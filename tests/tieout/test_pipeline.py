@@ -265,3 +265,26 @@ def test_category_settings_file_is_validated(tmp_path: Path) -> None:
     unordered.write_text("l2_code,pi1_same_low,pi1_same_base\nL03.01,0.8,0.6\n")
     with pytest.raises(ValueError, match="pi1_same"):
         read_category_settings(unordered)
+
+
+@pytest.mark.slow
+def test_decisions_apply_to_part_number_keyed_items() -> None:
+    """Item keys such as ``MPN:{mpn}|{maker}`` contain a pipe; their pairs can be decided."""
+    demo = Results.load(Path(__file__).resolve().parents[2] / "data" / "demo" / "results")
+    queue = demo.review_queue
+    piped = queue[(queue["type"] == "item_match") & (queue["pair_id"].str.count(r"\|") > 2)]
+    assert len(piped) > 100
+    before = demo.item_map["canonical_item_id"].nunique()
+    approve_id = "item_match|acquirer:CH-10226|target:MPN:STI4090401900|staviksi chemical"
+    assert approve_id in set(piped["pair_id"])
+    approved = apply_decisions(
+        demo, record_decision(None, approve_id, "approve", decided_at="2026-01-15T00:00:00Z")
+    )
+    assert approved.item_map["canonical_item_id"].nunique() == before - 1
+    assert approve_id not in set(approved.review_queue["pair_id"])
+    reject_id = piped["pair_id"].iloc[0]
+    rejected = apply_decisions(
+        demo, record_decision(None, reject_id, "reject", decided_at="2026-01-15T00:00:00Z")
+    )
+    assert reject_id not in set(rejected.review_queue["pair_id"])
+    assert rejected.item_map["canonical_item_id"].nunique() == before
