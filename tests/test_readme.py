@@ -44,8 +44,8 @@ def test_relative_links_and_images_resolve(target: str) -> None:
     assert (ROOT / path).exists(), f"README links to {path}, which is not in the repository"
 
 
-def test_the_readme_has_the_development_heading_the_landing_page_links_to() -> None:
-    assert re.search(r"^## Development$", README, flags=re.M)
+def test_the_readme_has_the_run_locally_heading_the_landing_page_links_to() -> None:
+    assert re.search(r"^## Run it locally$", README, flags=re.M)
 
 
 def test_screenshots_are_png_and_small() -> None:
