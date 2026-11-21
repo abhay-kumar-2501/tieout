@@ -137,6 +137,7 @@ h1, h2, h3, h4 {{ color: {t.INK}; font-weight: 600; }}
     color: {t.INK};
     font-size: {_TY["caption"]}px;
     line-height: 1.45;
+    margin-bottom: {t.SPACING[1]}px;
 }}
 .to-range {{ font-size: {_TY["body"]}px; white-space: nowrap; }}
 .to-range strong {{ font-variant-numeric: tabular-nums; }}
