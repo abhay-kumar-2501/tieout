@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tie-Out: procurement synergies a CFO can sign</title>
+<meta name="description" content="Tie-Out matches two companies' vendors and items, then shows why the naive procurement synergy figure shrinks to a defensible, measured, traceable range. Synthetic demo data.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F6E63'/%3E%3Cpath d='M8 11h16M16 11v13' stroke='%23FAF8F4' stroke-width='3.2' fill='none' stroke-linecap='square'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<script src="config.js" defer></script>
+<script src="data.js" defer></script>
+<script src="main.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap bar">
+    <span class="brand">Tie-Out</span>
+    <span class="tag">Illustrative: synthetic data</span>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero wrap" aria-labelledby="pitch">
+    <p class="eyebrow">A clean-team workbench for merger procurement synergies</p>
+    <h1 id="pitch">Tie-Out takes two messy purchasing extracts and produces a synergy estimate that is smaller than the naive one, expressed as a range, measured for accuracy, and traceable to the source rows.</h1>
+
+    <p class="finding">
+      The naive synergy figure is <strong data-bind="naive">…</strong>.
+      The defensible range is <strong data-bind="range">…</strong> a year.
+      <span class="finding-why">Why?</span>
+    </p>
+
+    <div class="actions">
+      <a id="demo-button" class="button" href="#">Open the live demo</a>
+      <a class="button ghost" href="assets/tieout_workbook.xlsx" download>Sample workbook</a>
+      <a class="button ghost" href="assets/tieout_deck.pptx" download>Sample deck</a>
+    </div>
+
+    <figure class="bridge">
+      <img src="assets/bridge.png" width="1600" height="900" alt="Bridge chart: the naive savings figure falls through seven removal steps to a defensible price-harmonisation saving, then volume consolidation is added, ending on a defensible run-rate range.">
+      <figcaption>The bridge from the naive figure to the defensible one. Illustrative: synthetic data.</figcaption>
+    </figure>
+
+    <noscript><p class="note">Figures on this page are filled in by a small script. With scripts off, see the bridge chart above.</p></noscript>
+  </section>
+
+  <!-- Video block (PRD 9.4). Uncomment when the 90-second video exists, and
+       remove the bridge image above or keep it as the poster.
+  <section class="wrap video" aria-labelledby="video-h">
+    <h2 id="video-h">Ninety seconds</h2>
+    <video controls preload="none" poster="assets/bridge.png" width="1600" height="900">
+      <source src="assets/tieout_demo.mp4" type="video/mp4">
+    </video>
+  </section>
+  -->
+
+  <section class="wrap band" aria-labelledby="bridge-h">
+    <div class="band-text">
+      <p class="eyebrow">The bridge</p>
+      <h2 id="bridge-h">Most of the naive figure is not savings.</h2>
+      <p>A plain &ldquo;pay the lower of the two prices on everything&rdquo; formula counts unit-of-measure errors, unverified matches, one-off spot prices and gaps that exist inside a single company. Each step below removes one of these, and each dollar is attributed to the first step that removes it, so the steps sum exactly to the difference.</p>
+    </div>
+    <div class="band-body">
+      <ol class="steps" id="bridge-steps" aria-label="Price harmonisation bridge, in dollars"></ol>
+    </div>
+  </section>
+
+  <section class="wrap band" aria-labelledby="score-h">
+    <div class="band-text">
+      <p class="eyebrow">The scorecard</p>
+      <h2 id="score-h">The matching is measured, not asserted.</h2>
+      <p>The demo data is synthetic, so the tool is scored against hidden ground truth it never reads. Tuning used three other seeds; the figures here are for a fourth, held-out seed. The same data is run through a naive design: fuzzy names and plain text similarity, with no attribute checks.</p>
+    </div>
+    <div class="band-body">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Accuracy scorecard, scrollable">
+        <table>
+          <caption class="sr">Held-out accuracy, Tie-Out against the naive baseline</caption>
+          <thead>
+            <tr><th scope="col">Measure</th><th scope="col" class="num">Tie-Out</th><th scope="col" class="num">Naive</th><th scope="col" class="num">Target</th></tr>
+          </thead>
+          <tbody id="score-rows"></tbody>
+        </table>
+      </div>
+      <p class="caption">Targets are acceptance criteria, not claims. Planted-savings recall is reported without a target.</p>
+    </div>
+  </section>
+
+  <section class="wrap band" aria-labelledby="trace-h">
+    <div class="band-text">
+      <p class="eyebrow">Traceability</p>
+      <h2 id="trace-h">Every dollar ties out to a purchasing line.</h2>
+      <p>Each headline figure has a chain back to the source rows, and re-sums from them to the cent. The workbook export carries the same figures as live formulas.</p>
+    </div>
+    <div class="band-body">
+      <pre class="chain" aria-label="Example trace chain"><code>lever:2
+ &rarr; L2:{category-level opportunity}
+   &rarr; line_id</code></pre>
+      <p class="caption">The chain for one lever. Click-through from any figure to its lines is in the live app.</p>
+    </div>
+  </section>
+
+  <section class="wrap band" aria-labelledby="limits-h">
+    <div class="band-text">
+      <p class="eyebrow">Limits</p>
+      <h2 id="limits-h">What this analysis cannot see.</h2>
+      <p>Stated on screen, in the deck and in the workbook, so nobody has to find out later.</p>
+    </div>
+    <div class="band-body">
+      <ul class="limits">
+        <li>Rebates, credits and off-invoice discounts</li>
+        <li>Specification, quality and lead-time differences between apparently identical items</li>
+        <li>Freight and delivery terms, unless incoterms are supplied</li>
+        <li>Contract clauses such as minimum volumes, exclusivity and change of control</li>
+        <li>Index-linked prices caught at different dates</li>
+        <li>Supplier capacity and willingness to serve the combined volume</li>
+        <li>Services and other spend with neither an item code nor a part number, beyond vendor and category totals</li>
+        <li>Corporate parent links not supplied in the parent table</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap band" aria-labelledby="dl-h">
+    <div class="band-text">
+      <p class="eyebrow">Sample outputs</p>
+      <h2 id="dl-h">Take the working with you.</h2>
+      <p>Both files are generated from the same committed results as this page.</p>
+    </div>
+    <div class="band-body">
+      <ul class="downloads">
+        <li><a href="assets/tieout_workbook.xlsx" download>Sample workbook <span class="mono">(.xlsx)</span></a><span class="caption">Formula-live, with a tie-out check.</span></li>
+        <li><a href="assets/tieout_deck.pptx" download>Sample deck <span class="mono">(.pptx)</span></a><span class="caption">The bridge, the range and the limits.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap honest" aria-labelledby="honest-h">
+    <h2 id="honest-h" class="sr">About this project</h2>
+    <p><strong>All data is synthetic and illustrative.</strong> The two companies, their vendors, items and prices are generated; no real company or supplier is represented.</p>
+    <p>This workflow is not new. Consulting firms and spend-analytics vendors do it with proprietary tooling. What Tie-Out offers is an open implementation in which every matching rule, every formula and every dollar can be audited. It is not legal advice, and its masked view is a presentation mode, not an access control.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap foot">
+    <a href="https://github.com/abhay-kumar-2501/tieout">Source repository</a>
+    <a href="https://github.com/abhay-kumar-2501/tieout#development">Run locally</a>
+    <span class="caption">Fonts: IBM Plex, <a href="assets/fonts/OFL.txt">SIL OFL</a>.</span>
+  </div>
+</footer>
+</body>
+</html>
