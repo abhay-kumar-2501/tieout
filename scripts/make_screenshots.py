@@ -8,8 +8,10 @@ dependency of the app). Start the app first, then run this script:
 
 It drives Chrome over the DevTools protocol, waits for each page to finish running,
 captures it at 1440 px wide and crops and downsizes each picture to a PNG under 400 KB.
+Crops run between section headings found on the page, so they follow layout changes.
 Plain ``--screenshot`` with a virtual-time budget returned the loading skeleton on the
-build machine, because the page is drawn over a websocket after load.
+build machine, because the page is drawn over a websocket after load. Set
+``TIEOUT_APP_URL`` to capture an app running on another port.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import asyncio
 import base64
 import io
 import json
+import os
 import subprocess
 import tempfile
 import time
@@ -28,25 +31,39 @@ import websockets
 from PIL import Image
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-BASE = "http://localhost:8791/"
+BASE = os.environ.get("TIEOUT_APP_URL", "http://localhost:8791/").rstrip("/") + "/"
 WIDTH, SCALE = 1440, 1.5
 OUT = Path(__file__).resolve().parents[1] / "docs" / "screenshots"
-#: file name -> (page, top, bottom) in CSS pixels of the full-page capture.
+#: file name -> (page, first section, section after the crop). ``None`` as the first
+#: section starts at the top of the page; each section is matched on the start of its text.
 SHOTS = {
-    "overview.png": ("", 0, 1230),
-    "matching-review-queue.png": ("matching", 860, 1860),
-    "risk-roadmap.png": ("risk_roadmap", 0, 1230),
+    "overview.png": ("", None, "How sure we are"),
+    "matching-review-queue.png": (
+        "matching",
+        "Review the uncertain matches",
+        "How accurate is the matching?",
+    ),
+    "risk-roadmap.png": ("risk_roadmap", None, "Concentration index before"),
 }
+#: Top of every section heading (and bold table title) on the page, in page pixels.
+_SECTION_TOPS = (
+    "(()=>{const m=document.querySelector('[data-testid=stMain]');const s=m.scrollTop;"
+    "const out={};document.querySelectorAll('.to-section, [data-testid=stMarkdownContainer] "
+    "strong').forEach(e=>{const k=e.innerText.trim();if(!(k in out))"
+    "out[k]=e.getBoundingClientRect().top+s});return out})()"
+)
+MARGIN = 24  # CSS pixels kept above a section heading and cut above the next one
+MAX_BYTES = 390_000  # the README test allows 400 KB a picture
 
 
-async def capture(pages: set[str]) -> dict[str, bytes]:
+async def capture(pages: set[str]) -> dict[str, tuple[bytes, dict[str, float]]]:
     profile = tempfile.mkdtemp()
     chrome = subprocess.Popen(
         [CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars",
          "--remote-debugging-port=9333", f"--user-data-dir={profile}", "about:blank"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )  # fmt: skip
-    images: dict[str, bytes] = {}
+    images: dict[str, tuple[bytes, dict[str, float]]] = {}
     try:
         tabs: list[dict] = []
         for _ in range(50):
@@ -97,22 +114,36 @@ async def capture(pages: set[str]) -> dict[str, bytes]:
                 )
                 await size(min(max(int(height or 1500), 900), 6000))
                 await asyncio.sleep(3)
+                tops = await evaluate(_SECTION_TOPS) or {}
                 shot = await call("Page.captureScreenshot", format="png")
-                images[page] = base64.b64decode(shot["data"])
+                images[page] = (base64.b64decode(shot["data"]), tops)
                 await size(1500)
     finally:
         chrome.terminate()
     return images
 
 
+def _section_top(tops: dict[str, float], start: str) -> int:
+    """The page position of the first section heading whose text starts with ``start``."""
+    for text, top in tops.items():
+        if text.startswith(start):
+            return int(top)
+    raise SystemExit(f"No section starting {start!r} on the page; update SHOTS.")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     images = asyncio.run(capture({page for page, _, _ in SHOTS.values()}))
-    for name, (page, top, bottom) in SHOTS.items():
-        picture = Image.open(io.BytesIO(images[page])).convert("RGB")
+    for name, (page, first, after) in SHOTS.items():
+        data, tops = images[page]
+        top = 0 if first is None else max(_section_top(tops, first) - MARGIN, 0)
+        bottom = _section_top(tops, after) - MARGIN
+        picture = Image.open(io.BytesIO(data)).convert("RGB")
         box = (0, int(top * SCALE), picture.width, int(bottom * SCALE))
         picture = picture.crop(box).resize((WIDTH, bottom - top), Image.LANCZOS)
         picture.save(OUT / name, optimize=True)
+        if (OUT / name).stat().st_size > MAX_BYTES:  # a flat interface survives 256 colours
+            picture.quantize(colors=256, dither=Image.Dither.NONE).save(OUT / name, optimize=True)
         print(name, (OUT / name).stat().st_size, "bytes")
 
 
