@@ -55,30 +55,45 @@ def hover_amount(field: str = "y") -> str:
 _CONFIG = {"displayModeBar": False, "displaylogo": False, "responsive": True}
 
 
+#: Chart roles, each drawn at its height in ``tieout.theme.CHART_HEIGHTS``.
+SHAPES = tuple(t.CHART_HEIGHTS)
+
+
 def themed(fig: go.Figure, *, height: int = 420, legend: bool = False) -> go.Figure:
-    """Apply the PRD 6.11 look: paper background, ink text, IBM Plex, quiet axes, no animation."""
+    """Apply the PRD 6.11 look: paper background, ink text, IBM Plex, quiet axes, no animation.
+
+    Text is never set below ``FONT_MIN``: a direct label that would have to shrink
+    below it to fit its bar is hidden instead (the hover and the table still give it).
+    """
     axis = {
         "gridcolor": t.BORDER,
         "linecolor": t.BORDER,
         "zerolinecolor": t.BORDER,
-        "tickfont": {"color": t.MUTED, "size": 12},
-        "title": {"font": {"color": t.MUTED, "size": 13}},
+        "tickfont": {"color": t.MUTED, "size": t.CHART_TICK},
+        "title": {"font": {"color": t.MUTED, "size": t.CHART_FONT}, "standoff": 12},
         "automargin": True,
     }
     fig.update_layout(
         height=height,
         paper_bgcolor=TRANSPARENT,
         plot_bgcolor=TRANSPARENT,
-        font={"family": f"{t.FONT_SANS}, sans-serif", "color": t.INK, "size": 13},
+        font={"family": f"{t.FONT_SANS}, sans-serif", "color": t.INK, "size": t.CHART_FONT},
         colorway=[t.ACQUIRER, t.TARGET, t.TEAL, t.MUTED, t.CONTROL],
-        margin={"l": 8, "r": 8, "t": 24, "b": 8},
+        margin={"l": 8, "r": 8, "t": 32, "b": 8},
         hoverlabel={
             "bgcolor": t.SURFACE,
             "bordercolor": t.BORDER,
-            "font": {"family": f"{t.FONT_SANS}, sans-serif", "color": t.INK, "size": 13},
+            "font": {"family": f"{t.FONT_SANS}, sans-serif", "color": t.INK, "size": t.CHART_FONT},
         },
         showlegend=legend,
-        legend={"orientation": "h", "y": 1.08, "x": 0, "font": {"color": t.MUTED, "size": 12}},
+        legend={
+            "orientation": "h",
+            "y": 1.02,
+            "yanchor": "bottom",
+            "x": 0,
+            "font": {"color": t.MUTED, "size": t.CHART_TICK},
+        },
+        uniformtext={"minsize": t.FONT_MIN, "mode": "hide"},
         clickmode="event+select",
         transition={"duration": 0},
     )
@@ -180,7 +195,8 @@ def bridge_figure(
         marker={"color": list(colors or bridge_colors(frame)), "line": {"width": 0}},
         text=["" if up else text for text, up in zip(frame["text"], above, strict=True)],
         textposition="outside",
-        textfont={"color": t.INK, "size": 12},
+        textfont={"color": t.INK, "size": t.CHART_LABEL},
+        constraintext="none",  # a figure may be wider than its bar; it is never shrunk
         cliponaxis=False,
         hovertext=list(hover),
         hoverinfo="text",
@@ -200,10 +216,11 @@ def bridge_figure(
                 text=str(frame["text"].iloc[i]),
                 showarrow=False,
                 yshift=10,
-                font={"color": t.INK, "size": 12},
+                font={"color": t.INK, "size": t.CHART_LABEL},
             )
     fig.update_yaxes(title_text=y_title, **axis_money(), rangemode="tozero")
-    fig.update_xaxes(tickangle=0)
+    # No fixed tick angle: Plotly keeps the wrapped names level where they fit and
+    # turns them where they do not (a phone).
     return themed(fig, height=height)
 
 
@@ -228,7 +245,7 @@ def dot_plot(
             y=[wrap_label(v, 34) for v in group[y]],
             mode="markers",
             name=str(value).capitalize(),
-            marker={"color": colors.get(str(value), t.MUTED), "size": 11, "line": {"width": 0}},
+            marker={"color": colors.get(str(value), t.MUTED), "size": 12, "line": {"width": 0}},
             hovertext=group[hover],
             hoverinfo="text",
         )
@@ -242,29 +259,35 @@ def dot_plot(
             xanchor="center",
             text=marker_line_label,
             showarrow=False,
-            font={"color": t.INK, "size": 12},
+            font={"color": t.INK, "size": t.CHART_LABEL},
         )
     fig.update_xaxes(title_text=x_title)
     fig.update_yaxes(type="category", automargin=True)
     rows = points[y].nunique()
-    fig = themed(fig, height=height or max(300, 120 + 40 * rows), legend=True)
-    fig.update_layout(legend={"y": -0.25, "yanchor": "top"}, margin={"t": 32, "b": 16})
+    fig = themed(fig, height=height or max(320, 140 + 44 * rows), legend=True)
+    fig.update_layout(legend={"y": -0.25, "yanchor": "top"}, margin={"t": 40, "b": 16})
     return fig
 
 
-def show_chart(fig: go.Figure, key: str, *, selectable: bool = True) -> Any:
-    """Render ``fig`` at full width in the PRD 6.11 look; selectable charts re-run on selection."""
+def show_chart(
+    fig: go.Figure, key: str, *, selectable: bool = True, shape: str | None = None
+) -> Any:
+    """Render ``fig`` at full width in the PRD 6.11 look; selectable charts re-run on selection.
+
+    With a ``shape`` from ``SHAPES`` (a role: main, wide or half) the chart is drawn at
+    that role's height from ``CHART_HEIGHTS``, in a container the stylesheet can
+    address; without one it keeps the figure's own height (charts sized by their rows).
+    """
+    options: dict[str, Any] = {"key": key, "theme": None, "config": _CONFIG, "width": "stretch"}
     if selectable:
-        return st.plotly_chart(
-            fig,
-            key=key,
-            on_select="rerun",
-            selection_mode="points",
-            theme=None,
-            config=_CONFIG,
-            width="stretch",
-        )
-    return st.plotly_chart(fig, key=key, theme=None, config=_CONFIG, width="stretch")
+        options.update(on_select="rerun", selection_mode="points")
+    if shape is None:
+        return st.plotly_chart(fig, **options)
+    if shape not in SHAPES:
+        raise ValueError(f"unknown chart shape {shape!r}")
+    fig.update_layout(height=t.CHART_HEIGHTS[shape])
+    with st.container(key=f"to_chart_{shape}_{key}"):
+        return st.plotly_chart(fig, **options)
 
 
 def selected_point(event: Any) -> int | None:
@@ -292,12 +315,26 @@ def selected_row(event: Any) -> int | None:
     return int(rows[0]) if rows else None
 
 
-def chart_with_table(fig: go.Figure, table: pd.DataFrame, key: str, caption: str) -> int | None:
+def chart_with_table(
+    fig: go.Figure,
+    table: pd.DataFrame,
+    key: str,
+    caption: str,
+    *,
+    shape: str | None = None,
+) -> int | None:
     """A selectable chart with its "View as table" toggle and one-sentence caption (PRD 6.8).
 
+    ``shape`` is passed to ``show_chart``. On a phone a note offers the table first.
     Returns the index of the selected bar or row (the same index either way).
     """
     as_table = st.toggle("View as table", key=f"{key}_as_table")
+    if not as_table:
+        st.markdown(
+            '<div class="to-narrow-note">On a narrow screen the table may read more easily: '
+            "switch on View as table.</div>",
+            unsafe_allow_html=True,
+        )
     if as_table:
         event = st.dataframe(
             table,
@@ -309,6 +346,6 @@ def chart_with_table(fig: go.Figure, table: pd.DataFrame, key: str, caption: str
         )
         index = selected_row(event)
     else:
-        index = selected_point(show_chart(fig, key))
+        index = selected_point(show_chart(fig, key, shape=shape))
     st.caption(caption.replace("$", "\\$"))
     return index

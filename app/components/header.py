@@ -41,23 +41,36 @@ def render_header() -> None:
     results = state.current_results()
     mode = state.view()
     top = headline(results, mode)
-    with st.container(border=True):
-        c1, c2, c3, c4 = st.columns([2, 3, 3, 2], vertical_alignment="center")
-        c1.markdown(f"**{esc(scenario_name(results.meta))}**")
-        c2.segmented_control(
-            "View mode",
-            VIEW_LABELS,
-            key=state.VIEW_KEY,
-            selection_mode="single",
-            label_visibility="collapsed",
-        )
-        c3.markdown(
-            f'<span class="to-muted">Defensible run-rate saving: </span>'
-            f"<strong>{esc(top['range_text'])}</strong>",
-            unsafe_allow_html=True,
-        )
-        if state.is_demo():
-            c4.markdown(
-                f'<span class="to-tag">{esc(t.ILLUSTRATIVE_LABEL)}</span>', unsafe_allow_html=True
+    # One bar: a row that wraps item by item on a narrow window, with the view banner below.
+    with st.container(border=True, key="to_header", gap="small"):
+        with st.container(
+            horizontal=True,
+            horizontal_alignment="distribute",
+            vertical_alignment="center",
+            key="to_header_row",
+        ):
+            st.markdown(
+                f'<span class="to-strong">{esc(scenario_name(results.meta))}</span>',
+                unsafe_allow_html=True,
+                width="content",
             )
-    st.markdown(f'<div class="to-banner">{esc(_BANNERS[mode])}</div>', unsafe_allow_html=True)
+            st.segmented_control(
+                "View mode",
+                VIEW_LABELS,
+                key=state.VIEW_KEY,
+                selection_mode="single",
+                label_visibility="collapsed",
+            )
+            st.markdown(
+                f'<span class="to-range"><span class="to-muted">Defensible run-rate saving: '
+                f"</span><strong>{esc(top['range_text'])}</strong></span>",
+                unsafe_allow_html=True,
+                width="content",
+            )
+            if state.is_demo():
+                st.markdown(
+                    f'<span class="to-tag">{esc(t.ILLUSTRATIVE_LABEL)}</span>',
+                    unsafe_allow_html=True,
+                    width="content",
+                )
+        st.markdown(f'<div class="to-banner">{esc(_BANNERS[mode])}</div>', unsafe_allow_html=True)
