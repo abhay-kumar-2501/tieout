@@ -338,3 +338,13 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **Matrix labels.** On the slide the top ten bubbles carry their rank 1 to 10; the five-row table beside it and the speaker notes give the names. The PNG draws numbered badges and a key.
 - **Masked slide 8.** Review decisions are hidden (the view is not available); volumes, tiers and the scorecard stay.
 - **Not rendered.** No LibreOffice here and PowerPoint did not respond to automation, so slide layout is verified by geometry tests and a text-fit estimate, not by eye.
+
+## Data screen and upload flow
+
+- **Where the logic lives.** `tieout/upload.py` holds the screen-free steps (`peek_file`, `suggest_columns`, `mapping_problems`, `check_upload`, `apply_category_file`, `run_upload`); `run_pipeline` gained an optional `progress(stage, counts)` callback. `app/components/upload_steps.py` is the plain stepper logic (blockers, next step, stale work) and `upload_ui.py` only draws it.
+- **Session memory only.** Uploaded bytes, mappings and edits sit in `st.session_state` (`_up_*` keys); the raw files are dropped as soon as the run succeeds and only the `Results` stay. Nothing uses `st.cache_data`, nothing is written to disk, and file contents never reach a log. A test runs the whole flow in an empty working directory and asserts nothing was written.
+- **Optional inputs.** A collapsed "Optional files and settings" section on the Upload step takes the FX, vendor-parents and category-settings CSVs, a period-end month (off by default, then the engine's default rule applies), the reporting currency and the aggregated switch. `tieout.upload.parse_options` checks them with plain messages; an invalid one blocks Continue. A non-USD reporting currency needs an FX file (the shipped table is in USD); money text on screens still uses the dollar sign. Only the first sheet of an XLSX is read (engine rule).
+- **Mapping widgets.** A header whose normalised name is already a schema field is used by the loader even when the user picks "Not used" (the engine's header fallback); the flow blocks only on required fields that no header is mapped to. A column the user wants ignored should be renamed in the file.
+- **Category step.** Suggestions follow PRD 2.3 (Jaccard of at least 0.3); an optional `category_map.csv` can be loaded on top of them. Continue needs at least one mapped category.
+- **Staged progress.** Real counts are shown at ingest, vendor matching, item matching and the savings; the bar only updates between stages, as the engine stages are single calls.
+- **Pareto.** Draws the first 60 vendors of each panel (the cumulative line and the 80% marker are computed over all vendors); the table toggle shows the same 60.
