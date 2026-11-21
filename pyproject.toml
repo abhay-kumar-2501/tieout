@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tieout"
+version = "0.1.0"
+description = "A clean-team workbench for procurement synergy sizing in mergers"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Abhay Kumar" }]
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.52",
+    "plotly>=5.22",
+    "rapidfuzz>=3.6",
+    "scikit-learn>=1.4",
+    "pandera>=0.24",
+    "xlsxwriter>=3.2",
+    "python-pptx>=1.0",
+    "pandas>=2.2",
+    "numpy",
+    "pyarrow",
+    "openpyxl",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+dev = ["hypothesis", "pytest", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["tieout*", "synthetic*", "evaluation*"]
+
+[tool.setuptools.package-data]
+tieout = ["reference/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = ["slow: needs the full demo dataset"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

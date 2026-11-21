@@ -1,0 +1,3 @@
+# Append-only logs written by several workstreams: keep both sides on merge.
+BUILD_NOTES.md merge=union
+HUMAN_TODO.md merge=union

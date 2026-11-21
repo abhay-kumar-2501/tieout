@@ -1,0 +1,13 @@
+# Runtime dependencies for the hosted app. Kept in step with pyproject.toml.
+streamlit>=1.52
+plotly>=5.22
+rapidfuzz>=3.6
+scikit-learn>=1.4
+pandera>=0.24
+xlsxwriter>=3.2
+python-pptx>=1.0
+pandas>=2.2
+numpy
+pyarrow
+openpyxl
+matplotlib
