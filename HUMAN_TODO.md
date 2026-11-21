@@ -9,7 +9,7 @@ Tasks left to the owner (PRD 11.1). Status as of 2026-11-21.
 | 3 | Usability check with five people | Remains with you |
 | 4 | Review by two practitioners | Remains with you |
 | 5 | Check the names | Web-search screening done; register search remains |
-| 6 | Open the workbook and deck in Excel and PowerPoint | See below |
+| 6 | Open the workbook and deck in Excel and PowerPoint | Done on the Mac versions |
 | 7 | App screenshots for the README | Done |
 | 8 | Public-data (P2) pass | Not attempted |
 
@@ -81,16 +81,14 @@ Remaining for you:
 - Search the registers (USPTO, EUIPO) before any public launch.
 - Add "Titra" to the generator's name denylist the next time the demo data is regenerated. The demo data was not regenerated in this pass.
 
-## 6. Excel and PowerPoint open check
+## 6. Excel and PowerPoint open check (done)
 
-Not done. The build could not get access to Excel or PowerPoint on this machine, so neither file has been opened in the real applications.
+Done on 2026-11-22 with Excel and PowerPoint for Mac, on the committed samples in `site/assets/`.
 
-What the tests do cover: both files open with openpyxl and python-pptx; every workbook formula is re-evaluated by a test evaluator and equals its stored value; the check cell reads `OK`; no shape leaves a slide and no text boxes overlap.
+- The deck opens with no repair prompt. Slides 1 and 3 to 8 were paged through at full size and slide 2 was seen as a thumbnail: no clipped or overlapping text, and the charts are native and editable.
+- The workbook opens with no repair prompt. `Summary` shows the same figures as the app. Changing the same-vendor base capture probability on `Assumptions` moved the lever 1 base figure on `Summary` at once, so the formulas recalculate in Excel.
 
-Remaining for the owner:
-
-- [ ] Open `site/assets/tieout_workbook.xlsx` in Excel. Confirm there is no repair prompt, that `Summary` shows `OK` in the check cell, and that changing a value on `Assumptions` moves the figures on `Summary` while the check stays `OK`.
-- [ ] Open `site/assets/tieout_deck.pptx` in PowerPoint. Confirm there is no repair prompt and page through the eight slides for clipped or overlapping text.
+Not looked at: the check cell after the edit, the masked workbook and the masked deck, and Excel or PowerPoint on Windows.
 
 ## 7. Screenshots (done)
 
