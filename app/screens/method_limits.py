@@ -1,5 +1,127 @@
-"""Method & limits page."""
+"""Method & limits (PRD 6.3, 6.10): how it works and what it cannot see.
 
-from components.page import render_placeholder
+Plain words first, then the measured accuracy, then the fixed "what this
+analysis cannot see" panel, then the data statement.
+"""
 
-render_placeholder("How it works and what it cannot see", "M2")
+from __future__ import annotations
+
+import pandas as pd
+import streamlit as st
+from components import state
+from components.page import page_question, section, unavailable
+from components.style import esc, headline
+
+from tieout import theme as t
+from tieout.views import CANNOT_SEE, Unavailable, percent, scorecard_table
+
+results = state.current_results()
+mode = state.view()
+
+page_question("How does it work, and what can it not see?")
+headline("Every figure comes from rules you can read, and the limits are listed here.")
+
+section("How it works")
+st.markdown(
+    esc("Tie-Out works in four steps, and each one keeps the evidence for what it decided."),
+)
+with st.container(border=True):
+    st.markdown("**1. Make two vendor lists one**")
+    st.markdown(
+        esc(
+            "Names are cleaned (case, punctuation, legal endings such as Inc or GmbH, branch "
+            "markers). Records with the same tax ID or the same cleaned name are merged. A "
+            "parent table links subsidiaries. Similar names are scored and merged only when they "
+            "clear guards against look-alikes (two different tax IDs always block a merge); "
+            "borderline pairs wait for a person to decide."
+        )
+    )
+    st.markdown("**2. Make two item lists one**")
+    st.markdown(
+        esc(
+            "Items are matched across the two companies inside the same category: first by "
+            "manufacturer part number, then by description similarity backed by size or "
+            "material attributes. Each match is tier A (certain or approved), tier B (automatic, "
+            "corroborated) or tier C (a candidate for review, never counted in the range). "
+            "Units of measure are converted, and a price gap that is really a different pack "
+            "size is flagged."
+        )
+    )
+    st.markdown("**3. Compare prices and volumes**")
+    st.markdown(
+        esc(
+            "Three levers are sized. Price harmonisation: where one company pays more than the "
+            "other's benchmark price for the same item, the gap is the opportunity. Volume "
+            "consolidation: moving spend to one preferred vendor per category, up to a "
+            "concentration cap. Payment terms: aligning days to pay, which is a one-time cash "
+            "release and never added to the run-rate saving."
+        )
+    )
+    st.markdown("**4. Walk from the naive figure to the defensible one**")
+    st.markdown(
+        esc(
+            "A plain best-of-both formula overstates the prize. The bridge removes, one step at "
+            "a time and each dollar once: unit-of-measure errors, unverified matches, "
+            "spot-price benchmarks, internal variance, non-comparable terms, contract lock-in and "
+            "the share not expected to be won in negotiation. Every bar opens to the items it "
+            "removed, and every item to the source rows."
+        )
+    )
+
+section(
+    "Risk guardrails",
+    "What stops the saving from being bought with a fragile supply base.",
+)
+st.markdown(
+    esc(
+        "Each category has a cap on the share any one parent vendor may hold after "
+        "consolidation (60% for critical, 75% for standard, 90% for non-critical categories "
+        "by default; you can change them). Where the cap limits consolidation, the saving "
+        "given up is shown as the price of resilience. Concentration is measured before and "
+        "after, and sole-source items and categories are flagged."
+    )
+)
+
+section(
+    "How accurate the matching is",
+    "Measured against hidden truth on a held-out dataset, next to a naive fuzzy-match baseline.",
+)
+card = scorecard_table(results, mode)
+if isinstance(card, Unavailable):
+    unavailable(card)
+else:
+    frame = pd.DataFrame(
+        {
+            "Measure": card["label"],
+            "Tie-Out": [percent(v) for v in card["tool"]],
+            "Naive baseline": [percent(v) for v in card["baseline"]],
+            "Target": card["target"].str.replace("<=", "at most").str.replace(">=", "at least"),
+            "Met": card["passed"].map({True: "Yes", False: "No"}).fillna(""),
+        }
+    )
+    st.dataframe(frame, hide_index=True, width="stretch")
+    st.caption(
+        "The truth files are never read by the tool; only the evaluation scripts see them. "
+        "Targets are acceptance criteria on seed 4, not claims about your data."
+    )
+
+section("What this analysis cannot see")
+with st.container(border=True):
+    for line in CANNOT_SEE:
+        st.markdown(f"- {esc(line)}")
+
+section("About the data")
+if state.is_demo():
+    st.info(
+        f"{t.ILLUSTRATIVE_LABEL}. The demo merger, its companies, vendors, items and prices "
+        "are generated by a script and do not describe any real business. The view modes "
+        "show how a clean-team process might look; they are a presentation, not a "
+        "security control.",
+        icon=":material/info:",
+    )
+else:
+    st.info(
+        "These results come from files you uploaded and stay in this session's memory. "
+        "The integration-office view is a presentation mode, not a security control.",
+        icon=":material/info:",
+    )
