@@ -9,14 +9,12 @@ from evaluation import tune as tuning
 from evaluation.evaluate import SeedTruth, baseline_metrics, run_tool, tool_metrics
 from evaluation.scorecard import Metrics, build_scorecard, write_scorecard
 from evaluation.seeds import HELD_OUT_SEED, TUNING_SEEDS, ensure_seed
+from evaluation.sensitivity import threshold_sensitivity, write_sensitivity
 from tieout.reference import Thresholds, load_thresholds
 from tieout.results import Results
 
 SCORECARD_FILE = "scorecard.json"
-
-
-class NotWiredError(RuntimeError):
-    """Raised by commands that need parts of the engine that do not exist yet."""
+SENSITIVITY_FILE = "sensitivity.json"
 
 
 def _thresholds(args: Namespace) -> Thresholds:
@@ -29,9 +27,16 @@ def _run(seed: int, args: Namespace, thresholds: Thresholds) -> tuple[Results, S
 
 
 def _format_row(label: str, metrics: Metrics) -> str:
+    def value(name: str) -> str:
+        number = metrics[name]
+        return "n/a" if number is None else f"{number:.4f}"
+
     return (
-        f"  {label:<10} vendor P {metrics['vendor_precision']:.4f} R {metrics['vendor_recall']:.4f}"
-        f" | item P {metrics['item_precision']:.4f} R {metrics['item_recall']:.4f}"
+        f"  {label:<10} vendor P {value('vendor_precision')} R {value('vendor_recall')}"
+        f" | item P {value('item_precision')} R {value('item_recall')}"
+        f" | planted-savings recall {value('planted_savings_recall')}"
+        f", false savings {value('false_savings_rate')}"
+        f", unit-error catch {value('unit_error_catch_rate')}"
     )
 
 
@@ -93,8 +98,12 @@ def run_baseline(args: Namespace) -> None:
 
 
 def run_sensitivity(args: Namespace) -> None:
-    """Precompute the threshold sensitivity curves (needs the synergy engine)."""
-    raise NotWiredError(
-        "`evaluation sensitivity` charts the base-case synergy figure, which needs the "
-        "synergy engine of the next milestone."
-    )
+    """Precompute the threshold sensitivity curves on the demo seed (PRD 4.7)."""
+    files = ensure_seed(HELD_OUT_SEED, args.seeds_dir, args.truth_dir)
+    data = threshold_sensitivity(run_tool(files, _thresholds(args)))
+    path = Path(args.out) / SENSITIVITY_FILE
+    write_sensitivity(data, path)
+    for name, curve in data["curves"].items():
+        points = ", ".join(f"{p['threshold']:g}: {p['recurring_base']:,.0f}" for p in curve)
+        print(f"{name}: {points}")
+    print(f"Wrote {path}")

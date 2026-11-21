@@ -7,9 +7,7 @@ from pathlib import Path
 import pytest
 
 from evaluation import targets
-from evaluation.__main__ import main
 from evaluation.metrics import make_pair_score
-from evaluation.runner import NotWiredError
 from evaluation.scorecard import (
     METRIC_NAMES,
     build_scorecard,
@@ -18,7 +16,9 @@ from evaluation.scorecard import (
     read_scorecard,
     write_scorecard,
 )
+from evaluation.sensitivity import threshold_sensitivity
 from evaluation.truth import load_truth
+from tieout.results import Results
 
 PASSING = {
     "vendor_precision": 0.99,
@@ -139,6 +139,12 @@ def test_load_truth_column_and_file_checks(tmp_path: Path) -> None:
         load_truth(tmp_path)
 
 
-def test_sensitivity_waits_for_the_synergy_engine() -> None:
-    with pytest.raises(NotWiredError, match="synergy engine"):
-        main(["sensitivity"])
+def test_sensitivity_varies_each_threshold_alone(small_results: Results) -> None:
+    data = threshold_sensitivity(small_results, vendor_grid=(85.0, 97.0), item_grid=(0.78, 0.9))
+    current = data["current"]
+    assert current["recurring_base"] == small_results.totals["recurring"]["base"]
+    vendor, item = data["curves"]["vendor_auto"], data["curves"]["item_auto_cosine"]
+    assert [p["threshold"] for p in vendor] == [85.0, 97.0]
+    at_current = [p for p in vendor + item if p["threshold"] in (85.0, 0.78)]
+    assert all(p["recurring_base"] == pytest.approx(current["recurring_base"]) for p in at_current)
+    assert all(p["recurring_low"] <= p["recurring_base"] <= p["recurring_high"] for p in vendor)

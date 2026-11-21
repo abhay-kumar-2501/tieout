@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import pandas as pd
 
-from evaluation.baseline import VENDOR_MAP_COLUMNS, baseline_item_pairs, baseline_vendor_map
+from evaluation.baseline import (
+    ITEM_MAP_COLUMNS,
+    VENDOR_MAP_COLUMNS,
+    baseline_item_map,
+    baseline_item_pairs,
+    baseline_vendor_map,
+)
 from evaluation.metrics import vendor_pair_score
 
 
@@ -114,3 +120,34 @@ def test_items_empty_inputs() -> None:
         [("acquirer:A1", "acquirer", "L2-1", ""), ("target:T1", "target", "L2-1", "")]
     )
     assert baseline_item_pairs(only_blank).empty
+
+
+def test_item_map_keeps_each_records_single_best_pair() -> None:
+    records = pd.DataFrame(
+        {
+            "item_record_id": ["acquirer:A1", "acquirer:A2", "target:T1", "target:T2"],
+            "company": ["acquirer", "acquirer", "target", "target"],
+            "item_key": ["A1", "A2", "T1", "T2"],
+            "l2_code": ["L02.01"] * 4,
+        }
+    )
+    pairs = pd.DataFrame(
+        {
+            "item_record_id_a": ["acquirer:A1", "acquirer:A1", "acquirer:A2"],
+            "item_record_id_b": ["target:T1", "target:T2", "target:T1"],
+            "l2_code": ["L02.01"] * 3,
+            "score": [0.95, 0.90, 0.99],
+        }
+    )
+    result = baseline_item_map(records, pairs).set_index("item_record_id")
+    assert list(result.reset_index().columns) == ITEM_MAP_COLUMNS
+    # A2-T1 (0.99) goes first; A1 then takes T2, its best free partner.
+    assert result.loc["acquirer:A2", "partner_id"] == "target:T1"
+    assert result.loc["acquirer:A1", "partner_id"] == "target:T2"
+    assert (
+        result.loc["acquirer:A1", "canonical_item_id"]
+        == result.loc["target:T2", "canonical_item_id"]
+    )
+    assert set(result["tier"]) == {"B"} and set(result["stage"]) == {"I3"}
+    unmatched = baseline_item_map(records, pairs.iloc[0:0])
+    assert unmatched["tier"].isna().all() and unmatched["canonical_item_id"].is_unique
