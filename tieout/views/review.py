@@ -143,8 +143,12 @@ def review_item(
     if pair_id not in queue.index:
         return Unavailable(f"{pair_id} is not in the review queue.")
     row = queue.loc[pair_id]
-    pair_type, side_a, side_b = parse_pair_id(pair_id)
-    cards = [_record_card(results, side, pair_type) for side in (side_a, side_b)]
+    # The keys come from the queue row: a record key may itself contain "|" (MPN-keyed items),
+    # which a pair id cannot be split on.
+    pair_type = str(row["type"])
+    cards = [
+        _record_card(results, side, pair_type) for side in sorted((row["key_a"], row["key_b"]))
+    ]
     label = "vendor_name" if pair_type.startswith("vendor_") else "item_description"
     evidence = _evidence(row["evidence"])
     return {
@@ -170,7 +174,10 @@ def _decided_spend(results: Results, pair_ids: list[str]) -> float:
     items = results.item_map.set_index("item_record_id")["spend"]
     total = 0.0
     for pair_id in pair_ids:
-        pair_type, side_a, side_b = parse_pair_id(pair_id)
+        try:
+            pair_type, side_a, side_b = parse_pair_id(pair_id)
+        except ValueError:  # a key containing "|": the pair cannot have been decided
+            continue
         spend = vendors if pair_type.startswith("vendor_") else items
         total += sum(float(spend.get(side, 0.0)) for side in (side_a, side_b))
     return total
@@ -202,6 +209,14 @@ def review_progress(results: Results, view: str | None = None) -> dict[str, Any]
     }
 
 
+def _parses(pair_id: str) -> bool:
+    try:
+        parse_pair_id(pair_id)
+    except ValueError:
+        return False
+    return True
+
+
 def bulk_approve_preview(
     results: Results, queue_type: str, min_score: float | None = None, view: str | None = None
 ) -> dict[str, Any] | Unavailable:
@@ -215,7 +230,8 @@ def bulk_approve_preview(
         return NOT_IN_VIEW
     queue = results.review_queue
     queue = queue[(queue["type"] == queue_type) & (queue["status"] == "pending")]
-    scored = queue[queue["score"].notna()]
+    decidable = [_parses(p) for p in queue["pair_id"]]  # ids a decision can be recorded on
+    scored = queue[queue["score"].notna() & pd.Series(decidable, index=queue.index, dtype=bool)]
     if scored.empty:
         return Unavailable(f"{queue_type} candidates have no score to approve in bulk.")
     low, high = float(scored["score"].min()), float(scored["score"].max())

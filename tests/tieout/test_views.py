@@ -503,3 +503,15 @@ def test_bulk_approve_preview_counts_the_pairs_above_a_score(results: Results) -
     assert len(part["pair_ids"]) == part["count"]
     assert isinstance(bulk_approve_preview(results, "unit_flag", None, "clean"), Unavailable)
     assert isinstance(bulk_approve_preview(results, "vendor_match", None, "masked"), Unavailable)
+
+
+def test_review_item_opens_pairs_whose_record_key_contains_a_pipe(results: Results) -> None:
+    queue = results.review_queue.iloc[:1].copy()
+    queue["pair_id"] = queue["pair_id"] + "|some maker"  # as a key with a pipe makes it
+    odd = replace(results, review_queue=queue)
+    item = views.review_item(odd, queue["pair_id"].iloc[0], "clean")
+    assert not isinstance(item, Unavailable) and len(item["records"]) == 2
+    # Such a pair cannot be written to the decisions log, so a bulk approval leaves it out.
+    assert isinstance(
+        views.bulk_approve_preview(odd, queue["type"].iloc[0], None, "clean"), Unavailable
+    )
