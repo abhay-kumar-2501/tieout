@@ -7,14 +7,14 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
 from hypothesis import strategies as st
-from synergy_fixtures import Book, run
+from synergy_fixtures import Book, memoised, property_test, run
 
 from tieout.synergy import SynergyOutputs
 from tieout.synergy.trace import figure_value, leaf_lines, resum
 
-PROPERTY = settings(max_examples=100, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+PROPERTY = property_test
 CENT = 0.01
 EPS = 1e-6
 
@@ -110,6 +110,7 @@ def independent_naive(frames: dict[str, pd.DataFrame]) -> float:
     return float(((price - floor) * groups["qty"]).sum())
 
 
+@memoised
 def compute(items, assumptions) -> tuple[dict[str, pd.DataFrame], SynergyOutputs]:
     frames = build(items)
     return frames, run(frames, assumptions=assumptions)

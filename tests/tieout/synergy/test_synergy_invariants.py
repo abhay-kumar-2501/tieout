@@ -10,15 +10,15 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given
 from hypothesis import strategies as st
-from synergy_fixtures import Book, run
+from synergy_fixtures import Book, memoised, property_test, run
 from test_synergy_properties import money_leaves, opportunity_measures
 
 from tieout.synergy import SynergyOutputs
 from tieout.synergy.trace import figure_value, leaf_lines, resum
 
-PROPERTY = settings(max_examples=100, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+PROPERTY = property_test
 CENT = 0.01
 EPS = 1e-6
 CASES = ("low", "base", "high")
@@ -108,6 +108,7 @@ def build(categories: list[dict[str, Any]]) -> dict[str, pd.DataFrame]:
     return book.frames(matches)
 
 
+@memoised
 def compute(categories, assumptions) -> tuple[dict[str, pd.DataFrame], SynergyOutputs]:
     frames = build(categories)
     return frames, run(frames, assumptions=assumptions)

@@ -8,11 +8,18 @@ both companies is one parent vendor.
 
 from __future__ import annotations
 
+import functools
+import hashlib
+import json
+import os
+import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TypeVar
 
 import numpy as np
 import pandas as pd
+from hypothesis import HealthCheck, seed, settings
 
 from tieout.match.review import make_pair_id
 from tieout.synergy import SynergyOutputs, compute_synergy
@@ -22,6 +29,56 @@ META: dict[str, Any] = {
     "period": {"start": "2025-01", "end": "2025-12", "months": 12},
     "reporting_currency": "USD",
 }
+Result = TypeVar("Result")
+
+
+def _shared_seed() -> int:
+    """One Hypothesis seed for every property test of a run, new on every run.
+
+    Under pytest-xdist every worker of one run sees the same
+    ``PYTEST_XDIST_TESTRUNUID``; without xdist the seed is drawn once per process.
+    """
+    run_id = os.environ.get("PYTEST_XDIST_TESTRUNUID")
+    if run_id is None:
+        return random.SystemRandom().randrange(2**32)
+    return int(hashlib.sha256(run_id.encode()).hexdigest()[:8], 16)
+
+
+SHARED_SEED = _shared_seed()
+_PROPERTY_SETTINGS = settings(
+    max_examples=100, deadline=None, suppress_health_check=[HealthCheck.too_slow]
+)
+
+
+def property_test(test: Callable[..., None]) -> Callable[..., None]:
+    """100 examples, no deadline, and the run's shared seed.
+
+    Property tests over the same strategies then draw the same 100 fresh
+    examples on a run, so :func:`memoised` computes each example once instead
+    of once per test, while every test still checks 100 new random examples
+    per run (PRD 10.2).
+    """
+    return seed(SHARED_SEED)(_PROPERTY_SETTINGS(test))
+
+
+def memoised(compute: Callable[..., Result]) -> Callable[..., Result]:
+    """Cache a property test's computation by the example's JSON form.
+
+    The tests only read the outputs, so one computation can serve every test
+    that draws the same example.
+    """
+    cache: dict[str, Result] = {}
+
+    @functools.wraps(compute)
+    def wrapper(*args: Any) -> Result:
+        key = json.dumps(args, sort_keys=True, default=str)
+        if key not in cache:
+            cache[key] = compute(*args)
+        return cache[key]
+
+    return wrapper
+
+
 #: Close date 2026-01-01 + 36 months.
 HORIZON_END = pd.Timestamp("2029-01-01")
 DOC_DATE = pd.Timestamp("2025-06-01")

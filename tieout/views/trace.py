@@ -12,7 +12,7 @@ all source rows are "not available in this view".
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
@@ -128,27 +128,29 @@ def _category_level(node: str) -> bool:
     return node.startswith(_CATEGORY_LEVEL)
 
 
-@dataclass(frozen=True)
 class _Labels:
-    """Display names for one run and view mode, built once per panel."""
+    """Display names for one run and view mode; each table is built on first use."""
 
-    categories: dict[str, str]
-    parents: dict[str, str]
-    items: dict[str, str]
-    rows: dict[str, str]
+    def __init__(self, results: Results, mode: str) -> None:
+        self._results, self._mode = results, mode
 
-    @classmethod
-    def build(cls, results: Results, mode: str) -> _Labels:
-        lines = results.lines
-        rows = (
-            lines["source_file"] + " row " + lines["source_row"].astype(int).astype(str)
-        ).tolist()
-        return cls(
-            categories=category_labels(results, mode),
-            parents=parent_labels(results, mode),
-            items=item_labels(results),
-            rows=dict(zip(lines["line_id"].tolist(), rows, strict=True)),
-        )
+    @cached_property
+    def categories(self) -> dict[str, str]:
+        return category_labels(self._results, self._mode)
+
+    @cached_property
+    def parents(self) -> dict[str, str]:
+        return parent_labels(self._results, self._mode)
+
+    @cached_property
+    def items(self) -> dict[str, str]:
+        return item_labels(self._results)
+
+    @cached_property
+    def rows(self) -> dict[str, str]:
+        lines = self._results.lines
+        names = lines["source_file"] + " row " + lines["source_row"].astype(int).astype(str)
+        return dict(zip(lines["line_id"].tolist(), names.tolist(), strict=True))
 
     def __call__(self, node: str) -> str:
         if node in _LEVER_NAMES:
@@ -180,7 +182,7 @@ class _Labels:
 
 def node_label(results: Results, node: str, view: str | None = None) -> str:
     """A trace node in words: category, item, buying group, vendor or source row."""
-    return _Labels.build(results, resolve_view(results, view))(node)
+    return _Labels(results, resolve_view(results, view))(node)
 
 
 def _child_measure(measure: str, child: str) -> str:
@@ -261,7 +263,7 @@ def trace_for(
         return Unavailable(f"No working is recorded for {figure_id}.")
     if mode == MASKED and not _category_level(node):
         return NOT_IN_VIEW
-    labels = _Labels.build(results, mode)
+    labels = _Labels(results, mode)
     rows: pd.DataFrame | Unavailable
     if mode == MASKED:
         rows, copy_table = NOT_IN_VIEW, ""
