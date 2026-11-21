@@ -1,5 +1,20 @@
-"""Synergy models (PRD 5). Lever 1, price harmonisation, with its bridge and trace."""
+"""Synergy models (PRD 5): levers 1 to 3, bridge, risk, phasing, prioritisation and trace."""
 
-from tieout.synergy.stage import SynergyOutputs, compute_synergy
+from tieout.synergy.sensitivity import SCENARIOS, tornado
+from tieout.synergy.stage import (
+    SynergyCache,
+    SynergyOutputs,
+    compute_synergy,
+    evaluate,
+    precompute,
+)
 
-__all__ = ["SynergyOutputs", "compute_synergy"]
+__all__ = [
+    "SCENARIOS",
+    "SynergyCache",
+    "SynergyOutputs",
+    "compute_synergy",
+    "evaluate",
+    "precompute",
+    "tornado",
+]

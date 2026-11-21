@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 
 from tieout.synergy.groups import COMPANIES, COMPANY_RANK
+from tieout.synergy.settings import CASES, category_table, number_cell
 
 __all__ = [
     "CASES",
@@ -49,7 +50,6 @@ __all__ = [
     "lever1",
 ]
 
-CASES = ("low", "base", "high")
 STEP_NAMES = (
     "Unit-of-measure errors",
     "Unverified matches",
@@ -389,30 +389,12 @@ def capture_probability(
     ``category_settings.csv`` row, as a mapping or a frame with an ``l2_code``
     column; a blank or missing cell falls back to ``assumptions["lever1"]``.
     """
-    settings = _category_settings(assumptions.get("category_settings"))
+    settings = category_table(assumptions.get("category_settings"))
     by_change = {}
     for change in ("same_vendor", "switch"):
         default = float(assumptions["lever1"][change][case])
         column = _SETTING_COLUMNS[(change, case)]
-        values = [_probability(settings.get(code, {}).get(column)) for code in inputs.l2_codes]
+        values = [number_cell(settings.get(code, {}).get(column)) for code in inputs.l2_codes]
         per_l2 = np.array([default if np.isnan(v) else v for v in values] + [default])
         by_change[change] = per_l2[inputs.l2_index]  # index -1 (no category): the default
     return np.where(same_vendor, by_change["same_vendor"], by_change["switch"])
-
-
-def _probability(value: object) -> float:
-    """A category-settings cell as a number; blank means "use the default" (NaN)."""
-    if value is None or (isinstance(value, str) and not value.strip()):
-        return float("nan")
-    return float(value)  # type: ignore[arg-type]
-
-
-def _category_settings(raw: object) -> dict[str, Mapping[str, object]]:
-    if raw is None:
-        return {}
-    if isinstance(raw, pd.DataFrame):
-        frame = raw.set_index("l2_code")
-        return {str(k): row.dropna().to_dict() for k, row in frame.iterrows()}
-    if isinstance(raw, Mapping):
-        return {str(k): dict(v) for k, v in raw.items()}
-    raise TypeError("category_settings must be a mapping or a data frame")

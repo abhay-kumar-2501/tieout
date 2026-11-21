@@ -145,3 +145,54 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
   The baseline's vendor precision is so low because `token_set_ratio` scores 100 whenever one name's tokens are a subset of the other's, and connected components then chain whole groups of `... Industrial Supply` vendors together.
 - **Gates.** `tests/evaluation/test_gates.py` (marked `slow`, run by CI) shares one pipeline run on seed 4 and asserts the four PRD 4.7 pairwise targets and that full matching takes under 60 seconds (about 4 seconds here, loading and preparation included). All pass; no gate is marked as an expected failure.
 - **`make demo`** generates seed 4, copies `vendor_parents.csv` and `category_map.csv` to `data/demo/`, runs `python -m tieout run` into `data/demo/results/` (git-ignored until the app reads committed results) and scores.
+## Levers 2–3, risk and phasing
+
+- **Stage shape.** `precompute(...)` builds everything that does not depend on the assumptions (buying groups, item facts, the spend cube). `evaluate(cache, assumptions)` is the recalculation, and `compute_synergy` runs both. `compute_synergy` gains an optional `taxonomy` argument (default: the shipped file). It is used only for each L2's default criticality, because `lines` carries `category_type` but not `criticality`. `recurring_base(cache, assumptions)` computes only the base recurring total, for the tornado. Lever-1 frames, lever-1 opportunity columns, `totals.lever1` and `totals.levers.lever1` are unchanged (checked byte for byte on seed 1). `trace.line_amounts` now covers every line, with lever-1 measures at zero off lever-1 lines, and `total:recurring` lists `lever:1` and `lever:2`.
+- **Spend cube.** Every in-scope line, sorted by `line_id`. Unmapped lines count in the baseline but in no lever (PRD 3.4), and that includes lever 3. "Addressable" spend is spend in categories where both companies have positive spend.
+- **Settings lookup.** Each per-category value is read from `assumptions["category_settings"]` first (a mapping or frame with the `category_settings.csv` columns), then the global assumption, then the default. Criticality comes from the settings file, then the taxonomy, then `standard`. `d` is 0 when the `category_type` is unknown. The user chooses a preferred vendor with `assumptions["lever2"]["preferred_vendor"] = {l2_code: parent_id}`. A choice with no spend in the category is ignored.
+- **Lever 2 qualification and preferred vendor.** "Has spend" and "parent vendor" both mean positive net spend in the category. By default the preferred vendor is the one with the largest combined spend over all its lines. Lever-1 `switch` lines are included here because `P` is "current spend". Ties go to the smaller `parent_id`. A non-preferred vendor whose net eligible spend is not positive moves nothing.
+- **Which lines are `switch` lines.** The comparison lines (the trace children) of buying groups in an in-range `L1:{item}:switch` opportunity. Pending (tier C) `switch` opportunities assume no saving, so their lines stay in lever 2.
+- **Lever 2 per line.** The preferred vendor's eligible lines have weight 1 and the other vendors' eligible lines have weight `f`. `B2 = Σ weight × (amount − lever-1 saving)`, which is exactly `P_eligible + f × M − L1`. `B2` is 0 when `f = 0` (as the PRD writes it) and never below 0. Every qualifying category is an opportunity, so savings forgone stays visible. Its status is `in_range` (f > 0), `cap_reached` or `nothing_to_move` (M = 0). Opportunity `gross_gap` is `B2 × d` (before capture), and `basis_*` holds `B2` per case.
+- **Lever 3 groups.** Only lines of vendor records whose `vendor_map.tier` is A or B count. The parent must have positive spend on such lines from both companies. Spend weights are positive line amounts. Observed days are `payment_date − doc_date`, and coverage is the share of positive spend with both dates. Observed days are never used in aggregated mode. When the 80% test fails and either company has no stated terms, the vendor is excluded with one of two reasons: "neither" (no terms and no dates) or "no stated terms" (some dates, but below 80%). Terms count as different when their spend-weighted `T` values are at least 1 day apart.
+- **`S[g]` per line.** `S = (1 − φ)(amount − lever-1 saving) − amount ÷ C[c] × N2[c]`, where `φ = f` on lines that move under lever 2 and 0 otherwise. Reading it term by term:
+  - the moved part leaves together with its lever-1 saving, which travels with it;
+  - the lever-1 saving on the part that stays is deducted;
+  - every line takes its spend share of its category's lever-2 saving. "Pro rata by spend" is read literally, over the whole category.
+  
+  Spend moved under a lever-1 `switch` is not deducted, because the PRD lists only lever-2 moves. A group's `S` is never below 0. Lever 3 is switched off when either company has neither `payment_terms_days` nor `payment_date` on any line, and `totals.checks.lever3_message` says so. Opportunity `gross_gap` is cash before `π3`, and `basis_*` is `Σ S` over the groups whose days rise.
+- **Risk.** `category_risk` is long: one row per (L2, parent vendor), with spend and share before and after consolidation. The category-level columns repeat on each row: effective settings, `C`, `P`, `P_eligible`, `M`, `f`, HHI before and after, savings forgone and the sole-source flags. Shares are computed with negative spend counted as 0. "After" reflects lever-2 moves only (post-move spend before savings), not lever-1 switches. A category is sole-source when only one parent has positive spend after consolidation. A sole-source item is a tier A or B item whose lines in both companies carry a single parent. Savings forgone is the base `N2` at cap 100% minus the base `N2` at the current cap, per category and in total.
+- **Months.** Month 1 is the close month. A line's available month is the month of its contract end plus 1, when the end falls between the close date and close + horizon. Otherwise it is 0 (contract expired, blank or beyond the horizon). An opportunity's available month is the maximum over its lines. For lever 1 those are its trace lines, for lever 2 the category's eligible lines, and for lever 3 the lines of the groups whose days rise. A recurring opportunity saves in every month from its start month on, so start month 3 gives one month in quarter 1. Contract-aware phasing needs at least one contract end date and a known close date. Otherwise the global ramp applies and every available month is 0. On demo data many lever-2 opportunities start after month 36, because one late contract anywhere in the category sets the category's available month.
+- **One-time costs.** Two kinds of move create switch events:
+  - a lever-1 `switch` group moves the spend of its contract-open defensible lines to the benchmark group's parent, or to `(re-tender)` when the benchmark is the company-level fallback;
+  - lever 2 moves `f × amount` of each eligible line to the preferred vendor.
+  
+  There is one event per (company, L2, destination). The $25,000 is shared across an event's moved dollars pro rata. Each opportunity's part is therefore `(25,000 × share + 1% × its moved spend) × its capture probability`, incurred in its own start quarter. Costs falling after quarter 12 are in `one_time.costs` but not in the three-year net.
+- **Prioritisation.**
+  - Change required: `same_vendor` scores 1 and terms 2. A lever-1 switch scores 3 when the buying company already uses the destination parent anywhere, 4 ("re-tender") when the benchmark is the fallback and there is no destination vendor, and 5 otherwise. Lever 2 scores 3 when every company that moves spend already buys from the preferred vendor, and 5 otherwise.
+  - Lever-3 criticality is that of the parent's largest category.
+  - Sites: lever 1 uses `sites_affected`, lever 2 the (company, site) pairs on lines with positive weight, and lever 3 those of the groups whose days rise (at least 1).
+  - Match confidence: tier A automatic scores 1, tier A with a `human` stage 2 and tier B 5. Tier C (pending) scores 5. A preferred vendor with no cross-company link scores 1.
+  - Weights and score tables are fixed constants in `prioritise.py`, because the PRD does not call them assumptions.
+- **Totals.**
+  - `levers.lever2` and `levers.lever3` (`kind` `one_time_cash`) sit beside lever 1.
+  - `recurring` is lever 1 + lever 2, and `defensible_range` holds its low and high.
+  - `one_time` holds `cash` and `costs`. `memo.financing_value` is cash × cost of capital.
+  - `spend` holds the baseline, addressable spend and net run-rate spend per case. `lever2` holds `B2` and savings forgone.
+  - `phasing` holds the method, realised savings by year, net three-year value and the beyond-month-36 list (opportunities with base > 0).
+  - `reconciliation` holds both band checks and, when the figure is outside a band, the three largest recurring opportunities. `largest_opportunities` is empty otherwise.
+  - Net three-year value subtracts one-time costs from realised savings, as PRD 5.6 defines it. It is the only figure that combines the two, and it never touches the run-rate totals.
+- **Trace.** The new chains:
+  - lever 2: `lever:2 → L2:{l2} → line_id`;
+  - lever 3: `lever:3 → L3:{parent} → vgrp:{company}|{parent} → line_id`;
+  - costs: `one_time:costs → event:{company}|{l2}|{destination} → line_id`;
+  - `spend:baseline`, `spend:addressable`, `spend:net`, `phasing:realised` and `phasing:net` complete the map.
+  
+  Every money figure in `totals` has a `trace.figures` entry and re-sums from its lines within $0.01, as tested on generated tables.
+- **Tornado and scenarios.** The moves:
+  - each probability triple's base goes to its low and to its high value;
+  - caps move ±10 points, clipped to [0, 1];
+  - the horizon moves ±12 months;
+  - other numbers move ±25%. Lead times, `min_lines` and maximum days are rounded to whole numbers, and shares are capped at 1.
+  
+  Reference bands, the close date and the settings file are not moved. Rows are sorted by the larger absolute effect, ties by path. "Central (defaults)" keeps only the `category_settings` file. "Conservative" and "Stretch" set every global base probability, and every `pi*_base` cell in the settings file, to its low or high value. When the low or high cell is blank, the base cell is cleared so that it falls back to the moved global value.
+- **Performance.** `compute_synergy` on seed 1 (59,902 lines) takes about 0.29 s. The tornado (around 60 base-case evaluations on the cache) takes about 0.4 s.

@@ -29,4 +29,6 @@ jobs:
           ruff check .
           ruff format --check .
       - name: Test
-        run: pytest
+        run: pytest -n auto
+        env:
+          TIEOUT_TIMING_SLACK: "4"
