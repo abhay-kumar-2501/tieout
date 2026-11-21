@@ -135,3 +135,41 @@ def test_clean_page_does_show_vendor_names(demo: Results) -> None:
     text = "\n".join(_texts(_open())).lower()
     names = set(demo.vendor_parents["parent_name"].dropna())
     assert any(len(n) >= 4 and n.lower() in text for n in names)
+
+
+@pytest.mark.parametrize("view", ["clean", "masked"])
+def test_sole_source_flags_table_renders_without_leaks(view: str, demo: Results) -> None:
+    at = _open(view)
+    text = "\n".join(_texts(at))
+    assert "rest on a single vendor" in text
+    tables = [f.value for f in at.dataframe]
+    assert any("Sole-source items" in t.columns for t in tables)
+    if view == "masked":
+        descriptions = {d for d in demo.item_map["description"].dropna() if len(d) >= 12}
+        assert not [d for d in descriptions if d in text]
+        assert "Item-level sole-source detail is not available" in text
+    else:
+        assert any("Description" in t.columns for t in tables)
+
+
+def test_all_three_caps_are_live_and_the_critical_cap_moves_forgone() -> None:
+    at = _open()
+    assert {s.key for s in at.slider} >= {
+        "risk_cap_critical_pct",
+        "risk_cap_pct",
+        "risk_cap_non_critical_pct",
+    }
+    before = _forgone(at)
+    at.slider(key="risk_cap_critical_pct").set_value(30).run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert _forgone(at) != before
+    at.slider(key="risk_cap_non_critical_pct").set_value(50).run()
+    assert not at.error
+
+
+def test_concentration_index_is_shown_before_and_after() -> None:
+    at = _open()
+    assert any(
+        "Concentration before" in f.value.columns and "Concentration after" in f.value.columns
+        for f in at.dataframe
+    )

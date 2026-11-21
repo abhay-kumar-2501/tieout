@@ -37,44 +37,48 @@ from tieout.views import (
     phasing_by_quarter,
     phasing_by_year,
     prioritisation_matrix,
+    sole_source,
     thousands,
 )
 
-CAP_KEY = "risk_cap_pct"
+CAP_KEY = "risk_cap_pct"  # the standard cap; the other two keys follow the same pattern
+_CAPS = (
+    ("critical", "Critical", "risk_cap_critical_pct"),
+    ("standard", "Standard", CAP_KEY),
+    ("non_critical", "Non-critical", "risk_cap_non_critical_pct"),
+)
 _CAP_ERROR = "_risk_cap_error"
 CATEGORIES_SHOWN = 8
 
 
-def _on_cap_change() -> None:
-    """Slider released: set the standard-category cap through the one state function."""
+def _on_cap_change(level: str, key: str) -> None:
+    """Slider released: set that criticality's cap through the one state function."""
     try:
-        state.set_assumptions({"caps": {"standard": st.session_state[CAP_KEY] / 100}})
+        state.set_assumptions({"caps": {level: st.session_state[key] / 100}})
         st.session_state[_CAP_ERROR] = None
     except ValueError as exc:
         st.session_state[_CAP_ERROR] = str(exc)
 
 
-def _cap_control() -> None:
+def _cap_controls() -> None:
+    """Three sliders, outside any form (PRD 9.3), editing the values Assumptions edits."""
     caps = state.assumptions()["caps"]
-    current = round(float(caps["standard"]) * 100)
-    st.slider(
-        "Concentration cap for standard categories",
-        min_value=0,
-        max_value=100,
-        value=current,
-        step=1,
-        format="%d%%",
-        key=CAP_KEY,
-        on_change=_on_cap_change,
-        help="The largest share any one parent vendor may hold of a standard category after "
-        "consolidation. Lower it to protect supply; the saving given up rises.",
-    )
-    st.caption(
-        esc(
-            f"Critical categories stay at {percent(caps['critical'])} and non-critical at "
-            f"{percent(caps['non_critical'])}; change them on the Assumptions screen."
-        )
-    )
+    for column, (level, name, key) in zip(st.columns(3), _CAPS, strict=True):
+        with column:
+            st.slider(
+                f"Cap, {name.lower()} categories",
+                min_value=0,
+                max_value=100,
+                value=round(float(caps[level]) * 100),
+                step=1,
+                format="%d%%",
+                key=key,
+                on_change=_on_cap_change,
+                args=(level, key),
+                help=f"The largest share any one parent vendor may hold of a {name.lower()} "
+                "category after consolidation. Lower it to protect supply; the saving given "
+                "up rises.",
+            )
     if st.session_state.get(_CAP_ERROR):
         st.error(esc(st.session_state[_CAP_ERROR]), icon=":material/error:")
 
@@ -89,9 +93,9 @@ def _concentration(results, mode: str) -> None:
         )
         return
     forgone = float(results.totals["lever2"]["savings_forgone"])
+    _cap_controls()
     left, right = st.columns([1, 2], vertical_alignment="top")
     with left:
-        _cap_control()
         figure_card(
             "Recurring, every year",
             "Savings forgone to protect supply resilience",
@@ -118,6 +122,42 @@ def _concentration(results, mode: str) -> None:
             "the caps; the concentration index runs from 0 to 10,000."
         )
         chart_with_table(fig, table, "risk_concentration", caption)
+    st.markdown("**Concentration index before and after consolidation**")
+    st.dataframe(
+        table.head(CATEGORIES_SHOWN), hide_index=True, width="stretch", key="risk_hhi_table"
+    )
+
+
+def _sole_source(results, mode: str) -> None:
+    data = sole_source(results, mode)
+    cats, items = data["categories"], data["items"]
+    if cats.empty:
+        empty_state("No sole-source flags", "No category or item depends on a single vendor.")
+        return
+    table = pd.DataFrame(
+        {
+            "Category": cats["category"],
+            "One vendor after consolidation": [
+                (v or "yes") if flag else "no"
+                for v, flag in zip(cats["vendor"], cats["category_sole_source"], strict=True)
+            ],
+            "Sole-source items": cats["items"],
+        }
+    )
+    st.dataframe(table, hide_index=True, width="stretch", key="risk_sole_categories")
+    if mode == "masked":
+        st.caption("Item-level sole-source detail is not available in the integration-office view.")
+        return
+    if not items.empty:
+        with st.expander(f"The {len(items):,} sole-source items"):
+            st.dataframe(
+                items.rename(columns={"item": "Item", "description": "Description"}).rename(
+                    columns={"category": "Category"}
+                ),
+                hide_index=True,
+                width="stretch",
+                key="risk_sole_items",
+            )
 
 
 def _matrix_detail(matrix: pd.DataFrame, index: int, mode: str) -> None:
@@ -246,6 +286,16 @@ section(
     "Concentration by category, before and after consolidation, against the cap.",
 )
 _guard("concentration view", _concentration, results, mode)
+
+_flags = sole_source(results, mode)["categories"]
+_n_cat, _n_items = int(_flags["category_sole_source"].sum()), int(_flags["items"].sum())
+section(
+    f"{_n_cat:,} {'category' if _n_cat == 1 else 'categories'} and {_n_items:,} "
+    f"{'item' if _n_items == 1 else 'items'} rest on a single vendor",
+    "Sole-source flags: categories left with one parent vendor, and items both companies "
+    "buy from one vendor only.",
+)
+_guard("sole-source flags", _sole_source, results, mode)
 
 section(
     "Which opportunities come first?",
