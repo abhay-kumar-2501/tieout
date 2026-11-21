@@ -43,7 +43,7 @@ from tieout.match import (
 from tieout.normalise.taxonomy import suggest_categories
 from tieout.reference import Thresholds, load_fx_rates, load_taxonomy, load_thresholds
 from tieout.results import Results
-from tieout.synergy import SynergyOutputs, evaluate, precompute
+from tieout.synergy import SynergyOutputs, evaluate
 from tieout.synergy.settings import CASES
 
 __all__ = [
@@ -547,14 +547,7 @@ def recompute(results: Results, assumptions: Mapping[str, Any] | None) -> Result
     """
     settings = merge_overrides(assumptions)
     validate(settings)
-    cache = results.synergy_cache or precompute(
-        results.lines,
-        results.vendor_map,
-        results.item_map,
-        results.item_pairs,
-        results.review_log,
-        results.meta,
-    )
+    cache = results.cached_synergy()
     outputs = evaluate(cache, settings)
     trace = outputs.trace
     updated = replace(

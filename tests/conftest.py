@@ -12,6 +12,7 @@ import pytest
 from evaluation.evaluate import run_tool
 from evaluation.seeds import HELD_OUT_SEED, SeedFiles, ensure_seed
 from synthetic.generate import generate, write
+from tieout.pipeline import PipelineInputs, run_pipeline
 from tieout.results import Results
 
 SMALL_SEED = 7
@@ -27,6 +28,25 @@ def small_files(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
     truth = root / "data" / "truth" / f"seed_{SMALL_SEED}"
     paths = write(generate(SMALL_SEED, scale=SMALL_SCALE), out, truth)
     return {**paths, "root": root, "truth_dir": truth}
+
+
+def small_inputs(files: dict[str, Path], **overrides: object) -> PipelineInputs:
+    """Pipeline inputs for the small dataset, with the demo's report date."""
+    kwargs: dict[str, object] = {
+        "acquirer": files["acquirer"],
+        "target": files["target"],
+        "category_map": files["category_map"],
+        "vendor_parents": files["vendor_parents"],
+        "as_of": "2026-01-15",
+    }
+    kwargs.update(overrides)
+    return PipelineInputs(**kwargs)  # type: ignore[arg-type]
+
+
+@pytest.fixture(scope="session")
+def small_results(small_files: dict[str, Path]) -> Results:
+    """One pipeline run on the small dataset, shared by every test that only reads it."""
+    return run_pipeline(small_inputs(small_files))
 
 
 @pytest.fixture(scope="session")
