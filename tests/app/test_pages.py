@@ -19,7 +19,7 @@ from tieout.results import Results
 
 ROOT = Path(__file__).resolve().parents[2]
 MAIN = ROOT / "app" / "main.py"
-PAGES = ROOT / "app" / "pages"
+PAGES = ROOT / "app" / "screens"
 VIEW_LABELS = {"clean": "Clean team", "masked": "Integration office"}
 
 

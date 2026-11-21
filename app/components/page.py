@@ -48,7 +48,7 @@ def next_question(text: str, target_module: str) -> None:
     """
     st.divider()
     try:
-        st.page_link(f"pages/{target_module}.py", label=text, icon=":material/arrow_forward:")
+        st.page_link(f"screens/{target_module}.py", label=text, icon=":material/arrow_forward:")
     except StreamlitAPIException:  # page run on its own, outside the navigation
         muted(f"Next: {text}")
 
@@ -66,7 +66,7 @@ def empty_state(
         st.markdown(esc(message))
         if link_text and target_module:
             try:
-                st.page_link(f"pages/{target_module}.py", label=link_text)
+                st.page_link(f"screens/{target_module}.py", label=link_text)
             except StreamlitAPIException:
                 muted(link_text)
 
