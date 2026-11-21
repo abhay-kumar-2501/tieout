@@ -145,3 +145,21 @@ def test_masked_page_hides_the_queue_and_names_no_vendor_or_item(demo: Results) 
     lowered = text.lower()
     leaked = [n for n in names if len(n) > 12 and n.lower() in lowered]
     assert not leaked[:3]
+
+
+def test_a_part_number_keyed_item_can_be_decided(demo: Results) -> None:
+    from tieout.views import review_queue_items
+
+    at = _open()
+    at.selectbox(key="mt_type").set_value("item_match").run()
+    items = review_queue_items(demo, "item_match", "clean")
+    index = int(items.index[items["pair_id"].str.count("[|]") > 2][0])
+    key = next(k for k in at.session_state if str(k).startswith("mt_queue_"))
+    at.session_state[key] = {"selection": {"rows": [index], "columns": [], "cells": []}}
+    at.run()
+    assert not at.button(key="mt_approve").disabled
+    at.button(key="mt_approve").click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert not at.error
+    row = _decisions(at).iloc[-1]
+    assert row["pair_id"] == items["pair_id"].iloc[index] and row["decision"] == "approve"

@@ -10,7 +10,7 @@ from components import state
 from components.matching_queue import render_queue
 from components.matching_scorecard import render_scorecard, render_sensitivity
 from components.matching_stages import render_stages
-from components.page import next_question, page_question, section
+from components.page import empty_state, next_question, page_question, section
 from components.style import headline
 
 from tieout.views import matching_counts
@@ -36,6 +36,12 @@ section(
     "How two lists became one", "Records by how they were matched; the queue below holds the rest."
 )
 render_stages(counts)
+if not any(counts[k]["by_tier"].get(t, 0) for k in ("vendors", "items") for t in ("A", "B")):
+    empty_state(
+        "No overlap found",
+        "The two files share no matched vendors or items. Check that both companies' categories "
+        "are mapped to the common taxonomy, then run matching again.",
+    )
 
 section(
     "Review the uncertain matches",

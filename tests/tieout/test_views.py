@@ -511,7 +511,4 @@ def test_review_item_opens_pairs_whose_record_key_contains_a_pipe(results: Resul
     odd = replace(results, review_queue=queue)
     item = views.review_item(odd, queue["pair_id"].iloc[0], "clean")
     assert not isinstance(item, Unavailable) and len(item["records"]) == 2
-    # Such a pair cannot be written to the decisions log, so a bulk approval leaves it out.
-    assert isinstance(
-        views.bulk_approve_preview(odd, queue["type"].iloc[0], None, "clean"), Unavailable
-    )
+    assert views.bulk_approve_preview(odd, queue["type"].iloc[0], None, "clean")["count"] == 1

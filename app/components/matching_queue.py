@@ -19,7 +19,6 @@ from components.page import empty_state, error_state, unavailable
 from components.plotting import selected_row
 from components.style import esc
 from tieout import theme as t
-from tieout.match.review import parse_pair_id
 from tieout.views import (
     Unavailable,
     bulk_approve_preview,
@@ -187,15 +186,6 @@ def _evidence(item: dict[str, Any]) -> None:
             st.markdown(esc(item["message"]))
 
 
-def _decidable(pair_id: str) -> bool:
-    """False for a pair whose record key contains "|": its id cannot be written to the log."""
-    try:
-        parse_pair_id(pair_id)
-    except ValueError:
-        return False
-    return True
-
-
 def _focus(item: dict[str, Any], remaining: int) -> None:
     pair_id, pair_type = item["pair_id"], item["type"]
     st.markdown(
@@ -210,7 +200,6 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
     right.markdown(_card(second, first, pair_type, different), unsafe_allow_html=True)
     _evidence(item)
     st.markdown(f"**{esc(item['stake_line'])}**")
-    decidable = _decidable(pair_id)
     if pair_type == "unit_flag":
         st.number_input(
             "Pack quantity (optional)",
@@ -226,7 +215,6 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
     approve.button(
         "Approve (A)",
         key="mt_approve",
-        disabled=not decidable,
         type="primary",
         shortcut="a",
         width="stretch",
@@ -237,7 +225,6 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
     reject.button(
         "Reject (X)",  # Streamlit reserves R (rerun)
         key="mt_reject",
-        disabled=not decidable,
         shortcut="x",
         width="stretch",
         help=meaning[1],
@@ -247,7 +234,6 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
     defer.button(
         "Defer (D)",
         key="mt_defer",
-        disabled=not decidable,
         shortcut="d",
         width="stretch",
         help="Leave it for later; it moves to the end of the queue.",
@@ -263,11 +249,6 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
         icon=":material/undo:",
         on_click=_undo,
     )
-    if not decidable:
-        st.caption(
-            "This pair has a record key containing a pipe character, so its id cannot be "
-            "saved as a decision yet."
-        )
     st.caption(f"Approve means: {meaning[0].lower()}. Reject means: {meaning[1].lower()}.")
 
 
