@@ -17,9 +17,11 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from tieout import theme as t
+from tieout.views import currency_prefix, currency_sign
 
 __all__ = [
-    "AXIS_MONEY",
+    "axis_money",
+    "hover_amount",
     "bridge_colors",
     "bridge_figure",
     "chart_with_table",
@@ -34,8 +36,22 @@ __all__ = [
 ]
 
 TRANSPARENT = "rgba(0,0,0,0)"
+
+
 #: d3 tick format for money axes: $32M, $520M.
-AXIS_MONEY = "$.3~s"
+def axis_money() -> dict[str, str]:
+    """Plotly axis settings for money in the reporting currency: ``$32M`` or ``EUR 32M``."""
+    sign = currency_sign()
+    if sign == "$":
+        return {"tickformat": "$.3~s"}
+    return {"tickformat": ".3~s", "tickprefix": f"{sign} "}
+
+
+def hover_amount(field: str = "y") -> str:
+    """Plotly hovertemplate fragment for an exact amount, in the reporting currency."""
+    return f"{currency_prefix()}%{{{field}:,.0f}}"
+
+
 _CONFIG = {"displayModeBar": False, "displaylogo": False, "responsive": True}
 
 
@@ -74,7 +90,7 @@ def themed(fig: go.Figure, *, height: int = 420, legend: bool = False) -> go.Fig
 def exact_money(value: float) -> str:
     """An exact dollar figure for hover text, with a minus sign: ``−$7,642,579`` (PRD 6.11)."""
     sign = "\u2212" if value < 0 else ""
-    return f"{sign}${abs(value):,.0f}"
+    return f"{sign}{currency_prefix()}{abs(value):,.0f}"
 
 
 def wrap_label(text: str, width: int = 12) -> str:
@@ -186,7 +202,7 @@ def bridge_figure(
                 yshift=10,
                 font={"color": t.INK, "size": 12},
             )
-    fig.update_yaxes(title_text=y_title, tickformat=AXIS_MONEY, rangemode="tozero")
+    fig.update_yaxes(title_text=y_title, **axis_money(), rangemode="tozero")
     fig.update_xaxes(tickangle=0)
     return themed(fig, height=height)
 

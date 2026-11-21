@@ -6,6 +6,11 @@ the nearest $0.1M otherwise (``$8–12M``); tables round to the nearest thousand
 (``$184k``); unit prices show four decimals; percentages one decimal; negative
 values carry a minus sign, never brackets.
 
+**Currency.** Money is written in the run's reporting currency: ``$`` for USD,
+otherwise the ISO code as a prefix (``EUR 6–13M``, ``EUR 184k``). The code is
+held in a context variable that :func:`resolve_view` sets from the results every
+view function reads, so the formatters need no extra argument.
+
 **Integration-office view (PRD 6.9).** Implemented here once for every view:
 parent vendors become codes (``Vendor 017``) numbered by descending combined
 spend and fixed for the run; categories with fewer than three parent vendors
@@ -17,6 +22,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
+from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -38,12 +44,15 @@ __all__ = [
     "Unavailable",
     "category_label",
     "category_labels",
+    "currency_prefix",
+    "currency_sign",
     "item_labels",
     "money",
     "money_range",
     "parent_labels",
     "percent",
     "resolve_view",
+    "set_currency",
     "thousands",
     "unit_price",
     "vendor_codes",
@@ -69,8 +78,32 @@ class Unavailable:
 NOT_IN_VIEW = Unavailable("Not available in the integration-office view.")
 
 
+_CURRENCY: ContextVar[str] = ContextVar("tieout_reporting_currency", default="USD")
+
+
+def set_currency(code: str | None) -> None:
+    """Set the currency the number formatters use (an ISO code; blank means USD)."""
+    _CURRENCY.set(str(code or "USD").strip().upper() or "USD")
+
+
+def currency_sign() -> str:
+    """``$`` for USD, otherwise the ISO code (``EUR``)."""
+    code = _CURRENCY.get()
+    return "$" if code == "USD" else code
+
+
+def currency_prefix() -> str:
+    """What goes before an amount: ``$`` or ``EUR `` (code plus a space)."""
+    sign = currency_sign()
+    return sign if sign == "$" else f"{sign} "
+
+
 def resolve_view(results: Results, view: str | None) -> str:
-    """``view`` when given, else the run's own view mode (``meta["view"]``)."""
+    """``view`` when given, else the run's own view mode (``meta["view"]``).
+
+    Also sets the reporting currency the number formatters use for these results.
+    """
+    set_currency((results.totals or {}).get("currency") or results.meta.get("reporting_currency"))
     mode = view or str(results.meta.get("view", CLEAN))
     if mode not in (CLEAN, MASKED):
         raise ValueError(f"view must be {CLEAN!r} or {MASKED!r}, got {mode!r}")
@@ -93,11 +126,12 @@ def money_range(low: float, high: float) -> str:
     step, decimals = (1.0, 0) if max(abs(low), abs(high)) >= _TEN_MILLION else (0.1, 1)
     ends = [_clean_zero(round(v / _MILLION / step) * step) for v in (low, high)]
     texts = [f"{abs(e):,.{decimals}f}" for e in ends]
+    cur = currency_prefix()
     if ends[0] == ends[1]:
-        return f"{_sign(ends[0])}${texts[0]}M"
+        return f"{_sign(ends[0])}{cur}{texts[0]}M"
     if ends[0] >= 0:
-        return f"${texts[0]}–{texts[1]}M"
-    return f"{_sign(ends[0])}${texts[0]}M–{_sign(ends[1])}${texts[1]}M"
+        return f"{cur}{texts[0]}–{texts[1]}M"
+    return f"{_sign(ends[0])}{cur}{texts[0]}M–{_sign(ends[1])}{cur}{texts[1]}M"
 
 
 def money(value: float) -> str:
@@ -108,7 +142,7 @@ def money(value: float) -> str:
 def thousands(value: float) -> str:
     """A table figure to the nearest thousand: ``$184k``, ``−$12k``."""
     rounded = _clean_zero(round(value / 1_000))
-    return f"{_sign(rounded)}${abs(rounded):,.0f}k"
+    return f"{_sign(rounded)}{currency_prefix()}{abs(rounded):,.0f}k"
 
 
 def percent(share: float) -> str:
@@ -121,7 +155,7 @@ def unit_price(value: float) -> str:
     """A unit price with four decimals (clean-team view only)."""
     if value is None or math.isnan(value):
         return ""
-    return f"{_sign(value)}${abs(value):,.4f}"
+    return f"{_sign(value)}{currency_prefix()}{abs(value):,.4f}"
 
 
 # ---------------------------------------------------------------- labels

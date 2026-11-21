@@ -14,7 +14,7 @@ import streamlit as st
 from plotly.subplots import make_subplots
 
 from components.page import missing_data, section
-from components.plotting import AXIS_MONEY, exact_money, show_chart, themed
+from components.plotting import axis_money, exact_money, hover_amount, show_chart, themed
 from components.style import esc, figure_card
 from tieout import theme as t
 from tieout.results import Results
@@ -159,7 +159,7 @@ def pareto_figure(panel: pd.DataFrame, title: str, share: float, at: int) -> go.
         name="Spend",
         marker_color=t.MUTED,
         customdata=shown["label"],
-        hovertemplate="%{customdata}<br>Rank %{x}<br>%{y:$,.0f}<extra></extra>",
+        hovertemplate=f"%{{customdata}}<br>Rank %{{x}}<br>{hover_amount()}<extra></extra>",
     )
     fig.add_scatter(
         x=shown["rank"],
@@ -173,7 +173,7 @@ def pareto_figure(panel: pd.DataFrame, title: str, share: float, at: int) -> go.
     fig.add_hline(y=share, line_dash="dot", line_color=t.TEAL, secondary_y=True)
     if at <= TOP_BARS:
         fig.add_vline(x=at, line_dash="dot", line_color=t.TEAL)
-    fig.update_yaxes(title_text="Spend per vendor", tickformat=AXIS_MONEY, secondary_y=False)
+    fig.update_yaxes(title_text="Spend per vendor", **axis_money(), secondary_y=False)
     fig.update_yaxes(
         title_text="Cumulative share", tickformat=".0%", range=[0, 1.02], secondary_y=True
     )
