@@ -19,9 +19,9 @@ Decisions, deviations and shortfalls of the Tie-Out build, checked against the c
 
 ## Known shortfalls
 
-- The workbook and the deck have not been opened in Excel or PowerPoint (`HUMAN_TODO.md`, item 6).
+- The clean workbook and deck were opened in Excel and PowerPoint for Mac without a repair prompt; the masked variants and the Windows applications were not checked (`HUMAN_TODO.md`, item 6).
 - No LibreOffice recalculation test has been run: `soffice` was not available, so the test and its `OOXMLRecalcMode` profile setting are unconfirmed.
-- Deck layout is checked by geometry tests and a text-fit estimate, not by eye.
+- Deck layout is checked by geometry tests and a text-fit estimate; the clean demo deck was also paged through in PowerPoint.
 - The public-data (P2) pass was not attempted (`HUMAN_TODO.md`, item 8).
 - The 90-second video is not recorded (its block in `site/index.html` is commented out), and the app and landing page are not deployed.
 - Planted-savings recall is 0.59 on seeds 1-3 and 0.62 on seed 4, reported without a gate as the PRD says; the tool leaves many items at tier C or unmatched.
