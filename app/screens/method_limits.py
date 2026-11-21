@@ -9,6 +9,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 from components import state
+from components.matching_scorecard import target_text
 from components.page import page_question, section, unavailable
 from components.style import esc, headline
 
@@ -95,7 +96,7 @@ else:
             "Measure": card["label"],
             "Tie-Out": [percent(v) for v in card["tool"]],
             "Naive baseline": [percent(v) for v in card["baseline"]],
-            "Target": card["target"].str.replace("<=", "at most").str.replace(">=", "at least"),
+            "Target": [target_text(v) for v in card["target"]],
             "Met": card["passed"].map({True: "Yes", False: "No"}).fillna(""),
         }
     )

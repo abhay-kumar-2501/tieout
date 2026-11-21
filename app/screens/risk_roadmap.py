@@ -110,8 +110,8 @@ def _concentration(results, mode: str) -> None:
             {
                 "Category": cats["category"],
                 "Cap": [percent(c) if c == c else "mixed" for c in cats["cap"]],
-                "Concentration before": cats["hhi_before"].round(0).astype(int),
-                "Concentration after": cats["hhi_after"].round(0).astype(int),
+                "Concentration before": [f"{v:,.0f}" for v in cats["hhi_before"]],
+                "Concentration after": [f"{v:,.0f}" for v in cats["hhi_after"]],
                 "Savings forgone": [thousands(v) for v in cats["savings_forgone"]],
             }
         )

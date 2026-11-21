@@ -4,6 +4,9 @@
 maxUploadSize = 50
 enableStaticServing = true
 
+[client]
+toolbarMode = "viewer"
+
 [browser]
 gatherUsageStats = false
 

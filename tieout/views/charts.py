@@ -421,12 +421,44 @@ def sole_source(results: Results, view: str | None = None) -> dict[str, Any]:
 # ---------------------------------------------------------------- assumptions
 
 
+_PLAIN_NAMES = {
+    "planning_horizon_months": "Planning horizon",
+    "cost_of_capital": "Cost of capital",
+    "lever1.same_vendor.base": "Same-vendor renegotiation: chance of capturing the gap",
+    "lever1.switch.base": "Switching vendor: chance of capturing the gap",
+    "lever2.capture.base": "Volume consolidation: chance of capturing the discount",
+    "lever3.capture.base": "Payment terms: chance of moving to the longer terms",
+    "lever3.max_payment_days": "Longest payment term to assume",
+    "benchmark.min_volume_share": "Benchmark: smallest volume share",
+    "benchmark.min_lines": "Benchmark: fewest purchase lines",
+    "switching_cost.fixed_usd": "Fixed cost of switching a vendor",
+    "switching_cost.pct_of_spend_moved": "Switching cost as a share of spend moved",
+    "caps.critical": "Concentration cap, critical categories",
+    "caps.standard": "Concentration cap, standard categories",
+    "caps.non_critical": "Concentration cap, non-critical categories",
+    "lead_time_months.l1_same_vendor": "Lead time, same-vendor renegotiation",
+    "lead_time_months.l1_switch": "Lead time, switching vendor",
+    "lead_time_months.l2": "Lead time, volume consolidation",
+    "lead_time_months.l3": "Lead time, payment terms",
+}
+_TYPES = {
+    "commodity": "Commodity",
+    "engineered": "Engineered",
+    "mro": "MRO",
+    "indirect": "Indirect",
+}
+
+
 def _assumption_label(path: str) -> str:
-    """A tornado row in plain words: ``lever1.switch.base`` -> ``Lever 1 · switch · base``."""
-    words = path.replace("_", " ").split(".")
-    return " · ".join(
-        w.replace("lever", "Lever ", 1) if w.startswith("lever") else w for w in words
-    )
+    """A tornado row in the plain name the Assumptions screen uses (PRD 6.12)."""
+    if path in _PLAIN_NAMES:
+        return _PLAIN_NAMES[path]
+    head, _, leaf = path.rpartition(".")
+    if head == "lever2.discount" and leaf in _TYPES:
+        return f"Volume discount, {_TYPES[leaf].lower()} categories"
+    if head == "global_ramp":
+        return f"Savings realised in {leaf.replace('year', 'year ')} (global ramp)"
+    return path.replace("_", " ").replace(".", ": ").capitalize()
 
 
 def tornado_chart(results: Results, view: str | None = None) -> pd.DataFrame:
