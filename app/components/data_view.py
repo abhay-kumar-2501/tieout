@@ -64,7 +64,7 @@ def render_received(results: Results, summary: dict[str, Any]) -> None:
     section("What came in")
     names = results.lines.groupby("company")["source_file"].first().to_dict()
     currency = results.meta.get("reporting_currency", "USD")
-    columns = st.columns(4)
+    columns = st.container(key="to_quad_data_received").columns(4, gap="medium")
     with columns[0]:
         total = sum(summary["rows"].values())
         figure_card(
@@ -178,7 +178,7 @@ def pareto_figure(panel: pd.DataFrame, title: str, share: float, at: int) -> go.
         title_text="Cumulative share", tickformat=".0%", range=[0, 1.02], secondary_y=True
     )
     fig.update_xaxes(title_text="Vendors, largest first")
-    fig.update_layout(title={"text": title, "font": {"size": 14}})
+    fig.update_layout(title={"text": title, "font": {"size": t.CHART_FONT}})
     return themed(fig, height=340)
 
 
@@ -217,10 +217,15 @@ def render_pareto(results: Results, mode: str) -> None:
                 key=f"data_pareto_table_{key}",
             )
     else:
-        for column, (title, panel, at, key) in zip(st.columns(2), panels, strict=True):
+        for column, (title, panel, at, key) in zip(
+            st.container(key="to_grid_data_pareto").columns(2, gap="large"), panels, strict=True
+        ):
             with column:
                 show_chart(
-                    pareto_figure(panel, title, share, at), f"data_pareto_{key}", selectable=False
+                    pareto_figure(panel, title, share, at),
+                    f"data_pareto_{key}",
+                    selectable=False,
+                    shape="half",
                 )
     st.caption(
         esc(

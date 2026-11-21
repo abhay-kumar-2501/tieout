@@ -54,7 +54,7 @@ def _offer(kind: str, title: str, text: str, action: str) -> None:
 
 
 section("Workbook and deck")
-left, right = st.columns(2)
+left, right = st.container(key="to_grid_exp_files").columns(2, gap="medium")
 with left:
     _offer(
         "workbook",
@@ -79,7 +79,7 @@ with right:
     )
 
 section("Charts and review decisions")
-left, right = st.columns(2)
+left, right = st.container(key="to_grid_exp_more").columns(2, gap="medium")
 with left:
     _offer(
         "charts",

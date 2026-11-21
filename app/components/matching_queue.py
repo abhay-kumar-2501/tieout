@@ -356,6 +356,7 @@ def render_queue() -> None:
             f"{progress['decided']:,} decisions.",
             link_text="See what it is worth: Synergies",
             target_module="synergies",
+            icon=":material/check_circle:",
         )
         if st.session_state.get(_UNDO):
             st.button("Undo", key="mt_undo_empty", shortcut="z", on_click=_undo)
@@ -373,7 +374,7 @@ def render_queue() -> None:
         list(items.index[items["status"] == "pending"])
         + list(items.index[items["status"] != "pending"])
     ].reset_index(drop=True)
-    left, right = st.columns([2, 3])
+    left, right = st.container(key="to_grid_mt_queue").columns([2, 3], gap="large")
     with left:
         picked = _list(items)
         _bulk_panel(mode, queue_type)

@@ -124,9 +124,9 @@ try:
 except Exception:  # noqa: BLE001
     headline(headline_view(results, mode)["text"])
 
-summary, reset = st.columns([4, 1], vertical_alignment="center")
-summary.markdown(f"**{esc(summary_line())}**")
-reset.button(
+row = st.container(horizontal=True, vertical_alignment="center", gap="medium")
+row.markdown(f"**{esc(summary_line())}**", width="content")
+row.button(
     "Reset all to defaults",
     key="asm_reset_all",
     icon=":material/restart_alt:",

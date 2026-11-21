@@ -75,7 +75,7 @@ def _scorecard(table: pd.DataFrame) -> None:
         f"Measured against hidden truth on the held-out seed: {worst['label'].lower()} is "
         f"{_pct(worst['tool'])} for Tie-Out and {_pct(worst['baseline'])} for the naive baseline."
     )
-    chart_with_table(fig, shown, "mt_scorecard", caption)
+    chart_with_table(fig, shown, "mt_scorecard", caption, shape="wide")
 
 
 def _curve(name: str, frame: pd.DataFrame, current: dict) -> None:
@@ -123,7 +123,7 @@ def _curve(name: str, frame: pd.DataFrame, current: dict) -> None:
         f"The base saving stays between {thousands(base.min())} and {thousands(base.max())} "
         f"across this range; the dashed line is the threshold in use ({current[name]:g})."
     )
-    chart_with_table(fig, table, f"mt_curve_{name}", caption)
+    chart_with_table(fig, table, f"mt_curve_{name}", caption, shape="half")
 
 
 def render_scorecard() -> None:
@@ -139,7 +139,7 @@ def render_sensitivity() -> None:
     if isinstance(curves, Unavailable):
         unavailable(curves)
         return
-    left, right = st.columns(2)
+    left, right = st.container(key="to_grid_mt_curves").columns(2, gap="large")
     for column, name in zip((left, right), _CURVES, strict=True):
         with column:
             _curve(name, curves[name], curves["current"])
