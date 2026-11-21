@@ -26,6 +26,8 @@ from rapidfuzz import fuzz, process
 from rapidfuzz.distance import JaroWinkler
 
 from tieout.match.review import approved, deferred, make_pair_id, rejected
+from tieout.normalise.spelling import is_abbreviation, is_typing_slip
+from tieout.normalise.truncation import cut_length
 from tieout.normalise.vendors import (
     VendorName,
     normalise_country,
@@ -88,6 +90,7 @@ CAP_ONE_DESCRIPTOR = 91.0
 RARE_TOKEN_SHARE = 0.01
 RARE_TOKEN_MIN_COUNT = 3
 PREFIX_LENGTH = 4
+_SKELETON_VOWELS = "aeiou"
 
 _STAGE_RANK = {"V1": 0, "V2": 1, "human": 2, "V4": 3}
 
@@ -151,16 +154,22 @@ def _prepare_records(records: pd.DataFrame) -> list[_Record]:
     frame = records.sort_values("vendor_key", kind="stable").reset_index(drop=True)
     if frame["vendor_key"].duplicated().any():
         raise ValueError("vendor records must have one row per vendor_key")
+    limits = {
+        str(company): cut_length(group["vendor_name"])
+        for company, group in frame.groupby("company", sort=True)
+    }
     out = []
     for i, row in enumerate(frame.itertuples(index=False)):
+        raw = "" if pd.isna(row.vendor_name) else str(row.vendor_name)
+        cut = len(raw.strip()) == limits.get(str(row.company))
         out.append(
             _Record(
                 index=i,
                 key=str(row.vendor_key),
                 company=str(row.company),
                 vendor_id=str(row.vendor_id),
-                vendor_name="" if pd.isna(row.vendor_name) else str(row.vendor_name),
-                name=normalise_vendor_name(row.vendor_name),
+                vendor_name=raw,
+                name=normalise_vendor_name(row.vendor_name, cut=cut),
                 tax=normalise_tax_id(getattr(row, "vendor_tax_id", None)),
                 country=normalise_country(getattr(row, "vendor_country", None)),
             )
@@ -176,6 +185,30 @@ def _tax_vetoed(a: _Record, b: _Record) -> bool:
         and a.country == b.country
         and (a.tax != b.tax)
     )
+
+
+def _country_vetoed(a: _Record, b: _Record) -> bool:
+    """Record-level veto: both countries present and different.
+
+    A legal entity is registered in one country, so records in two countries
+    are at most sibling companies under one parent.
+    """
+    return a.country is not None and b.country is not None and a.country != b.country
+
+
+def _vetoed(a: _Record, b: _Record) -> bool:
+    return _tax_vetoed(a, b) or _country_vetoed(a, b)
+
+
+def _veto_reason(a: _Record, b: _Record) -> str:
+    if _country_vetoed(a, b):
+        return f"different countries ({a.country} vs {b.country})"
+    return f"different tax IDs in {a.country} ({a.tax} vs {b.tax})"
+
+
+def _sibling_outcome(a: _Record, b: _Record) -> str:
+    reason = _veto_reason(a, b)
+    return f"{reason[0].upper()}{reason[1:]}: not merged; offered as possible sibling companies"
 
 
 # --------------------------------------------------------------------------- scoring
@@ -208,6 +241,64 @@ class _Prepared:
     tokens: tuple[str, ...]
     descriptors: frozenset[str]
 
+    @property
+    def distinctive(self) -> tuple[str, ...]:
+        """Tokens that are neither generic nor descriptors."""
+        return tuple(t for t in self.tokens if t not in self.descriptors)
+
+
+_VOWELS = frozenset("aeiou")
+#: Shortest start of a listed word that still counts as that word, cut short.
+GENERIC_PREFIX_MIN = 3
+DESCRIPTOR_PREFIX_MIN = 4
+#: Shortest token for which a one-slip misspelling of a listed word counts as that word.
+TYPO_MIN_LENGTH = 5
+
+
+def _listed_variant(token: str, words: frozenset[str], prefix_min: int) -> str | None:
+    """The listed word that ``token`` renders, if any.
+
+    A token renders a listed word when it is that word, its start cut short
+    (``intern`` / ``international``, at least ``prefix_min`` letters), a
+    consonant abbreviation of it (``intl``, ``brgs``, ``fstnrs``), or one typing
+    slip away from it (``saefty`` / ``safety``, ``bearing`` / ``bearings``).
+    Ties go to the alphabetically first word.
+    """
+    if token in words:
+        return token
+    if len(token) < GENERIC_PREFIX_MIN:
+        return None
+    consonants = not (_VOWELS & set(token[1:]))
+    for word in sorted(words):
+        if len(token) >= prefix_min and word.startswith(token):
+            return word
+        if consonants and is_abbreviation(token, word):
+            return word
+        if len(token) >= TYPO_MIN_LENGTH and is_typing_slip(token, word):
+            return word
+    return None
+
+
+def _distinctive_difference(a: _Prepared, b: _Prepared) -> str | None:
+    """Distinctive words that differ by more than a typing slip or a cut-off end.
+
+    Returns ``None`` when every distinctive word on one side equals, is one slip
+    from, or is the cut-off start of a distinctive word on the other side.
+    """
+    left, right = Counter(a.distinctive), Counter(b.distinctive)
+    common = left & right
+    only_a = sorted((left - common).elements())
+    only_b = sorted((right - common).elements())
+    for x in list(only_a):
+        for y in only_b:
+            if is_typing_slip(x, y) or x.startswith(y) or y.startswith(x):
+                only_a.remove(x)
+                only_b.remove(y)
+                break
+    if not only_a and not only_b:
+        return None
+    return f"{' '.join(only_a) or '(nothing)'} vs {' '.join(only_b) or '(nothing)'}"
+
 
 @dataclass
 class NameScorer:
@@ -219,14 +310,31 @@ class NameScorer:
     _cache: dict[tuple[str, str], FuzzyScore] = field(default_factory=dict, repr=False)
 
     def prepare(self, name: str) -> _Prepared:
-        """Strip generic tokens; fall back to the full name if nothing is left."""
+        """Strip generic tokens and spell descriptors in full.
+
+        Generic and descriptor words are recognised through truncation,
+        abbreviation and typing slips (:func:`_listed_variant`). Falls back to
+        the full name if nothing is left.
+        """
         hit = self._prepared.get(name)
         if hit is None:
-            tokens = tuple(t for t in name.split() if t not in self.generic)
+            tokens: list[str] = []
+            descriptors: set[str] = set()
+            for token in name.split():
+                if _listed_variant(token, self.generic, GENERIC_PREFIX_MIN):
+                    continue
+                descriptor = _listed_variant(token, self.descriptors, DESCRIPTOR_PREFIX_MIN)
+                if descriptor:
+                    descriptors.add(descriptor)
+                tokens.append(descriptor or token)
             text = " ".join(tokens) if tokens else name
-            hit = _Prepared(text, tokens, frozenset(tokens) & self.descriptors)
+            hit = _Prepared(text, tuple(tokens), frozenset(descriptors))
             self._prepared[name] = hit
         return hit
+
+    def distinctive_difference(self, name_a: str, name_b: str) -> str | None:
+        """See :func:`_distinctive_difference`."""
+        return _distinctive_difference(self.prepare(name_a), self.prepare(name_b))
 
     def _cap(
         self, a: _Prepared, b: _Prepared, name_a: str, name_b: str
@@ -251,6 +359,18 @@ class NameScorer:
             cap = CAP_ONE_DESCRIPTOR
             reason = f"only '{only}' has a business descriptor ({word}) (review at most)"
         return cap, reason
+
+    def review_cap(self, name_a: str, name_b: str) -> str | None:
+        """Why the pair may be reviewed but never merged automatically, if it may not.
+
+        The weak-name and one-descriptor caps of PRD 4.3 mean "review at most,
+        never automatic"; that holds whatever the automatic threshold is tuned to,
+        so a pair under either cap is never merged automatically, even when the
+        tuned threshold lies below the cap.
+        """
+        a, b = self.prepare(name_a), self.prepare(name_b)
+        cap, reason = self._cap(a, b, name_a, name_b)
+        return reason if cap <= CAP_ONE_DESCRIPTOR else None
 
     def score(self, name_a: str, name_b: str) -> FuzzyScore:
         """Guarded score for two normalised names; symmetric."""
@@ -277,14 +397,30 @@ class NameScorer:
 # --------------------------------------------------------------------------- blocking
 
 
+def _skeleton(word: str) -> str:
+    """Consonants of a word with repeats collapsed: ``fittondren`` -> ``ftndrn``.
+
+    Typing slips (a doubled, dropped or swapped vowel) keep the skeleton, so a
+    slip in the first four letters does not hide a pair from blocking.
+    """
+    out: list[str] = []
+    for ch in word:
+        if ch not in _SKELETON_VOWELS and (not out or out[-1] != ch):
+            out.append(ch)
+    return "".join(out)
+
+
 def _blocks(names: list[str]) -> list[list[int]]:
-    """Name-index blocks: shared rare token, or the same first four characters."""
+    """Name-index blocks: shared rare token, the same first four characters, or
+    the same consonant skeleton of the first word."""
     token_sets = [frozenset(n.split()) for n in names]
     df = Counter(t for tokens in token_sets for t in tokens)
     limit = max(RARE_TOKEN_SHARE * len(names), RARE_TOKEN_MIN_COUNT)
     by_key: dict[tuple[str, str], list[int]] = defaultdict(list)
     for i, (name, tokens) in enumerate(zip(names, token_sets, strict=True)):
         by_key[("prefix", name[:PREFIX_LENGTH])].append(i)
+        if name:
+            by_key[("skeleton", _skeleton(name.split()[0]))].append(i)
         for token in tokens:
             if df[token] < limit:
                 by_key[("token", token)].append(i)
@@ -334,6 +470,9 @@ class _Clusters:
         self.taxes: dict[int, dict[str, set[str]]] = {
             r.index: ({r.country: {r.tax}} if r.tax_key else {}) for r in records
         }
+        self.countries: dict[int, set[str]] = {
+            r.index: ({r.country} if r.country else set()) for r in records
+        }
         self.tested: dict[int, set[str]] = {r.index: set() for r in records}
         self._cannot: dict[int, set[int]] = defaultdict(set)
         for a, b in cannot_link:
@@ -358,6 +497,11 @@ class _Clusters:
                 return True
         return False
 
+    def country_conflict(self, a: int, b: int) -> bool:
+        """Cluster-level veto: the two clusters hold records in different countries."""
+        ca, cb = self.countries[self.find(a)], self.countries[self.find(b)]
+        return bool(ca) and bool(cb) and len(ca | cb) > 1
+
     def rejected_link(self, a: int, b: int) -> bool:
         """A reviewer rejected a pair joining these two clusters."""
         rb = self.find(b)
@@ -371,6 +515,7 @@ class _Clusters:
             self.members[root] = sorted(self.members[root] + self.members.pop(child))
             for country, ids in self.taxes.pop(child).items():
                 self.taxes[root].setdefault(country, set()).update(ids)
+            self.countries[root] |= self.countries.pop(child)
             self.tested[root] |= self.tested.pop(child)
         root = self.find(a)
         self.tested[root].update(tested)
@@ -560,12 +705,9 @@ def _has_tax_split(members: list[_Record]) -> bool:
 def _queue_exact(ctx: _Context, a: _Record, b: _Record, name: str, reason: str) -> None:
     """Send an exact-name pair that was not merged to review (sibling if vetoed)."""
     detail = f"Same normalised name '{name}'"
-    if _tax_vetoed(a, b):
+    if _vetoed(a, b):
         pair_type = "vendor_sibling"
-        reason = (
-            f"Different tax IDs in {a.country} ({a.tax} vs {b.tax}): not merged; "
-            "offered as possible sibling companies"
-        )
+        reason = _sibling_outcome(a, b)
     else:
         pair_type = "vendor_match"
     pair_id = make_pair_id(pair_type, a.key, b.key)
@@ -627,6 +769,15 @@ def _merge_group(ctx: _Context, name: str, members: list[_Record]) -> None:
                     "Not merged: the two legal entities hold different tax IDs in one country",
                 )
                 continue
+            if clusters.country_conflict(anchor.index, member.index):
+                _queue_exact(
+                    ctx,
+                    anchor,
+                    member,
+                    name,
+                    "Not merged: the two legal entities are registered in different countries",
+                )
+                continue
             if clusters.rejected_link(anchor.index, member.index):
                 _queue_exact(
                     ctx,
@@ -654,15 +805,39 @@ def _merge_group(ctx: _Context, name: str, members: list[_Record]) -> None:
             ctx.link(record, "V2", 100.0, "A", detail)
 
 
+def _resolve_exact(ctx: _Context, name: str, members: list[_Record]) -> None:
+    if len(members) < 2:
+        return
+    if _has_tax_split(members):
+        _split_group(ctx, name, members)
+    else:
+        _merge_group(ctx, name, members)
+
+
 def _apply_exact_names(ctx: _Context) -> None:
-    """V2: exact normalised name (primary or alias) merges at tier A unless vetoed."""
+    """V2: exact normalised name (primary or alias) merges at tier A unless vetoed.
+
+    A group spanning several countries is resolved per country; one record per
+    country is offered against the others as a possible sibling, and records
+    with no country go to review against each.
+    """
     for name, members in sorted(_name_groups(ctx.records).items()):
-        if len(members) < 2:
+        by_country: dict[str, list[_Record]] = defaultdict(list)
+        for record in members:
+            by_country[record.country or ""].append(record)
+        countries = sorted(c for c in by_country if c)
+        if len(countries) <= 1:
+            _resolve_exact(ctx, name, members)
             continue
-        if _has_tax_split(members):
-            _split_group(ctx, name, members)
-        else:
-            _merge_group(ctx, name, members)
+        for country in countries:
+            _resolve_exact(ctx, name, by_country[country])
+        reps = [by_country[c][0] for c in countries] + by_country.get("", [])
+        reason = (
+            "Not merged automatically: records with this name are in different countries, "
+            "so a record without a country cannot be assigned to one of them without review"
+        )
+        for a, b in combinations(sorted(reps, key=lambda r: r.key), 2):
+            _queue_exact(ctx, a, b, name, reason)
 
 
 # --------------------------------------------------------------------------- V4 / V5
@@ -727,14 +902,11 @@ def _chain_failure(ctx: _Context, a: _Record, b: _Record) -> str | None:
 
 def _cluster_one(ctx: _Context, cand: _Candidate) -> None:
     a, b, clusters = cand.a, cand.b, ctx.clusters
-    if _tax_vetoed(a, b):
+    if _vetoed(a, b):
         if cand.score >= ctx.auto_threshold:
             pair_id = make_pair_id("vendor_sibling", a.key, b.key)
             status, tier = _review_status(ctx, pair_id)
-            outcome = (
-                f"Different tax IDs in {a.country} ({a.tax} vs {b.tax}): not merged; "
-                "offered as possible sibling companies"
-            )
+            outcome = _sibling_outcome(a, b)
             ctx.add_row(
                 "vendor_sibling",
                 a,
@@ -756,7 +928,7 @@ def _cluster_one(ctx: _Context, cand: _Candidate) -> None:
                 tier=None,
                 status="vetoed",
                 detail=cand.detail,
-                outcome=f"Vetoed: different tax IDs in {a.country}",
+                outcome=f"Vetoed: {_veto_reason(a, b)}",
             )
         return
     pair_id = make_pair_id("vendor_match", a.key, b.key)
@@ -827,9 +999,20 @@ def _auto_block_reason(ctx: _Context, cand: _Candidate) -> str | None:
             f"Review: score is between {ctx.review_threshold:g} and {ctx.auto_threshold:g} "
             "(tier C, treated as different vendors until approved)"
         )
+    capped = ctx.scorer.review_cap(cand.a.name.name, cand.b.name.name)
+    if capped:
+        return f"Review: {capped} (tier C)"
+    difference = ctx.scorer.distinctive_difference(cand.a.name.name, cand.b.name.name)
+    if difference:
+        return (
+            "Review: the distinctive words differ by more than a typing slip "
+            f"({difference}; tier C)"
+        )
     clusters = ctx.clusters
     if clusters.tax_conflict(cand.a.index, cand.b.index):
         return "Not merged automatically: the legal entities hold different tax IDs in one country"
+    if clusters.country_conflict(cand.a.index, cand.b.index):
+        return "Not merged automatically: the legal entities are registered in different countries"
     if clusters.rejected_link(cand.a.index, cand.b.index):
         return "Not merged automatically: a reviewer rejected a link between these legal entities"
     return _chain_failure(ctx, cand.a, cand.b)

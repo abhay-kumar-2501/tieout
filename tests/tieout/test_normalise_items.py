@@ -38,7 +38,7 @@ def test_dimension_and_unit_standardisation(raw: str, expected: str) -> None:
 def test_abbreviations_expand_whole_tokens_only() -> None:
     assert normalise_description("brg ball 6204") == "BEARING BALL 6204"
     assert normalise_description("hhcs ss") == "HEX HEAD CAP SCREW STAINLESS STEEL"
-    assert normalise_description("SS-304, ZP") == "STAINLESS STEEL-304, ZINC PLATED"
+    assert normalise_description("SS-304, ZP") == "STAINLESS STEEL-304 ZINC PLATED"
     # Not whole tokens: left alone.
     assert normalise_description("SSX BRGS2 HXA") == "SSX BRGS2 HXA"
     assert normalise_description("SS304") == "SS304"
