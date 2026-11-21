@@ -4,6 +4,8 @@ import io
 
 import pandas as pd
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from tieout.match.review import (
     DECISION_COLUMNS,
@@ -113,3 +115,31 @@ def test_import_rejects_mismatched_type() -> None:
     )
     with pytest.raises(ValueError):
         read_decisions_csv(text)
+
+
+def test_pair_ids_round_trip_with_pipes_in_keys() -> None:
+    a, b = "acquirer:CH-10297", "target:MPN:BES4090501257|belestna chemical"
+    pair_id = make_pair_id("item_match", b, a)
+    assert pair_id == f"item_match|{a}|{b}"
+    assert parse_pair_id(pair_id) == ("item_match", a, b)
+    both = make_pair_id("item_match", "acquirer:MPN:X1|maker one", "target:MPN:Y2|maker two")
+    assert parse_pair_id(both)[1:] == ("acquirer:MPN:X1|maker one", "target:MPN:Y2|maker two")
+
+
+def test_pair_id_with_a_boundary_inside_a_key_takes_the_last_boundary() -> None:
+    pair_id = "item_match|acquirer:A|target:B|target:C"  # ambiguous: documented choice
+    assert parse_pair_id(pair_id) == ("item_match", "acquirer:A|target:B", "target:C")
+
+
+@given(
+    st.text("ABC:|-. xyz019", min_size=1, max_size=12).filter(
+        lambda s: "|acquirer:" not in s and "|target:" not in s
+    ),
+    st.text("ABC:|-. xyz019", min_size=1, max_size=12).filter(
+        lambda s: "|acquirer:" not in s and "|target:" not in s
+    ),
+)
+def test_pair_id_round_trip_property(key_a: str, key_b: str) -> None:
+    side_a, side_b = f"acquirer:{key_a}", f"target:{key_b}"
+    for kind in ("item_match", "vendor_match", "unit_flag"):
+        assert parse_pair_id(make_pair_id(kind, side_b, side_a)) == (kind, side_a, side_b)

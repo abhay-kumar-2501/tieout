@@ -25,7 +25,7 @@ import pandas as pd
 from rapidfuzz import fuzz, process
 from rapidfuzz.distance import JaroWinkler
 
-from tieout.match.review import approved, deferred, make_pair_id, rejected
+from tieout.match.review import approved, deferred, make_pair_id, parse_pair_id, rejected
 from tieout.normalise.spelling import is_abbreviation, is_typing_slip
 from tieout.normalise.truncation import cut_length
 from tieout.normalise.vendors import (
@@ -601,7 +601,7 @@ class _Context:
 
 
 def _pair_records(ctx: _Context, pair_id: str) -> tuple[_Record, _Record] | None:
-    _, key_a, key_b = pair_id.split("|")
+    _, key_a, key_b = parse_pair_id(pair_id)
     a, b = ctx.by_key.get(key_a), ctx.by_key.get(key_b)
     return (a, b) if a is not None and b is not None else None
 
@@ -1173,7 +1173,7 @@ class VendorMatch:
 def _cannot_links(by_key: dict[str, _Record], ids: frozenset[str]) -> set[tuple[int, int]]:
     out = set()
     for pair_id in ids:
-        _, key_a, key_b = pair_id.split("|")
+        _, key_a, key_b = parse_pair_id(pair_id)
         if key_a in by_key and key_b in by_key:
             out.add((by_key[key_a].index, by_key[key_b].index))
     return out
