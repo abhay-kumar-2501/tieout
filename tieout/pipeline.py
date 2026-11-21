@@ -20,7 +20,7 @@ import datetime as dt
 import io
 import json
 import tomllib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -611,8 +611,13 @@ def run_pipeline(
     inputs: PipelineInputs,
     assumptions: Mapping[str, Any] | None = None,
     decisions: pd.DataFrame | None = None,
+    progress: Callable[[str, Mapping[str, Any]], None] | None = None,
 ) -> Results:
     """Run the engine on two purchasing files and return the ``Results``.
+
+    ``progress``, when given, is called as ``progress(stage, counts)`` after each
+    stage with real counts (stages ``ingest``, ``vendor_matching``,
+    ``item_matching``, ``synergy``) so a screen can show staged progress (PRD 6.13).
 
     ``assumptions`` and ``decisions``, when given, take the place of the ones in
     ``inputs``. Raises :class:`tieout.ingest.BlockingValidationError` (carrying the
@@ -633,6 +638,19 @@ def run_pipeline(
     acq = _load(inputs.acquirer, "acquirer", inputs.mapping)
     tgt = _load(inputs.target, "target", inputs.mapping)
     prepared, category_info = _prepare(inputs, acq, tgt, taxonomy)
+
+    def report(stage: str, counts: Mapping[str, Any]) -> None:
+        if progress is not None:
+            progress(stage, counts)
+
+    report(
+        "ingest",
+        {
+            "rows": {"acquirer": len(acq), "target": len(tgt)},
+            "lines": len(prepared.lines),
+            "vendor_records": int(prepared.lines["vendor_key"].nunique()),
+        },
+    )
     matching = match_lines(
         prepared.lines, vendor_parents=parents, thresholds=thresholds, decisions=log
     )
@@ -666,4 +684,9 @@ def run_pipeline(
         scorecard=_json_input(inputs.scorecard),
         sensitivity=_json_input(inputs.sensitivity),
     )
-    return recompute(_with_matching(unmatched, matching, log), merged)
+    matched = _with_matching(unmatched, matching, log)
+    report("vendor_matching", matched.meta["matching"]["vendors"])
+    report("item_matching", matched.meta["matching"]["items"])
+    final = recompute(matched, merged)
+    report("synergy", {"totals": True})
+    return final
