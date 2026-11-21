@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import io
+import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -178,3 +179,45 @@ def test_mapping_edits_survive_a_visit_to_another_step(files: dict[str, bytes]) 
     _next(at)
     assert at.selectbox(key="up_map_target_0").value == ""
     assert at.button(key="up_next").disabled  # site is required and no longer mapped
+
+
+def _to_run(at: AppTest, category_map: bytes) -> AppTest:
+    for _ in range(3):
+        _next(at)
+    at.file_uploader(key="up_cat_file").set_value(("category_map.csv", category_map, "text/csv"))
+    at.run()
+    _next(at)
+    assert _step(at) == 4
+    at.button(key="up_run").click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    return at
+
+
+def test_optional_inputs_reach_the_run(
+    files: dict[str, bytes], small_files: dict[str, Path]
+) -> None:
+    at = _upload(_fresh(), files["acquirer"], files["target"])
+    parents = small_files["vendor_parents"].read_bytes()
+    at.file_uploader(key="up_opt_file_vendor_parents_0").set_value(
+        ("vendor_parents.csv", parents, "text/csv")
+    )
+    at.toggle(key="up_opt_period_on").set_value(True)
+    at.run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert not at.button(key="up_next").disabled
+    _to_run(at, files["category_map"])
+    results_meta = at.session_state[UPLOADED].meta
+    assert results_meta["inputs"]["vendor_parents"] is True
+    assert re.fullmatch(r"\d{4}-\d{2}", results_meta["period"]["end"])
+
+
+def test_a_malformed_fx_file_shows_a_message_and_blocks(files: dict[str, bytes]) -> None:
+    at = _upload(_fresh(), files["acquirer"], files["target"])
+    at.file_uploader(key="up_opt_file_fx_0").set_value(
+        ("fx.csv", b"cur,rate\nEUR,1.1\n", "text/csv")
+    )
+    at.run()
+    errors = [html.unescape(str(e.value)) for e in at.error]
+    assert any("FX rates file needs the columns currency, rate" in e for e in errors)
+    assert at.button(key="up_next").disabled
+    assert _step(at) == 0

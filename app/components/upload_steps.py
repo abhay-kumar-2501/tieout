@@ -43,6 +43,7 @@ class Facts:
     aggregated: bool = False
     check: UploadCheck | None = None
     mapped_categories: int = 0
+    option_problems: tuple[str, ...] = ()
 
 
 def blockers(step: int, facts: Facts) -> list[str]:
@@ -52,6 +53,7 @@ def blockers(step: int, facts: Facts) -> list[str]:
         for company, label in COMPANY_LABELS.items():
             if company not in facts.files:
                 out.append(f"Add the {label.lower()} file.")
+        out += list(facts.option_problems)
     elif step == 1:
         for company, label in COMPANY_LABELS.items():
             out += [

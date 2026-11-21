@@ -27,6 +27,7 @@ from components.upload_steps import (
 )
 from tieout import upload
 from tieout.ingest import BlockingValidationError, FileLimitError, UnreadableFileError
+from tieout.ingest.mapping import to_mapping
 from tieout.ingest.schema import COLUMNS, REQUIRED
 from tieout.reference import load_taxonomy
 from tieout.views import money, thousands
@@ -43,8 +44,11 @@ _KEYS = {
     "run_error": "_up_run_error",
     "catfile": "_up_catfile",
     "cat_round": "_up_cat_round",
+    "optfiles": "_up_optfiles",
+    "options": "_up_options",
+    "optproblems": "_up_optproblems",
 }
-_WIDGET_PREFIXES = ("up_map_", "up_file_", "up_cat_")
+_WIDGET_PREFIXES = ("up_map_", "up_file_", "up_cat_", "up_opt_")
 _NOT_USED = ""
 PRIVACY = (
     "The public demo is not a place for real deal data. Run the tool locally for that. "
@@ -102,6 +106,26 @@ def _facts() -> Facts:
         mapping=st.session_state.get(_KEYS["mapping"], {}),
         check=st.session_state.get(_KEYS["check"]),
         mapped_categories=mapped,
+        aggregated=bool(st.session_state.get(_KEYS["options"], {}).get("aggregated")),
+        option_problems=tuple(st.session_state.get(_KEYS["optproblems"], ())),
+    )
+
+
+def _upload_options() -> upload.UploadOptions:
+    """The optional inputs as the engine takes them (bytes and plain settings)."""
+    given = st.session_state.get(_KEYS["optfiles"], {})
+    scalars = st.session_state.get(_KEYS["options"], {})
+
+    def data(kind: str) -> bytes | None:
+        return given[kind]["data"] if kind in given else None
+
+    return upload.UploadOptions(
+        fx=data("fx"),
+        vendor_parents=data("vendor_parents"),
+        category_settings=data("category_settings"),
+        period_end=scalars.get("period_end"),
+        reporting_currency=scalars.get("currency", "USD"),
+        aggregated=bool(scalars.get("aggregated", False)),
     )
 
 
@@ -216,6 +240,104 @@ def _step_upload() -> None:
                 if st.button("Remove file", key=f"up_file_remove_{company}"):
                     _remove_file(company)
                     st.rerun()
+    _optional_inputs()
+
+
+_OPTIONAL_FILES = {
+    "fx": ("FX rates file", "currency, rate (amount x rate = reporting currency)"),
+    "vendor_parents": ("Vendor parents file", "key_type, key, country (optional), parent_name"),
+    "category_settings": ("Category settings file", "l2_code and any of the per-category settings"),
+}
+
+
+def _optional_file(kind: str) -> None:
+    label, columns = _OPTIONAL_FILES[kind]
+    stored = dict(st.session_state.get(_KEYS["optfiles"], {}))
+    round_ = st.session_state.get("_up_round", 0)
+    uploaded = st.file_uploader(
+        label, type=["csv"], key=f"up_opt_file_{kind}_{round_}", help=f"CSV with {columns}."
+    )
+    if uploaded is not None and stored.get(kind, {}).get("file_id") != uploaded.file_id:
+        stored[kind] = {
+            "file_id": uploaded.file_id,
+            "name": uploaded.name,
+            "data": uploaded.getvalue(),
+        }
+        st.session_state[_KEYS["optfiles"]] = stored
+    elif kind in stored and uploaded is None:
+        st.caption(esc(f"Using {stored[kind]['name']}."))
+        if st.button("Remove", key=f"up_opt_remove_{kind}"):
+            del stored[kind]
+            st.session_state[_KEYS["optfiles"]] = stored
+            st.session_state["_up_round"] = round_ + 1
+            st.rerun()
+
+
+def _optional_inputs() -> None:
+    """The collapsed "Optional files and settings" section; invalid input blocks Continue."""
+    before = (st.session_state.get(_KEYS["optfiles"]), st.session_state.get(_KEYS["options"]))
+    previous = st.session_state.get(_KEYS["options"], {})
+    with st.expander("Optional files and settings", expanded=False):
+        st.caption("Leave these alone to use the shipped defaults.")
+        for kind in _OPTIONAL_FILES:
+            _optional_file(kind)
+        left, right = st.columns(2)
+        currency = left.text_input(
+            "Reporting currency",
+            value=previous.get("currency", "USD"),
+            max_chars=3,
+            key="up_opt_currency",
+            help="Amounts are converted into this currency; non-USD needs an FX rates file.",
+        )
+        aggregated = right.toggle(
+            "Data is already aggregated (no document dates)",
+            value=bool(previous.get("aggregated", False)),
+            key="up_opt_aggregated",
+        )
+        period = _period_end_input(previous, aggregated)
+    options = {"currency": currency, "aggregated": aggregated, "period_end": period}
+    st.session_state[_KEYS["options"]] = options
+    problems: list[str] = []
+    try:
+        upload.parse_options(_upload_options())
+    except ValueError as exc:
+        problems.append(str(exc))
+        error_state("An optional input was refused.", str(exc), "Correct or remove it to continue.")
+    st.session_state[_KEYS["optproblems"]] = problems
+    if before != (st.session_state.get(_KEYS["optfiles"]), options):
+        _drop(stale_after(0))
+
+
+def _period_end_input(previous: Mapping[str, Any], aggregated: bool) -> str | None:
+    """A month picker, off by default (then the engine uses the earlier latest month)."""
+    if aggregated:
+        return None
+    files = st.session_state.get(_KEYS["files"], {})
+    default = None
+    if len(files) == 2:
+        mapping = {
+            c: to_mapping(upload.suggest_columns(files[c]["headers"])) for c in COMPANY_LABELS
+        }
+        try:
+            default = upload.detect_period_end(
+                files["acquirer"]["data"], files["target"]["data"], mapping
+            )
+        except ValueError:
+            default = None
+    chosen = st.toggle(
+        "Choose the period end",
+        value=previous.get("period_end") is not None,
+        key="up_opt_period_on",
+        help="The window is the 12 months ending in this month. Default: the earlier of the "
+        "two files' latest months" + (f" ({default})." if default else "."),
+    )
+    if not chosen:
+        return None
+    start = pd.Period(previous.get("period_end") or default or "2025-12", "M")
+    picked = st.date_input(
+        "Period end (month)", value=start.to_timestamp().date(), key="up_opt_period"
+    )
+    return str(pd.Period(picked, "M"))
 
 
 # ---------------------------------------------------------------- step 2: columns
@@ -284,6 +406,7 @@ def _run_check() -> None:
                 files["acquirer"]["data"],
                 files["target"]["data"],
                 st.session_state[_KEYS["mapping"]],
+                options=_upload_options(),
             )
         except (FileLimitError, UnreadableFileError, ValueError) as exc:
             status.update(label="The files could not be checked", state="error")
@@ -481,6 +604,7 @@ def _step_run() -> None:
             files["target"]["data"],
             st.session_state[_KEYS["mapping"]],
             st.session_state[_KEYS["categories"]],
+            options=_upload_options(),
             names={c: files[c]["name"] for c in files},
             progress=show,
         )
