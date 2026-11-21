@@ -55,8 +55,7 @@ def test_run_writes_full_results_and_honours_every_option(
         "pair_id,type,decision,pack_qty,note,decided_at\n"
         f"{pair},item_match,reject,,,2026-01-15T00:00:00Z\n"
     )
-    scorecard = tmp_path / "scorecard.json"
-    scorecard.write_text(json.dumps({"passed": True}))
+    scorecard = Path(__file__).parents[2] / "data" / "demo" / "scorecard.json"
     code = main(
         [
             "run", str(small_files["acquirer"]), str(small_files["target"]),
@@ -70,7 +69,8 @@ def test_run_writes_full_results_and_honours_every_option(
     assert code == EXIT_OK
     captured = capsys.readouterr()
     assert "after matching" in captured.out and "Defensible run-rate saving" in captured.out
-    assert "exports are not built yet" in captured.err
+    assert (tmp_path / "tieout_workbook.xlsx").is_file()
+    assert (tmp_path / "tieout_deck.pptx").is_file()
     results = Results.load(tmp_path / "results")
     assert not results.vendor_map.empty and results.meta["report_date"] == "2026-01-15"
     assert results.meta["view"] == "masked"
@@ -81,7 +81,7 @@ def test_run_writes_full_results_and_honours_every_option(
     risk = results.category_risk
     assert (risk.loc[risk["l2_code"] == "L03.01", "cap"] == 0.5).all()
     assert results.review_log["pair_id"].tolist() == [pair]
-    assert results.scorecard == {"passed": True}
+    assert results.scorecard == json.loads(scorecard.read_text())
     assert results.totals["recurring"]["base"] > 0 and results.trace
 
 
@@ -106,3 +106,28 @@ def test_blocking_validation_error_exits_2_with_report(
     out = capsys.readouterr().out
     assert out.startswith("Blocking validation errors:") and "vendor_id" in out
     assert not (tmp_path / "o" / "results").exists()
+
+
+def test_exports_follow_the_view(small_files: dict[str, Path], tmp_path: Path) -> None:
+    import io
+
+    import openpyxl
+    from pptx import Presentation
+
+    args = ["run", str(small_files["acquirer"]), str(small_files["target"])]
+    sheets = {}
+    for view in ("clean", "masked"):
+        out = tmp_path / view
+        assert main([*args, "--out", str(out), "--view", view]) == EXIT_OK
+        book = openpyxl.load_workbook(out / "tieout_workbook.xlsx")
+        sheets[view] = set(book.sheetnames)
+        assert len(Presentation(out / "tieout_deck.pptx").slides) == 8
+        assert io.BytesIO((out / "tieout_workbook.xlsx").read_bytes()).getbuffer().nbytes > 0
+    assert "Payment_Terms" in sheets["clean"]
+    assert "Payment_Terms" not in sheets["masked"]
+
+
+def test_no_exports_writes_neither_file(small_files: dict[str, Path], tmp_path: Path) -> None:
+    args = ["run", str(small_files["acquirer"]), str(small_files["target"]), "--out", str(tmp_path)]
+    assert main([*args, "--no-exports"]) == EXIT_OK
+    assert not list(tmp_path.glob("tieout_*"))
