@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -21,3 +22,9 @@ def small_files(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
     truth = root / "data" / "truth" / f"seed_{SMALL_SEED}"
     paths = write(generate(SMALL_SEED, scale=SMALL_SCALE), out, truth)
     return {**paths, "root": root, "truth_dir": truth}
+
+
+@pytest.fixture(scope="session")
+def timing_slack() -> float:
+    """Multiplier for wall-clock bounds; shared CI runners are slower than a laptop."""
+    return float(os.environ.get("TIEOUT_TIMING_SLACK", "1"))

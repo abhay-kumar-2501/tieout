@@ -125,7 +125,7 @@ def test_lever1_outputs_do_not_depend_on_lever2_and_lever3_assumptions() -> None
     assert first.totals["levers"]["lever2"] != second.totals["levers"]["lever2"]
 
 
-def test_full_recompute_is_well_under_half_a_second() -> None:
+def test_full_recompute_is_well_under_half_a_second(timing_slack: float) -> None:
     frames = realistic_table(n_items=1_500, n_lines=60_000, seed=1)
     run(frames)  # warm-up
     best = float("inf")
@@ -134,4 +134,4 @@ def test_full_recompute_is_well_under_half_a_second() -> None:
         out = run(frames)
         best = min(best, time.perf_counter() - start)
     assert out.opportunities["canonical_item_id"].nunique() > 1_000
-    assert best < 1.0, f"recompute took {best:.3f} s"
+    assert best < 1.0 * timing_slack, f"recompute took {best:.3f} s"
