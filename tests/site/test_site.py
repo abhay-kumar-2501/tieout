@@ -118,3 +118,80 @@ def test_workflow_is_manual_only():
     assert not re.search(r"^\s*(push|pull_request|schedule):", text, re.M)
     for action in ("configure-pages", "upload-pages-artifact", "deploy-pages"):
         assert f"actions/{action}@" in text
+
+
+# ------------------------------------------------------------------ layout and type
+
+
+class _Tags(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.images: list[dict[str, str | None]] = []
+        self.metas: list[dict[str, str | None]] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("img", "source"):
+            self.images.append(dict(attrs))
+        if tag == "meta":
+            self.metas.append(dict(attrs))
+
+
+def _tags() -> _Tags:
+    p = _Tags()
+    p.feed((SITE / "index.html").read_text(encoding="utf-8"))
+    p.close()
+    return p
+
+
+def test_viewport_meta_is_present():
+    assert any(
+        m.get("name") == "viewport" and "width=device-width" in (m.get("content") or "")
+        for m in _tags().metas
+    )
+
+
+def test_image_dimensions_match_the_files():
+    from PIL import Image
+
+    images = [a for a in _tags().images if (a.get("src") or "").startswith("assets/")]
+    assert images, "no local images found"
+    for a in images:
+        with Image.open(SITE / a["src"]) as picture:
+            assert (int(a["width"]), int(a["height"])) == picture.size, a["src"]
+
+
+def _min_px(value: str, variables: dict[str, str]) -> float:
+    """The smallest pixel size a CSS font-size value can resolve to."""
+    value = value.strip()
+    m = re.fullmatch(r"var\((--[\w-]+)\)", value)
+    if m:
+        return _min_px(variables[m.group(1)], variables)
+    m = re.fullmatch(r"clamp\(\s*([^,]+),.*\)", value)
+    if m:
+        return _min_px(m.group(1), variables)
+    m = re.fullmatch(r"([\d.]+)(px|rem)", value)
+    assert m, f"unsupported font size {value!r}: use px, rem, clamp() or a token"
+    return float(m.group(1)) * (16 if m.group(2) == "rem" else 1)
+
+
+def test_every_text_size_is_at_least_14px():
+    css = re.sub(r"/\*.*?\*/", "", (SITE / "styles.css").read_text(encoding="utf-8"), flags=re.S)
+    variables = dict(re.findall(r"(--text-[\w-]+)\s*:\s*([^;]+);", css))
+    sizes = re.findall(r"font-size\s*:\s*([^;}]+)", css)
+    # The size in a font shorthand: "font: <weight> <size>/<line-height> <family>".
+    sizes += re.findall(r"\bfont\s*:\s*\d{3}\s+(\S+?)/", css)
+    sizes += variables.values()
+    assert len(sizes) > 10
+    for size in sizes:
+        assert _min_px(size, variables) >= 14, size
+
+
+def test_figures_come_from_data_js():
+    html = (SITE / "index.html").read_text(encoding="utf-8")
+    text = re.sub(r"<[^>]+>", " ", re.sub(r"<!--.*?-->", "", html, flags=re.S))
+    assert not re.search(r"\$\s?\d", text), "hard-coded dollar figure in index.html"
+    assert not re.search(r"\d%", text), "hard-coded percentage in index.html"
+    assert 'data-bind="naive"' in html and 'data-bind="range"' in html
+    script = (SITE / "main.js").read_text(encoding="utf-8")
+    assert not re.search(r"[\"']\$?\d[\d.,]*[MkK%]?[\"']", script), "figure literal in main.js"
+    assert "TIEOUT.naive" in script and "TIEOUT.defensible_recurring" in script
