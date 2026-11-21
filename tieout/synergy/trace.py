@@ -1,4 +1,4 @@
-"""The trace index: every lever-1 figure down to source rows (PRD 6.6, M2 exit criterion).
+"""The trace index: every figure down to source rows (PRD 6.6, M2 exit criterion).
 
 **What a source row contributes.** A saving is not a line amount, so each
 figure is spread over the lines it rests on. For one ``lever1`` evaluation, a
@@ -30,6 +30,11 @@ plus ``lever:1:tier:{A,B}``, ``lever:1:upside``, ``lever:1:internal``,
 ``item:{id}`` nodes. ``line_amounts`` holds each line's contribution per
 measure, and ``figures`` maps each dotted path in ``totals`` to its node and
 measure. :func:`resum` recomputes a figure from its traced lines.
+
+Levers 2 and 3, spend, one-time costs and phasing add their own nodes and
+measures over every line through :func:`extend_trace` (see
+:mod:`tieout.synergy.assemble`); ``total:recurring`` then lists ``lever:1``
+and ``lever:2``.
 """
 
 from __future__ import annotations
@@ -48,6 +53,8 @@ __all__ = [
     "LineIndex",
     "TraceIndex",
     "build_trace",
+    "children_by",
+    "extend_trace",
     "figure_value",
     "leaf_lines",
     "line_contributions",
@@ -193,6 +200,39 @@ def _figures() -> dict[str, tuple[str, str]]:
         figures[f"lever1.bridge.step_{i}"] = (f"bridge:step:{i}", f"step_{i}")
         figures[f"lever1.bridge_raw.step_{i}"] = (f"bridge:raw:{i}", f"raw_{i}")
     return figures
+
+
+def children_by(
+    keys: np.ndarray, mask: np.ndarray, line_id: np.ndarray, names: np.ndarray
+) -> dict[str, list[str]]:
+    """Node ``names[k]`` -> the ``line_id`` s (in their order) of masked rows with key ``k``."""
+    rows = np.flatnonzero(mask)
+    order = rows[np.argsort(keys[rows], kind="stable")]
+    bounds = np.searchsorted(keys[order], np.arange(len(names) + 1)).tolist()
+    ids = line_id[order].tolist()
+    return {
+        str(name): ids[start:end]
+        for name, start, end in zip(names, bounds[:-1], bounds[1:], strict=True)
+        if end > start
+    }
+
+
+def extend_trace(
+    trace: TraceIndex,
+    line_id: np.ndarray,
+    measures: Mapping[str, np.ndarray],
+    children: Mapping[str, list[str]],
+    figures: Mapping[str, tuple[str, str]],
+) -> TraceIndex:
+    """Add measures over every line in ``line_id`` (lever-1 measures are zero off their lines)."""
+    index = pd.Index(line_id, name="line_id")
+    amounts = trace.line_amounts.reindex(index, fill_value=0.0)
+    amounts = pd.concat([amounts, pd.DataFrame(dict(measures), index=index)], axis=1)
+    return TraceIndex(
+        children={**trace.children, **children},
+        line_amounts=amounts,
+        figures={**trace.figures, **figures},
+    )
 
 
 def leaf_lines(trace: TraceIndex, node: str) -> list[str]:

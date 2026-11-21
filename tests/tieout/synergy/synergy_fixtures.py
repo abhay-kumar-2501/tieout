@@ -24,6 +24,7 @@ META: dict[str, Any] = {
 }
 #: Close date 2026-01-01 + 36 months.
 HORIZON_END = pd.Timestamp("2029-01-01")
+DOC_DATE = pd.Timestamp("2025-06-01")
 
 
 @dataclass
@@ -31,12 +32,13 @@ class Book:
     rows: list[dict[str, Any]] = field(default_factory=list)
     parents: dict[str, str] = field(default_factory=dict)
     vendor_tiers: dict[str, str | None] = field(default_factory=dict)
+    vendor_stages: dict[str, str] = field(default_factory=dict)
     l2: dict[str, str] = field(default_factory=dict)
 
     def buy(
         self,
         company: str,
-        item: str,
+        item: str | None,
         qty: float,
         price: float,
         *,
@@ -49,20 +51,31 @@ class Book:
         exclusion: str | None = None,
         incoterm: str | None = None,
         contract_end: str | None = None,
-        l2: str = "L02.01",
+        l2: str | None = "L02.01",
         vendor_tier: str | None = "A",
+        vendor_stage: str = "V1",
+        category_type: str = "mro",
+        terms: float | None = None,
+        paid_after: float | None = None,
     ) -> None:
         """``lines`` lines of ``qty / lines`` recorded units at ``price`` per recorded unit.
 
         ``factor`` is base units per recorded unit; ``status="unconverted"``
         leaves the line without a base quantity (excluded from comparison).
+        ``item=None`` records spend with no item (services). ``terms`` are the
+        stated payment days; ``paid_after`` sets ``payment_date`` that many days
+        after ``doc_date``.
         """
         vendor_key = f"{company}:{vendor}"
         self.parents[vendor_key] = parent or vendor
         self.vendor_tiers[vendor_key] = vendor_tier
-        self.l2[f"{company}:{item}"] = l2
-        unconverted = status == "unconverted"
-        if unconverted:
+        self.vendor_stages[vendor_key] = vendor_stage if vendor_tier else "none"
+        if item is None:
+            status, exclusion = "none", "no_item"
+        else:
+            self.l2[f"{company}:{item}"] = l2
+        unconverted = status in ("unconverted", "none")
+        if status == "unconverted":
             exclusion = exclusion or "unit_unconverted"
         for _ in range(lines):
             q = qty / lines
@@ -86,6 +99,13 @@ class Book:
                     "price_exclusion": exclusion,
                     "incoterm": incoterm,
                     "contract_end_date": pd.Timestamp(contract_end) if contract_end else pd.NaT,
+                    "l2_code": l2,
+                    "category_type": category_type if l2 else None,
+                    "payment_terms_days": np.nan if terms is None else float(terms),
+                    "doc_date": DOC_DATE,
+                    "payment_date": (
+                        pd.NaT if paid_after is None else DOC_DATE + pd.Timedelta(days=paid_after)
+                    ),
                 }
             )
 
@@ -93,16 +113,26 @@ class Book:
         self,
         matches: list[tuple[str, str, str]] = (),  # type: ignore[assignment]
         pending: list[tuple[str, str, float]] = (),  # type: ignore[assignment]
+        human: tuple[str, ...] = (),
     ) -> dict[str, pd.DataFrame]:
-        """``matches``: (acquirer item, target item, tier); ``pending``: tier C candidates."""
+        """``matches``: (acquirer item, target item, tier); ``pending``: tier C candidates.
+
+        ``human`` lists acquirer items whose match a reviewer approved.
+        """
+        stages = {f"acquirer:{a}": "human" for a in human}
+        stages |= {f"target:{b}": "human" for a, b, _ in matches if a in human}
         lines = pd.DataFrame(self.rows)
-        lines["contract_end_date"] = pd.to_datetime(lines["contract_end_date"])
+        for column in ("contract_end_date", "payment_date", "doc_date"):
+            lines[column] = pd.to_datetime(lines[column])
+        lines["l2_code"] = lines["l2_code"].astype(object)
         vendor_map = pd.DataFrame(
             {
                 "vendor_key": list(self.parents),
                 "parent_id": list(self.parents.values()),
                 "tier": list(self.vendor_tiers.values()),
-            }
+                "stage": list(self.vendor_stages.values()),
+            },
+            dtype=object,
         )
         records = sorted(self.l2)
         partner: dict[str, tuple[str, str]] = {}
@@ -121,6 +151,7 @@ class Book:
                 ],
                 "partner_id": [partner[r][0] if r in partner else None for r in records],
                 "tier": [partner[r][1] if r in partner else None for r in records],
+                "stage": [stages.get(r, "I1") if r in partner else "none" for r in records],
                 "l2_code": [self.l2[r] for r in records],
             },
             dtype=object,
@@ -190,6 +221,11 @@ def removed(out: SynergyOutputs, step: int) -> pd.DataFrame:
     return detail[detail["step"] == step]
 
 
+def _l2_of(item_key: str | None) -> str | None:
+    """A fixed category per item key (five L2s), so an item's lines share one category."""
+    return None if item_key is None else f"L02.0{1 + int(item_key[1:]) % 5}"
+
+
 def realistic_table(n_items: int = 1500, n_lines: int = 60_000, seed: int = 0):
     """A large matched table: ``n_items`` matched items plus unmatched and no-item lines."""
     rng = np.random.default_rng(seed)
@@ -240,11 +276,31 @@ def realistic_table(n_items: int = 1500, n_lines: int = 60_000, seed: int = 0):
             "price_exclusion": exclusion,
             "incoterm": rng.choice(np.array(["FCA", "EXW", None], dtype=object), n_lines),
             "contract_end_date": contract,
+            "l2_code": np.where(
+                item_key == None,  # noqa: E711
+                np.char.add("L02.0", rng.integers(1, 6, n_lines).astype(str)),
+                [_l2_of(k) for k in item_key],
+            ),
+            "category_type": "mro",
+            "payment_terms_days": rng.choice([30.0, 45.0, 60.0], n_lines),
+            "doc_date": np.datetime64("2025-06-01"),
+            "payment_date": pd.to_datetime(
+                np.where(
+                    rng.random(n_lines) < 0.85,
+                    np.datetime64("2025-06-01") + rng.integers(20, 80, n_lines).astype("m8[D]"),
+                    np.datetime64("NaT", "D"),
+                )
+            ),
         }
     )
     keys = sorted(set(vendor_key))
     vendor_map = pd.DataFrame(
-        {"vendor_key": keys, "parent_id": [k.split(":")[1] for k in keys], "tier": "A"}
+        {
+            "vendor_key": keys,
+            "parent_id": [k.split(":")[1] for k in keys],
+            "tier": "A",
+            "stage": "V1",
+        }
     )
     records = lines.dropna(subset=["item_key"])[["company", "item_key"]].drop_duplicates()
     records = records.sort_values(["company", "item_key"]).reset_index(drop=True)
@@ -266,7 +322,8 @@ def realistic_table(n_items: int = 1500, n_lines: int = 60_000, seed: int = 0):
             "canonical_item_id": [canonical[r] for r in root],
             "partner_id": partner,
             "tier": np.where(partner.notna(), "A", None),
-            "l2_code": "L02.01",
+            "stage": np.where(partner.notna(), "I1", "none"),
+            "l2_code": [_l2_of(k) for k in records["item_key"]],
         },
         dtype=object,
     )

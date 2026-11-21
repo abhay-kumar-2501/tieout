@@ -148,7 +148,8 @@ def test_low_base_high_are_ordered(items, assumptions) -> None:
 def test_each_line_contributes_to_at_most_one_opportunity(items, assumptions) -> None:
     _, out = compute(items, assumptions)
     seen: set[str] = set()
-    for opp_id in out.opportunities["opportunity_id"]:
+    opps = out.opportunities
+    for opp_id in opps.loc[opps["lever"] == 1, "opportunity_id"]:
         lines = set(leaf_lines(out.trace, opp_id))
         assert not lines & seen
         seen |= lines
@@ -185,17 +186,33 @@ def test_every_figure_and_opportunity_resums_from_its_traced_rows(items, assumpt
     _, out = compute(items, assumptions)
     for path, (node, measure) in out.trace.figures.items():
         assert abs(resum(out.trace, node, measure) - figure_value(out.totals, path)) <= CENT, path
-    in_range = {"gross_gap": "gross", "low": "low", "base": "base", "high": "high"}
-    pending = {"gross_gap": "upside_gross", "upside_base": "upside"}
     for _, opp in out.opportunities.iterrows():
-        measures = in_range if opp["status"] == "in_range" else pending
-        for column, measure in measures.items():
+        for column, measure in opportunity_measures(opp).items():
             assert abs(resum(out.trace, opp["opportunity_id"], measure) - opp[column]) <= CENT
 
 
-def _money_leaves(node: object, path: str = "") -> list[str]:
+def opportunity_measures(opp: pd.Series) -> dict[str, str]:
+    """Opportunity column -> trace measure that re-sums it."""
+    if opp["lever"] == 1 and opp["status"] == "pending_review":
+        return {"gross_gap": "upside_gross", "upside_base": "upside"}
+    prefix = {1: "", 2: "l2_", 3: "l3_"}[opp["lever"]]
+    gross = {1: "gross", 2: "l2_gross", 3: "l3_gross"}[opp["lever"]]
+    return {"gross_gap": gross, **{case: f"{prefix}{case}" for case in ("low", "base", "high")}}
+
+
+#: Floats in ``totals`` that are ratios or flags, not money.
+NOT_MONEY = {"share", "band_low", "band_high"}
+
+
+def money_leaves(node: object, path: str = "") -> list[str]:
+    """Dotted paths of every money figure in ``totals``."""
     if isinstance(node, dict):
-        return [p for k, v in node.items() for p in _money_leaves(v, f"{path}{k}.")]
+        return [
+            p
+            for k, v in node.items()
+            if k not in NOT_MONEY and k != "checks"
+            for p in money_leaves(v, f"{path}{k}.")
+        ]
     return [path[:-1]] if isinstance(node, float) else []
 
 
@@ -210,12 +227,7 @@ def test_every_money_figure_in_totals_has_a_trace() -> None:
         ]
     )
     out = run(frames)
-    money = {
-        p
-        for section in ("levers", "recurring", "lever1")
-        for p in _money_leaves(out.totals[section], f"{section}.")
-    }
-    assert money == set(out.trace.figures)
+    assert set(money_leaves(out.totals)) == set(out.trace.figures)
     assert out.totals["levers"]["lever1"]["base"] == pytest.approx(0.5 * 300 * 0.70)
 
 

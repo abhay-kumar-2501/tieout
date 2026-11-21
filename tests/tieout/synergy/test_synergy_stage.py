@@ -12,6 +12,7 @@ from synergy_fixtures import Book, decision, realistic_table, run
 from tieout.match.review import make_pair_id
 from tieout.synergy.bridge import carry_negative_steps
 from tieout.synergy.lever1 import Filters
+from tieout.synergy.opportunities import OPPORTUNITY_COLUMNS
 from tieout.synergy.trace import figure_value, resum
 
 FRAMES = (
@@ -21,6 +22,9 @@ FRAMES = (
     "internal_variance",
     "review_items",
     "item_gross_gaps",
+    "category_risk",
+    "payment_terms",
+    "phasing",
 )
 
 
@@ -96,6 +100,29 @@ def test_shuffling_input_rows_changes_no_output() -> None:
     assert first.trace.children == second.trace.children
     pd.testing.assert_frame_equal(first.trace.line_amounts, second.trace.line_amounts)
     assert first.removed_at_step1 == second.removed_at_step1
+
+
+def test_lever1_outputs_do_not_depend_on_lever2_and_lever3_assumptions() -> None:
+    frames = realistic_table(n_items=100, n_lines=4_000, seed=5)
+    first = run(frames)
+    changed = {
+        "lever2": {"capture": {"low": 0.1, "base": 0.2, "high": 0.3}},
+        "lever3": {"capture": {"low": 0.9, "base": 0.95, "high": 1.0}, "max_payment_days": 30},
+        "caps": {"standard": 0.4},
+        "global_ramp": {"year1": 0.1},
+    }
+    second = run(frames, assumptions=changed)
+    for name in ("price_groups", "bridge_detail", "internal_variance", "review_items"):
+        pd.testing.assert_frame_equal(getattr(first, name), getattr(second, name))
+    pd.testing.assert_frame_equal(
+        *(
+            out.opportunities.loc[out.opportunities["lever"] == 1, OPPORTUNITY_COLUMNS]
+            for out in (first, second)
+        )
+    )
+    assert first.totals["lever1"] == second.totals["lever1"]
+    assert first.totals["levers"]["lever1"] == second.totals["levers"]["lever1"]
+    assert first.totals["levers"]["lever2"] != second.totals["levers"]["lever2"]
 
 
 def test_full_recompute_is_well_under_half_a_second() -> None:
