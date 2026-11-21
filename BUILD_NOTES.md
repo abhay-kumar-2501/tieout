@@ -266,3 +266,21 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - Headline figures are rendered by `site/main.js` from `site/data.js`; with scripts off the hero shows an ellipsis and a note pointing to the bridge image.
 - `site/assets/bridge.png` is a neutral placeholder until `make demo` regenerates it; the sample workbook and deck links are plain anchors that 404 until then.
 - The traceability section shows the lever 2 chain from the trace design, not a live figure.
+## App foundation (session state, trace panel, page scaffolding)
+
+- **Session state.** `app/components/state.py` is the only module that reads or writes the session's results, assumptions and decisions. `current_results()` caches two stages against version counters:
+  - decisions applied (`apply_decisions`, about 1.5 s on the demo);
+  - assumptions applied (`recompute`, about 0.2 s).
+
+  A re-run with nothing changed returns the cached object. The demo results are loaded once per server with the synergy cache already built, so the first assumption change re-runs only the arithmetic.
+- **Assumptions.** `set_assumptions(overrides)` merges a partial or complete nested dict over the assumptions in force. Invalid values raise `ValueError` and leave the session unchanged. Decisions are applied before assumptions, so an override survives a new decision.
+- **Decisions.** Session decisions are appended to the base run's own `review_log`, and the last decision per `pair_id` wins. A new decision on a pair replaces the earlier one and becomes the last, so "undo" removes it.
+- **Uploaded data.** `set_uploaded_results` and `reset_to_demo` clear this session's decisions and overrides, because they refer to other records.
+- **Scenario name.** The header shows `meta["scenario"]`, with `demo` displayed as "Demo merger".
+- **View banner.** A one-line banner under the header names the active view in both modes. In the integration-office view it adds that the mode is not a security control (PRD 6.9).
+- **Show working.** The dialog and the inline panel are one component, `render_trace`.
+  - Selecting a component opens it one level down, and "Back" returns.
+  - A component opens in its parent's measure, so bridge steps and unit traps show the dollars they removed. The exception is the run-rate total, under which each lever uses its own measure.
+  - Source rows are capped at 500 in the panel and in the copy block, with the full count shown.
+- **Charts.** The chart layout leaves Plotly's drag mode at its default, because with drag disabled Streamlit did not report click selections. Hover text gives exact dollars with a minus sign. Text from views is escaped before it reaches Markdown, so that two `$` signs never start maths.
+- **AppTest limits.** After the first run, `AppTest` re-runs the current page script without `main.py`, and it cannot re-run a dialog fragment. The header is therefore tested on its own, and drill-down is tested on the inline trace panel. Chart and table selections are injected through their session-state keys.

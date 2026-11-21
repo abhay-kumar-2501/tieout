@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MAIN = ROOT / "app" / "main.py"
 PAGE_PATHS = ["overview", "data", "matching", "synergies", "risk_roadmap", "assumptions",
               "export", "method_limits"]  # fmt: skip
+VIEW_LABELS = ["Clean team", "Integration office"]
 
 
 def test_app_renders():
@@ -18,12 +19,15 @@ def test_app_renders():
     assert at.session_state["view_mode"] == "Clean team"
 
 
+@pytest.mark.parametrize("view_label", VIEW_LABELS)
 @pytest.mark.parametrize("page", PAGE_PATHS)
-def test_each_page_renders(page):
-    at = AppTest.from_file(str(MAIN), default_timeout=30).run()
+def test_each_page_renders_in_both_view_modes(page, view_label):
+    at = AppTest.from_file(str(MAIN), default_timeout=30)
+    at.session_state["view_mode"] = view_label
+    at.run()
     at.switch_page(str(ROOT / "app" / "pages" / f"{page}.py")).run()
-    assert not at.exception
-    assert any("Coming in milestone" in m.value for m in at.markdown)
+    assert not at.exception, [e.message for e in at.exception]
+    assert at.session_state["view_mode"] == view_label
 
 
 @pytest.mark.parametrize("page", PAGE_PATHS)
