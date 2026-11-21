@@ -117,6 +117,33 @@ def test_bridge_steps_tie_out_and_stack(results: Results) -> None:
             assert row.bar_base + row.bar_height == pytest.approx(max(prev.level, row.level))
 
 
+def test_refused_items_resum_to_each_bridge_step(results: Results) -> None:
+    bars = views.bridge(results)
+    for step in range(1, 8):
+        removed = -float(bars.iloc[step]["amount"])
+        clean = views.refused_items(results, step, "clean")
+        masked = views.refused_items(results, step, "masked")
+        assert clean["amount_removed"].sum() == pytest.approx(removed, abs=0.01)
+        assert masked["amount_removed"].sum() == pytest.approx(removed, abs=0.01)
+        assert list(clean["amount_removed"]) == sorted(clean["amount_removed"], reverse=True)
+        assert clean["reason"].notna().all()
+        assert masked["figure_id"].isna().all() and "item" not in masked.columns
+        for row in clean.head(2).itertuples():
+            working = views.trace_for(results, row.figure_id, measure=row.measure)
+            assert working["value"] == pytest.approx(row.amount_removed, abs=0.01)
+    with pytest.raises(ValueError):
+        views.refused_items(results, 8)
+
+
+def test_lever1_items_are_clean_team_only(results: Results) -> None:
+    items = views.lever1_items(results, "clean")
+    opps = results.opportunities
+    live = opps[(opps["lever"] == 1) & (opps["status"] == "in_range") & (opps["base"] > 0)]
+    assert items["base"].sum() == pytest.approx(live["base"].sum(), abs=0.01)
+    assert items.iloc[0]["base"] == items["base"].max()
+    assert views.lever1_items(results, "masked") is NOT_IN_VIEW
+
+
 def test_confidence_strip_and_cards(results: Results) -> None:
     strip = views.confidence_strip(results)
     assert strip["share_a"] + strip["share_b"] == pytest.approx(1.0)
@@ -334,6 +361,9 @@ def _masked_outputs(results: Results) -> Iterator[Any]:
     yield views.confidence_strip(results, m)
     yield views.worth_a_look(results, m)
     yield views.synergy_waterfall(results, m)
+    for step in range(1, 8):
+        yield views.refused_items(results, step, m)
+    yield views.lever1_items(results, m)
     yield views.spend_pareto(results, m)
     yield views.price_dispersion(results, results.price_groups["canonical_item_id"].iloc[0], m)
     yield views.prioritisation_matrix(results, m)

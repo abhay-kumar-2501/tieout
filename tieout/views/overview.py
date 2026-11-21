@@ -14,6 +14,8 @@ import pandas as pd
 from tieout.synergy.lever1 import STEP_NAMES
 from tieout.views.common import (
     MASKED,
+    NOT_IN_VIEW,
+    Unavailable,
     category_label,
     category_labels,
     item_labels,
@@ -35,9 +37,11 @@ __all__ = [
     "bridge",
     "confidence_strip",
     "headline",
+    "lever1_items",
     "opportunity_labels",
     "overview_figures",
     "reconciliation_text",
+    "refused_items",
     "synergy_waterfall",
     "worth_a_look",
 ]
@@ -249,6 +253,114 @@ def bridge(results: Results, view: str | None = None) -> pd.DataFrame:
     return _stacked(rows)[BRIDGE_COLUMNS]
 
 
+REFUSED_COLUMNS = [
+    "canonical_item_id",
+    "item",
+    "category",
+    "groups",
+    "naive_gap",
+    "amount_removed",
+    "text",
+    "reason",
+    "figure_id",
+    "measure",
+]
+REFUSED_MASKED_COLUMNS = ["category", "items", "amount_removed", "text", "figure_id", "measure"]
+
+
+def refused_items(results: Results, step: int, view: str | None = None) -> pd.DataFrame:
+    """What bridge step ``step`` (1-7) removed: the filterable list behind its bar (PRD 5.2).
+
+    Clean team: one row per canonical item, largest removal first, with its
+    category, buying groups, naive gap, the amount the step removed, the
+    reason (step 1: the unit-flag message; otherwise the step's name), and
+    the trace node and measure that open its working. Masked: aggregated to
+    category ("Other" merged), with no item and no trace link (PRD 6.9).
+    The amounts re-sum to the step's bar.
+    """
+    mode = resolve_view(results, view)
+    if step not in range(1, len(STEP_NAMES) + 1):
+        raise ValueError(f"step must be 1-{len(STEP_NAMES)}, got {step!r}")
+    detail = results.bridge_detail
+    rows = detail[detail["step"] == step] if not detail.empty else detail
+    columns = REFUSED_MASKED_COLUMNS if mode == MASKED else REFUSED_COLUMNS
+    if rows.empty:
+        return pd.DataFrame(columns=columns)
+    l2 = results.price_groups.set_index("group_id")["l2_code"]
+    labels = category_labels(results, mode)
+    rows = rows.assign(
+        category=[category_label(labels, l2.get(g)) for g in rows["group_id"]],
+    )
+    measure = f"raw_{step}"
+    if mode == MASKED:
+        frame = (
+            rows.groupby("category", sort=True)
+            .agg(
+                items=("canonical_item_id", "nunique"),
+                amount_removed=("amount_removed", "sum"),
+            )
+            .reset_index()
+        )
+        frame["figure_id"], frame["measure"] = None, None
+    else:
+        frame = (
+            rows.groupby("canonical_item_id", sort=True)
+            .agg(
+                category=("category", "first"),
+                groups=("group_id", "nunique"),
+                naive_gap=("naive_gap", "sum"),
+                amount_removed=("amount_removed", "sum"),
+            )
+            .reset_index()
+        )
+        names = item_labels(results)
+        frame["item"] = [names.get(i, i) for i in frame["canonical_item_id"]]
+        reasons: dict[str, str] = {}
+        if step == 1:
+            queue = results.review_queue
+            flags = queue[queue["type"] == "unit_flag"].dropna(subset=["canonical_item_id"])
+            reasons = dict(
+                zip(flags["canonical_item_id"], flags["message"].fillna(""), strict=True)
+            )
+        default = _UNCONVERTED if step == 1 else STEP_NAMES[step - 1]
+        frame["reason"] = [reasons.get(i) or default for i in frame["canonical_item_id"]]
+        frame["figure_id"] = "item:" + frame["canonical_item_id"].astype(str)
+        frame["measure"] = measure
+    frame = frame[frame["amount_removed"] != 0]
+    frame = frame.assign(text=[thousands(v) for v in frame["amount_removed"]])
+    key = "category" if mode == MASKED else "canonical_item_id"
+    frame = frame.sort_values(["amount_removed", key], ascending=[False, True], kind="mergesort")
+    return frame[columns].reset_index(drop=True)
+
+
+def lever1_items(results: Results, view: str | None = None) -> pd.DataFrame | Unavailable:
+    """Canonical items with a lever-1 base saving, largest first (price dispersion picker).
+
+    Clean team only: item-level rows are not shown in the integration-office view.
+    """
+    mode = resolve_view(results, view)
+    if mode == MASKED:
+        return NOT_IN_VIEW
+    opps = results.opportunities
+    lever1 = opps[(opps["lever"] == 1) & (opps["status"] == "in_range") & (opps["base"] > 0)]
+    columns = ["canonical_item_id", "item", "category", "base", "text"]
+    if lever1.empty:
+        return pd.DataFrame(columns=columns)
+    frame = (
+        lever1.groupby("canonical_item_id", sort=True)
+        .agg(l2_code=("l2_code", "first"), base=("base", "sum"))
+        .reset_index()
+    )
+    names, labels = item_labels(results), category_labels(results, mode)
+    frame["item"] = [names.get(i, i) for i in frame["canonical_item_id"]]
+    frame["category"] = [category_label(labels, c) for c in frame["l2_code"]]
+    frame["text"] = [thousands(v) for v in frame["base"]]
+    frame = frame.sort_values(
+        ["base", "canonical_item_id"], ascending=[False, True], kind="mergesort"
+    )
+    return frame[columns].reset_index(drop=True)
+
+
 def synergy_waterfall(results: Results, view: str | None = None) -> pd.DataFrame:
     """Baseline spend -> lever 1 -> lever 2 -> net run-rate spend (PRD 6.8; recurring only)."""
     resolve_view(results, view)
@@ -345,6 +457,9 @@ def _largest_lever1(results: Results, view: str) -> dict[str, Any]:
     }
 
 
+_UNCONVERTED = "Unconverted pack units: the price is per pack on one side, not a saving"
+
+
 def _largest_unit_trap(results: Results, view: str) -> dict[str, Any]:
     detail = results.bridge_detail
     card: dict[str, Any] = {"id": "unit_trap", "title": "Largest unit trap removed"}
@@ -356,11 +471,7 @@ def _largest_unit_trap(results: Results, view: str) -> dict[str, Any]:
     item, amount = str(removed.index[0]), float(removed.iloc[0])
     queue = results.review_queue
     flag = queue[(queue["type"] == "unit_flag") & (queue["canonical_item_id"] == item)]
-    message = (
-        str(flag["message"].iloc[0])
-        if not flag.empty
-        else "Unconverted pack units: the price is per pack on one side, not a saving"
-    )
+    message = str(flag["message"].iloc[0]) if not flag.empty else _UNCONVERTED
     if view == MASKED:
         l2 = step1.loc[step1["canonical_item_id"] == item, "group_id"]
         code = results.price_groups.set_index("group_id").loc[l2.iloc[0], "l2_code"]
