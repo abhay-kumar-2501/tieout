@@ -1,0 +1,143 @@
+company,category_native,l2_code
+acquirer,RM01 - Carbon & alloy steel,L01.01
+acquirer,RM02 - Stainless steel,L01.02
+acquirer,RM03 - Aluminium & non-ferrous,L01.03
+acquirer,"RM04 - Plastics, resins & rubber stock",L01.04
+acquirer,RM05 - Castings & forgings (production),L01.05
+acquirer,RM05 - Castings & forgings (MRO),L01.05
+acquirer,FA01 - Bolts & screws,L02.01
+acquirer,FA02 - Nuts & washers,L02.02
+acquirer,FA03 - Anchors,L02.03
+acquirer,FA04 - Rivets (production),L02.04
+acquirer,FA04 - Rivets (MRO),L02.04
+acquirer,FA05 - Threaded rod & studs (production),L02.05
+acquirer,FA05 - Threaded rod & studs (MRO),L02.05
+acquirer,BR01 - Ball bearings (production),L03.01
+acquirer,BR01 - Ball bearings (MRO),L03.01
+acquirer,BR02 - Roller & tapered bearings (production),L03.02
+acquirer,BR02 - Roller & tapered bearings (MRO),L03.02
+acquirer,BR03 - Mounted units & plain bushings (production),L03.03
+acquirer,BR03 - Mounted units & plain bushings (MRO),L03.03
+acquirer,BR04 - Belts & pulleys,L03.04
+acquirer,"BR05 - Chains, sprockets & couplings",L03.05
+acquirer,PV01 - Pipe & tube,L04.01
+acquirer,PV02 - Valves,L04.02
+acquirer,PV03 - Fittings & flanges (production),L04.03
+acquirer,PV03 - Fittings & flanges (MRO),L04.03
+acquirer,PV04 - Hose & hose assemblies (production),L04.04
+acquirer,PV04 - Hose & hose assemblies (MRO),L04.04
+acquirer,PV05 - Gaskets & seals (production),L04.05
+acquirer,PV05 - Gaskets & seals (MRO),L04.05
+acquirer,EL01 - Wire & cable (production),L05.01
+acquirer,EL01 - Wire & cable (MRO),L05.01
+acquirer,EL02 - Circuit protection & switchgear (production),L05.02
+acquirer,EL02 - Circuit protection & switchgear (MRO),L05.02
+acquirer,EL03 - Motors & drives,L05.03
+acquirer,EL04 - Relays & contactors (production),L05.04
+acquirer,EL04 - Relays & contactors (MRO),L05.04
+acquirer,"EL05 - Sensors, PLCs & controls",L05.05
+acquirer,CT01 - Grinding & cutting wheels,L06.01
+acquirer,CT02 - Coated abrasives (production),L06.02
+acquirer,CT02 - Coated abrasives (MRO),L06.02
+acquirer,CT03 - Drill bits & taps,L06.03
+acquirer,CT04 - Milling cutters & inserts (production),L06.04
+acquirer,CT04 - Milling cutters & inserts (MRO),L06.04
+acquirer,CT05 - Saw blades,L06.05
+acquirer,SF01 - Gloves,L07.01
+acquirer,SF02 - Eye & face protection,L07.02
+acquirer,SF03 - Hearing & respiratory protection,L07.03
+acquirer,SF04 - Protective clothing & footwear,L07.04
+acquirer,SF05 - Fall protection & first aid (production),L07.05
+acquirer,SF05 - Fall protection & first aid (MRO),L07.05
+acquirer,PK01 - Corrugated boxes & cartons (production),L08.01
+acquirer,PK01 - Corrugated boxes & cartons (MRO),L08.01
+acquirer,PK02 - Pallets & crating (production),L08.02
+acquirer,PK02 - Pallets & crating (MRO),L08.02
+acquirer,"PK03 - Stretch film, tape & strapping",L08.03
+acquirer,PK04 - Labels & tags (production),L08.04
+acquirer,PK04 - Labels & tags (MRO),L08.04
+acquirer,PK05 - Protective packaging & void fill,L08.05
+acquirer,CH01 - Lubricating oils & greases,L09.01
+acquirer,CH02 - Cutting fluids & coolants (production),L09.02
+acquirer,CH02 - Cutting fluids & coolants (MRO),L09.02
+acquirer,CH03 - Solvents & cleaners,L09.03
+acquirer,CH04 - Adhesives & sealants,L09.04
+acquirer,CH05 - Paints & coatings (production),L09.05
+acquirer,CH05 - Paints & coatings (MRO),L09.05
+acquirer,MR01 - Hand & power tools,L10.01
+acquirer,MR02 - Welding supplies,L10.02
+acquirer,MR03 - Janitorial & breakroom (production),L10.03
+acquirer,MR03 - Janitorial & breakroom (MRO),L10.03
+acquirer,MR04 - Facility maintenance & HVAC (production),L10.04
+acquirer,MR04 - Facility maintenance & HVAC (MRO),L10.04
+acquirer,MR05 - Test equipment & gauges,L10.05
+acquirer,SV01 - Truckload & LTL freight,L11.01
+acquirer,SV02 - Parcel & express,L11.02
+acquirer,SV03 - Ocean & air freight,L11.03
+acquirer,SV04 - Warehousing & 3PL,L11.04
+acquirer,SV05 - Customs & brokerage,L11.05
+acquirer,SV06 - Software & cloud,L12.01
+acquirer,SV07 - IT hardware & telecom,L12.02
+acquirer,SV08 - Temporary staffing & contractors,L12.03
+acquirer,SV09 - Engineering & consulting,L12.04
+acquirer,"SV10 - Legal, audit & insurance",L12.05
+target,3110-35 CARBON ALLOY STEEL,L01.01
+target,3120-15 STAINLESS STEEL,L01.02
+target,3130-50 ALUMINIUM NON-FERROUS,L01.03
+target,3140-87 PLASTICS RESINS RUBBER S,L01.04
+target,3150-67 CASTINGS FORGINGS,L01.05
+target,3210-14 BOLTS SCREWS,L02.01
+target,3220-38 NUTS WASHERS,L02.02
+target,3230-68 ANCHORS,L02.03
+target,3240-69 RIVETS,L02.04
+target,3250-67 THREADED ROD STUDS,L02.05
+target,3310-34 BALL BEARINGS,L03.01
+target,3320-63 ROLLER TAPERED BEARINGS,L03.02
+target,3330-90 MOUNTED UNITS PLAIN BUSH,L03.03
+target,3340-26 BELTS PULLEYS,L03.04
+target,3350-17 CHAINS SPROCKETS COUPLIN,L03.05
+target,3410-63 PIPE TUBE,L04.01
+target,3420-14 VALVES,L04.02
+target,3430-17 FITTINGS FLANGES,L04.03
+target,3440-46 HOSE HOSE ASSEMBLIES,L04.04
+target,3450-26 GASKETS SEALS,L04.05
+target,3510-39 WIRE CABLE,L05.01
+target,3520-53 CIRCUIT PROTECTION SWITC,L05.02
+target,3530-75 MOTORS DRIVES,L05.03
+target,3540-79 RELAYS CONTACTORS,L05.04
+target,3550-46 SENSORS PLCS CONTROLS,L05.05
+target,3610-92 GRINDING CUTTING WHEELS,L06.01
+target,3620-41 COATED ABRASIVES,L06.02
+target,3630-79 DRILL BITS TAPS,L06.03
+target,3640-98 MILLING CUTTERS INSERTS,L06.04
+target,3650-25 SAW BLADES,L06.05
+target,3710-89 GLOVES,L07.01
+target,3720-82 EYE FACE PROTECTION,L07.02
+target,3730-92 HEARING RESPIRATORY PROT,L07.03
+target,3740-74 PROTECTIVE CLOTHING FOOT,L07.04
+target,3750-92 FALL PROTECTION FIRST AI,L07.05
+target,3810-68 CORRUGATED BOXES CARTONS,L08.01
+target,3820-38 PALLETS CRATING,L08.02
+target,3830-82 STRETCH FILM TAPE STRAPP,L08.03
+target,3840-12 LABELS TAGS,L08.04
+target,3850-89 PROTECTIVE PACKAGING VOI,L08.05
+target,3910-16 LUBRICATING OILS GREASES,L09.01
+target,3920-25 CUTTING FLUIDS COOLANTS,L09.02
+target,3930-10 SOLVENTS CLEANERS,L09.03
+target,3940-90 ADHESIVES SEALANTS,L09.04
+target,3950-50 PAINTS COATINGS,L09.05
+target,4010-45 HAND POWER TOOLS,L10.01
+target,4020-83 WELDING SUPPLIES,L10.02
+target,4030-84 JANITORIAL BREAKROOM,L10.03
+target,4040-53 FACILITY MAINTENANCE HVA,L10.04
+target,4050-30 TEST EQUIPMENT GAUGES,L10.05
+target,4110-50 TRUCKLOAD LTL FREIGHT,L11.01
+target,4120-92 PARCEL EXPRESS,L11.02
+target,4130-25 OCEAN AIR FREIGHT,L11.03
+target,4140-80 WAREHOUSING 3PL,L11.04
+target,4150-70 CUSTOMS BROKERAGE,L11.05
+target,4210-30 SOFTWARE CLOUD,L12.01
+target,4220-75 IT HARDWARE TELECOM,L12.02
+target,4230-34 TEMPORARY STAFFING CONTR,L12.03
+target,4240-94 ENGINEERING CONSULTING,L12.04
+target,4250-75 LEGAL AUDIT INSURANCE,L12.05

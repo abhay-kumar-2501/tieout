@@ -37,3 +37,5 @@ data/truth/seed_1/
 data/truth/seed_2/
 data/truth/seed_3/
 data/seeds/
+# `make demo` writes results here; they are committed once the app reads them (M2)
+data/demo/results/
