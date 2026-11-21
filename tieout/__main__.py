@@ -53,6 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--as-of", metavar="YYYY-MM-DD", help="report date")
     run.add_argument("--aggregated", action="store_true", help="inputs are pre-aggregated")
     run.add_argument("--view", choices=("clean", "masked"), default="clean")
+    run.add_argument("--scenario", default="custom", help="scenario name ('demo' for demo data)")
     run.add_argument("--scorecard", type=Path, help="accuracy scorecard to embed (JSON)")
     run.add_argument("--sensitivity", type=Path, help="threshold sensitivity to embed (JSON)")
     run.add_argument("--no-exports", action="store_true", help="skip workbook and deck")
@@ -75,6 +76,7 @@ def _inputs(args: argparse.Namespace) -> PipelineInputs:
         as_of=args.as_of,
         aggregated=args.aggregated,
         view=args.view,
+        scenario=args.scenario,
         scorecard=args.scorecard,
         sensitivity=args.sensitivity,
     )

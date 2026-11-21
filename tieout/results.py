@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from tieout.synergy.stage import SynergyCache, precompute
@@ -45,7 +46,9 @@ _JSON_NAMES = ("meta", "assumptions", "totals", "trace_figures", "scorecard", "s
 _JSON_FILE = "results.json"
 _TRACE_FILE = "trace.parquet"
 _AMOUNTS_FILE = "trace_amounts.parquet"
+#: Parquet settings: zstd at a high level, floats byte-stream split (smaller committed demo).
 _COMPRESSION = "zstd"
+_COMPRESSION_LEVEL = 19
 
 
 def _empty_frame() -> pd.DataFrame:
@@ -138,16 +141,12 @@ class Results:
         out = Path(directory)
         out.mkdir(parents=True, exist_ok=True)
         for name in FRAME_NAMES:
-            getattr(self, name).to_parquet(
-                out / f"{name}.parquet", index=False, compression=_COMPRESSION
-            )
+            _write_frame(getattr(self, name), out / f"{name}.parquet")
         edges = [(node, child) for node, kids in self.trace.items() for child in kids]
-        pd.DataFrame(edges, columns=["node", "child"], dtype=object).to_parquet(
-            out / _TRACE_FILE, index=False, compression=_COMPRESSION
+        _write_frame(
+            pd.DataFrame(edges, columns=["node", "child"], dtype=object), out / _TRACE_FILE
         )
-        _amounts_long(self.trace_amounts).to_parquet(
-            out / _AMOUNTS_FILE, index=False, compression=_COMPRESSION
-        )
+        _write_frame(_amounts_long(self.trace_amounts), out / _AMOUNTS_FILE)
         payload = {name: getattr(self, name) for name in _JSON_NAMES}
         text = json.dumps(payload, indent=1, sort_keys=True, default=_json_default)
         (out / _JSON_FILE).write_text(text + "\n", encoding="utf-8")
@@ -167,6 +166,19 @@ class Results:
             trace.setdefault(node, []).append(child)
         amounts = _amounts_wide(pd.read_parquet(src / _AMOUNTS_FILE))
         return cls(**payload, **frames, trace=trace, trace_amounts=amounts)
+
+
+def _write_frame(frame: pd.DataFrame, path: Path) -> None:
+    """One frame as Parquet, with the pandas metadata :func:`_read_frame` relies on."""
+    table = pa.Table.from_pandas(frame, preserve_index=False)
+    floats = [f.name for f in table.schema if pa.types.is_floating(f.type)]
+    pq.write_table(
+        table,
+        path,
+        compression=_COMPRESSION,
+        compression_level=_COMPRESSION_LEVEL,
+        use_byte_stream_split=floats or False,
+    )
 
 
 def _read_frame(path: Path) -> pd.DataFrame:
