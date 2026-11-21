@@ -21,7 +21,7 @@ import io
 import json
 import tomllib
 from collections.abc import Mapping
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +55,7 @@ __all__ = [
     "match_lines",
     "read_category_settings",
     "recompute",
+    "rematch",
     "run_pipeline",
     "thresholds_of",
 ]
@@ -571,6 +572,21 @@ def recompute(results: Results, assumptions: Mapping[str, Any] | None) -> Result
     return replace(updated, meta=meta)
 
 
+def _reassemble(results: Results, log: pd.DataFrame, thresholds: Thresholds) -> Results:
+    """Clustering and one-to-one assembly from the cached pair scores, then the arithmetic."""
+    matching = match_lines(
+        results.lines,
+        vendor_parents=results.vendor_parents,
+        thresholds=thresholds,
+        decisions=log,
+        vendor_pairs=results.vendor_pairs,
+        item_pairs=results.item_pairs,
+    )
+    reassembled = _with_matching(results, matching, log)
+    meta = {**reassembled.meta, "thresholds": asdict(thresholds)}
+    return recompute(replace(reassembled, meta=meta), results.assumptions)
+
+
 def apply_decisions(results: Results, decisions: pd.DataFrame | None) -> Results:
     """Apply a review decisions log, then re-run the arithmetic (PRD 4.5).
 
@@ -579,16 +595,16 @@ def apply_decisions(results: Results, decisions: pd.DataFrame | None) -> Results
     re-run from the cached pair scores in ``vendor_pairs`` and ``item_pairs``;
     no pair is rescored.
     """
-    log = validate_decisions(decisions)
-    matching = match_lines(
-        results.lines,
-        vendor_parents=results.vendor_parents,
-        thresholds=thresholds_of(results),
-        decisions=log,
-        vendor_pairs=results.vendor_pairs,
-        item_pairs=results.item_pairs,
-    )
-    return recompute(_with_matching(results, matching, log), results.assumptions)
+    return _reassemble(results, validate_decisions(decisions), thresholds_of(results))
+
+
+def rematch(results: Results, thresholds: Thresholds) -> Results:
+    """Re-run assembly and the arithmetic with other automatic thresholds (PRD 4.7 sensitivity).
+
+    Pairs are not rescored, so a review threshold below the one the pairs were
+    scored with cannot bring back pairs that were never kept.
+    """
+    return _reassemble(results, results.review_log, thresholds)
 
 
 def run_pipeline(

@@ -1,61 +1,58 @@
 {
   "baseline": {
     "held_out": {
-      "false_savings_rate": null,
+      "false_savings_rate": 0.17720464330760033,
       "item_precision": 0.3576007326007326,
       "item_recall": 0.49587301587301585,
-      "planted_savings_recall": null,
-      "unit_error_catch_rate": null,
+      "planted_savings_recall": 0.5418431449628148,
+      "unit_error_catch_rate": 0.4142857142857143,
       "vendor_precision": 0.03326033397207775,
       "vendor_recall": 0.9473684210526315
     },
     "tuning": {
       "1": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.13215283317492163,
         "item_precision": 0.33166666666666667,
         "item_recall": 0.5053968253968254,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.4795125288438528,
+        "unit_error_catch_rate": 0.5,
         "vendor_precision": 0.029431643625192013,
         "vendor_recall": 0.9485148514851485
       },
       "2": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.11380810497301569,
         "item_precision": 0.3303030303030303,
         "item_recall": 0.48444444444444446,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.4829997100992263,
+        "unit_error_catch_rate": 0.42857142857142855,
         "vendor_precision": 0.03326018378823207,
         "vendor_recall": 0.943579766536965
       },
       "3": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.12359199639998185,
         "item_precision": 0.35447593342330186,
         "item_recall": 0.5003174603174603,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.4711398080481855,
+        "unit_error_catch_rate": 0.5,
         "vendor_precision": 0.09482245586193215,
         "vendor_recall": 0.9390962671905697
       }
     },
     "tuning_mean": {
-      "false_savings_rate": null,
+      "false_savings_rate": 0.12318431151597305,
       "item_precision": 0.3388152101309996,
       "item_recall": 0.49671957671957667,
-      "planted_savings_recall": null,
-      "unit_error_catch_rate": null,
+      "planted_savings_recall": 0.4778840156637549,
+      "unit_error_catch_rate": 0.4761904761904762,
       "vendor_precision": 0.05250476109178542,
       "vendor_recall": 0.9437302950708943
     }
   },
-  "failures": [
-    "false_savings_rate: not available (need <= 0.02)",
-    "unit_error_catch_rate: not available (need >= 0.95)"
-  ],
+  "failures": [],
   "gates": {
     "false_savings_rate": {
-      "passed": false,
-      "value": null
+      "passed": true,
+      "value": 0.003116347205975484
     },
     "item_precision": {
       "passed": true,
@@ -66,8 +63,8 @@
       "value": 0.8342857142857143
     },
     "unit_error_catch_rate": {
-      "passed": false,
-      "value": null
+      "passed": true,
+      "value": 0.9857142857142858
     },
     "vendor_precision": {
       "passed": true,
@@ -79,7 +76,7 @@
     }
   },
   "held_out_seed": 4,
-  "passed": false,
+  "passed": true,
   "schema_version": 1,
   "targets": {
     "false_savings_rate": {
@@ -115,49 +112,49 @@
   },
   "tool": {
     "held_out": {
-      "false_savings_rate": null,
+      "false_savings_rate": 0.003116347205975484,
       "item_precision": 0.9827973074046372,
       "item_recall": 0.8342857142857143,
-      "planted_savings_recall": null,
-      "unit_error_catch_rate": null,
+      "planted_savings_recall": 0.62196529225784,
+      "unit_error_catch_rate": 0.9857142857142858,
       "vendor_precision": 0.9959677419354839,
       "vendor_recall": 0.9629629629629629
     },
     "tuning": {
       "1": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.00730424982063465,
         "item_precision": 0.9762258543833581,
         "item_recall": 0.8342857142857143,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.6258087565540704,
+        "unit_error_catch_rate": 1.0,
         "vendor_precision": 0.9959266802443992,
         "vendor_recall": 0.9683168316831683
       },
       "2": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.005204351609699213,
         "item_precision": 0.9722425127830533,
         "item_recall": 0.8450793650793651,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.605371505889709,
+        "unit_error_catch_rate": 1.0,
         "vendor_precision": 0.997979797979798,
         "vendor_recall": 0.9610894941634242
       },
       "3": {
-        "false_savings_rate": null,
+        "false_savings_rate": 0.005735455746377971,
         "item_precision": 0.9788011695906432,
         "item_recall": 0.8501587301587301,
-        "planted_savings_recall": null,
-        "unit_error_catch_rate": null,
+        "planted_savings_recall": 0.5344670036997005,
+        "unit_error_catch_rate": 1.0,
         "vendor_precision": 0.993963782696177,
         "vendor_recall": 0.9705304518664047
       }
     },
     "tuning_mean": {
-      "false_savings_rate": null,
+      "false_savings_rate": 0.006081352392237278,
       "item_precision": 0.9757565122523516,
       "item_recall": 0.8431746031746031,
-      "planted_savings_recall": null,
-      "unit_error_catch_rate": null,
+      "planted_savings_recall": 0.5885490887144933,
+      "unit_error_catch_rate": 1.0,
       "vendor_precision": 0.9959567536401247,
       "vendor_recall": 0.9666455925709991
     }

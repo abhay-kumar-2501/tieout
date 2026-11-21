@@ -1,0 +1,124 @@
+{
+  "current": {
+    "item_auto_cosine": 0.78,
+    "item_review_cosine": 0.6,
+    "recurring_base": 9608632.765002705,
+    "vendor_auto": 85.0,
+    "vendor_review": 75.0
+  },
+  "curves": {
+    "item_auto_cosine": [
+      {
+        "recurring_base": 9866743.782922838,
+        "recurring_high": 12919701.06249915,
+        "recurring_low": 6517133.225093702,
+        "threshold": 0.6
+      },
+      {
+        "recurring_base": 9645482.193711624,
+        "recurring_high": 12649504.462928876,
+        "recurring_low": 6360394.9144132715,
+        "threshold": 0.65
+      },
+      {
+        "recurring_base": 9641033.763693899,
+        "recurring_high": 12644124.666996509,
+        "recurring_low": 6357204.60023052,
+        "threshold": 0.7
+      },
+      {
+        "recurring_base": 9625847.161691178,
+        "recurring_high": 12624838.497360753,
+        "recurring_low": 6346999.640837071,
+        "threshold": 0.75
+      },
+      {
+        "recurring_base": 9572166.802804232,
+        "recurring_high": 12548445.740129612,
+        "recurring_low": 6317188.170635957,
+        "threshold": 0.8
+      },
+      {
+        "recurring_base": 9542160.380927525,
+        "recurring_high": 12508897.354981031,
+        "recurring_low": 6298102.195890378,
+        "threshold": 0.85
+      },
+      {
+        "recurring_base": 9422624.036694827,
+        "recurring_high": 12349186.188540429,
+        "recurring_low": 6223649.695912097,
+        "threshold": 0.9
+      },
+      {
+        "recurring_base": 9344806.209473617,
+        "recurring_high": 12251058.884459801,
+        "recurring_low": 6170854.135190882,
+        "threshold": 0.95
+      }
+    ],
+    "vendor_auto": [
+      {
+        "recurring_base": 9608632.765002705,
+        "recurring_high": 12602946.847917799,
+        "recurring_low": 6335444.983300518,
+        "threshold": 80.0
+      },
+      {
+        "recurring_base": 9608632.765002705,
+        "recurring_high": 12602946.847917799,
+        "recurring_low": 6335444.983300518,
+        "threshold": 82.0
+      },
+      {
+        "recurring_base": 9608632.765002705,
+        "recurring_high": 12602946.847917799,
+        "recurring_low": 6335444.983300518,
+        "threshold": 84.0
+      },
+      {
+        "recurring_base": 9608632.765002705,
+        "recurring_high": 12602946.847917799,
+        "recurring_low": 6335444.983300518,
+        "threshold": 86.0
+      },
+      {
+        "recurring_base": 9608632.765002705,
+        "recurring_high": 12602946.847917799,
+        "recurring_low": 6335444.983300518,
+        "threshold": 88.0
+      },
+      {
+        "recurring_base": 9605213.971411359,
+        "recurring_high": 12600153.320321834,
+        "recurring_low": 6331989.211666847,
+        "threshold": 90.0
+      },
+      {
+        "recurring_base": 9605213.971411359,
+        "recurring_high": 12600153.320321834,
+        "recurring_low": 6331989.211666847,
+        "threshold": 92.0
+      },
+      {
+        "recurring_base": 9602889.049031185,
+        "recurring_high": 12598228.372862864,
+        "recurring_low": 6329655.96404811,
+        "threshold": 94.0
+      },
+      {
+        "recurring_base": 9601472.683408845,
+        "recurring_high": 12597048.068177585,
+        "recurring_low": 6328239.598425772,
+        "threshold": 96.0
+      },
+      {
+        "recurring_base": 9559846.54580433,
+        "recurring_high": 12562204.9783975,
+        "recurring_low": 6286716.555338798,
+        "threshold": 98.0
+      }
+    ]
+  },
+  "seed": 4
+}

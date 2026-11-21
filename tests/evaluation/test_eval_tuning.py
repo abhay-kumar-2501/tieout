@@ -10,8 +10,8 @@ from evaluation import tune
 from evaluation.evaluate import SeedTruth, baseline_metrics, tool_metrics
 from evaluation.metrics import make_pair_score
 from evaluation.truth import load_item_truth_engine_keys
-from tieout.pipeline import PipelineInputs, run_pipeline
 from tieout.reference import Thresholds, load_thresholds
+from tieout.results import Results
 
 
 def _grid(precisions: dict[float, list[float]]) -> tune.Grid:
@@ -54,21 +54,18 @@ def test_item_truth_is_rekeyed_with_the_engine_rule(tmp_path: Path) -> None:
 
 
 @pytest.fixture(scope="module")
-def small_scores(small_files: dict[str, Path]) -> tuple[dict, dict]:
-    results = run_pipeline(
-        PipelineInputs(
-            acquirer=small_files["acquirer"],
-            target=small_files["target"],
-            category_map=small_files["category_map"],
-            vendor_parents=small_files["vendor_parents"],
-        )
-    )
+def small_scores(small_files: dict[str, Path], small_results: Results) -> tuple[dict, dict]:
     truth = SeedTruth.load(small_files["truth_dir"])
-    return tool_metrics(results, truth), baseline_metrics(results, truth)
+    return tool_metrics(small_results, truth), baseline_metrics(small_results, truth)
 
 
-def test_tool_beats_the_baseline_on_precision(small_scores: tuple[dict, dict]) -> None:
+def test_tool_beats_the_baseline_on_precision_and_false_savings(
+    small_scores: tuple[dict, dict],
+) -> None:
     tool, baseline = small_scores
     assert tool["vendor_precision"] > baseline["vendor_precision"]
     assert tool["item_precision"] > baseline["item_precision"]
-    assert tool["false_savings_rate"] is None  # needs the synergy engine
+    for side in (tool, baseline):  # the dollar metrics are fed from the synergy stage
+        assert all(side[m] is not None for m in ("planted_savings_recall", "false_savings_rate"))
+    assert tool["false_savings_rate"] < baseline["false_savings_rate"]
+    assert tool["unit_error_catch_rate"] >= baseline["unit_error_catch_rate"]
