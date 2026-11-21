@@ -122,6 +122,7 @@ match_items(records, *, auto_cosine=0.80, review_cosine=0.60,
 # tieout/pipeline.py
 run_pipeline(inputs, assumptions=None, decisions=None) -> Results
 recompute(results, assumptions) -> Results                                  # arithmetic only
+apply_decisions(results, decisions) -> Results                              # re-assembly + arithmetic
 ```
 
 When `cached_pairs` is given, pair scoring is skipped and only clustering /

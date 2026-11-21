@@ -235,7 +235,7 @@ def _lever2_opportunities(state: State) -> pd.DataFrame:
     moving = lev2.moved != 0
     uses = _uses(cube)
     rank = (cube.company == COMPANIES[1]).astype(np.int64)
-    pref_line = np.where(mapped, lev2.preferred[l2], -1)
+    pref_line = np.where(mapped, cube.per_line(lev2.preferred), -1)
     new_vendor = moving & ~np.isin(rank * len(cube.parents) + pref_line, uses)
     any_new = np.bincount(l2[new_vendor], minlength=n_l2) > 0
     vendors_moving = pd.DataFrame({"l2": l2[moving], "p": cube.parent[moving]}).drop_duplicates()
@@ -465,7 +465,6 @@ def build_measures(
 ) -> dict[str, np.ndarray]:
     """Every new figure's contribution per cube line (the trace measures)."""
     cube, lev2, lev3 = state.cube, state.lev2, state.lev3
-    l2 = state.l2
     factors = year_factors(opps["start_month"].to_numpy(), state.method, settings["global_ramp"])
     factors = np.vstack([factors, np.zeros((1, factors.shape[1]))])  # row -1: no opportunity
     row1, row2 = _line_opportunity_rows(state, opps)
@@ -476,7 +475,7 @@ def build_measures(
     coc = float(settings["cost_of_capital"])
     out: dict[str, np.ndarray] = {
         "spend": cube.amount,
-        "l2_gross": lev2.line_B2["base"] * np.where(cube.mapped, state.params.d[l2], 0.0),
+        "l2_gross": lev2.line_B2["base"] * cube.per_line(state.params.d),
         "forgone": state.lev2_uncapped.line_N2["base"] - lev2.line_N2["base"],
         "l3_gross": gap / DAYS_PER_YEAR * lev3.line_S["base"],
     }
@@ -530,7 +529,7 @@ def new_totals(
     realised = {f"year{y}": {c: float(yearly[c].get(y, 0.0)) for c in CASES} for y in range(1, 4)}
     three_year = {c: sum(realised[f"year{y}"][c] for y in range(1, 4)) for c in CASES}
     addressable_l2 = lev2.reason != ONE_COMPANY
-    addressable = cube.mapped & addressable_l2[state.l2]
+    addressable = cube.mapped & cube.per_line(addressable_l2)
     baseline = float(cube.amount.sum())
     recurring_opps = opps[(opps["lever"] != 3) & (opps["status"] == "in_range")]
     beyond = opps[opps["beyond_month_36"] & (opps["base"] > 0)]
@@ -615,7 +614,7 @@ def new_children(state: State, opps: pd.DataFrame, costs: Costs) -> dict[str, li
             "lever:2": lever2_ids,
             "lever:3": lever3_ids,
             "spend:baseline": ids.tolist(),
-            "spend:addressable": ids[cube.mapped & addressable_l2[state.l2]].tolist(),
+            "spend:addressable": ids[cube.mapped & cube.per_line(addressable_l2)].tolist(),
             "spend:net": ["spend:baseline"],
             "one_time:costs": events.tolist(),
             "phasing:realised": ["total:recurring"],

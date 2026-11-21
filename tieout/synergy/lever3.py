@@ -201,13 +201,12 @@ def lever3(
     group = np.clip(line_group, 0, None)
     gains = member & (gap[group] > 0)
 
-    l2 = np.where(cube.mapped, cube.l2, 0)
     moved_share = np.where(lev2.moved != 0, lev2.weight, 0.0)
     pi3 = {case: float(settings["capture"][case]) for case in CASES}
     line_S, line_cash, S_group, cash_group = {}, {}, {}, {}
     for case in CASES:
         per_dollar = np.where(lev2.C > 0, lev2.N2[case] / np.where(lev2.C > 0, lev2.C, 1.0), 0.0)
-        l2_share = np.where(cube.mapped, cube.amount * per_dollar[l2], 0.0)
+        l2_share = np.where(cube.mapped, cube.amount * cube.per_line(per_dollar), 0.0)
         raw = S(cube.amount, lev2.moved, l1[case], moved_share * l1[case], l2_share)
         raw = np.where(gains, raw, 0.0)
         total = np.bincount(line_group[member], weights=raw[member], minlength=len(gap))

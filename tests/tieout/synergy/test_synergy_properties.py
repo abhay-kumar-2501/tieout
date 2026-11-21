@@ -135,12 +135,19 @@ def test_no_saving_is_negative(items, assumptions) -> None:
 @PROPERTY
 @given(items=items_st, assumptions=assumptions_st)
 def test_low_base_high_are_ordered(items, assumptions) -> None:
+    """Lever-1 opportunities, the lever-1 total and total recurring (PRD 5.9).
+
+    Lever 2 alone is computed on a base that shrinks as lever 1 saves more, so
+    its opportunities are labelled by case and not required to be ordered.
+    """
     _, out = compute(items, assumptions)
-    opps = out.opportunities
+    opps = out.opportunities[out.opportunities["lever"] == 1]
     assert (opps["low"] <= opps["base"] + EPS).all()
     assert (opps["base"] <= opps["high"] + EPS).all()
     lever = out.totals["levers"]["lever1"]
     assert lever["low"] <= lever["base"] + EPS <= lever["high"] + 2 * EPS
+    recurring = out.totals["recurring"]
+    assert recurring["low"] <= recurring["base"] + EPS <= recurring["high"] + 2 * EPS
 
 
 @PROPERTY
