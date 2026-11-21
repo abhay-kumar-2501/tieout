@@ -196,18 +196,22 @@ def dot_plot(
             hoverinfo="text",
         )
     if marker_line is not None and not math.isnan(marker_line):
-        fig.add_vline(
+        fig.add_vline(x=marker_line, line={"color": t.TEAL, "width": 2, "dash": "dash"})
+        fig.add_annotation(  # above the plot area, so it never sits on a dot
             x=marker_line,
-            line={"color": t.TEAL, "width": 2, "dash": "dash"},
-            annotation_text=marker_line_label,
-            annotation_position="top right",
-            annotation_font={"color": t.INK, "size": 12},
+            y=1,
+            yref="paper",
+            yanchor="bottom",
+            xanchor="center",
+            text=marker_line_label,
+            showarrow=False,
+            font={"color": t.INK, "size": 12},
         )
     fig.update_xaxes(title_text=x_title)
     fig.update_yaxes(type="category", automargin=True)
     rows = points[y].nunique()
-    fig = themed(fig, height=height or max(280, 80 + 40 * rows), legend=True)
-    fig.update_layout(legend={"y": -0.2, "yanchor": "top"}, margin={"t": 32})
+    fig = themed(fig, height=height or max(300, 120 + 40 * rows), legend=True)
+    fig.update_layout(legend={"y": -0.25, "yanchor": "top"}, margin={"t": 32, "b": 16})
     return fig
 
 
