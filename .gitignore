@@ -31,3 +31,9 @@ coverage/
 data/raw/
 data/interim/
 outputs/
+
+# Tie-Out: tuning seeds are regenerated on demand (seed 4 is the committed demo)
+data/truth/seed_1/
+data/truth/seed_2/
+data/truth/seed_3/
+data/seeds/

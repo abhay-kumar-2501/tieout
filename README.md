@@ -1,13 +1,21 @@
-# PMI Vendor & SKU Rationalization
+# Tie-Out
 
-Toolkit for post-merger integration (PMI) work: consolidating the combined
-vendor base and rationalizing the combined SKU portfolio of two merging
-companies.
+**A clean-team workbench for procurement synergy sizing in mergers.**
 
-> **Status:** repository scaffold. Product scope is defined by the PRD and
-> will be built out feature by feature through pull requests.
+Tie-Out takes two messy purchasing extracts and produces a synergy estimate
+that is smaller than the naive one, expressed as a range, measured for
+accuracy, and traceable from every dollar back to the source rows.
 
-## Contributing
+> **Status:** under construction. See [docs/PRD.md](docs/PRD.md) for the
+> product requirements and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for
+> the module contracts.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the branching model, commit
-conventions and pull-request workflow.
+## Development
+
+```
+pip install -e ".[dev]"
+make lint test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the branching model and commit
+conventions.
