@@ -284,3 +284,12 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
   - Source rows are capped at 500 in the panel and in the copy block, with the full count shown.
 - **Charts.** The chart layout leaves Plotly's drag mode at its default, because with drag disabled Streamlit did not report click selections. Hover text gives exact dollars with a minus sign. Text from views is escaped before it reaches Markdown, so that two `$` signs never start maths.
 - **AppTest limits.** After the first run, `AppTest` re-runs the current page script without `main.py`, and it cannot re-run a dialog fragment. The header is therefore tested on its own, and drill-down is tested on the inline trace panel. Chart and table selections are injected through their session-state keys.
+
+## Overview and Synergies screens
+
+- **What was refused.** In the integration-office view `trace_for` returns "not available" for bridge steps. A new view, `refused_items(step)`, therefore lists what each step removed: items in the clean-team view, categories in the masked view, re-summing to the bar. `lever1_items` feeds the price dispersion picker (clean team only).
+- **Bridge drill-down.** Selecting a removal step shows its refused list, which can be filtered by category; each item opens its working in the step's own measure. Selecting a total opens its working inline. On Synergies, a chart selection also sets the "Bridge step" picker, which the user can still change afterwards.
+- **Synergies layout.** The bridge is the main chart, followed by the refused list. Below them the spend waterfall and the price dispersion sit side by side, with the two reconciliation sentences (PRD 5.8) under the waterfall. Price dispersion shows one item, picked from the items with a lever-1 saving, largest first. In the masked view it shows the view's "not available" message.
+- **Headlines.** The Overview headline is the `headline` view's sentence. The Synergies headline is built from the bridge rows: what each lever gives, and which step removed most of the naive figure.
+- **Tour hook.** The Overview calls `components.tour.render_tour_button()` when that module imports, and shows nothing otherwise.
+- **Deep links.** On a fresh server, the first request to `/synergies` can run that page script on its own, without the header, until `/` has been loaded once. This is how Streamlit behaves when a `pages/` folder sits next to an `st.navigation` script. It is left to whoever owns `main.py`; renaming the folder would fix it.
