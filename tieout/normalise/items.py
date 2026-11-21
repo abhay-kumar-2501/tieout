@@ -19,6 +19,7 @@ from functools import lru_cache
 
 from rapidfuzz import fuzz
 
+from tieout.normalise.vendors import normalise_name
 from tieout.reference import load_abbreviations
 
 __all__ = [
@@ -109,31 +110,15 @@ def mpn_key(value: object) -> str | None:
 
 # --------------------------------------------------------------- manufacturer
 
-_LEGAL_FORMS = frozenset(
-    "inc incorporated corp corporation co company llc ltd limited lp llp plc gmbh ag sa sas "
-    "srl bv nv pty ab oy kk".split()
-)
-
 
 def normalise_manufacturer(value: object) -> str:
     """V0 normalisation of a manufacturer name (PRD 4.3); ``""`` when blank.
 
-    NFKC, case-fold, strip accents, ``&`` -> ``and``, remove punctuation,
-    collapse whitespace, drop a leading "the", remove trailing legal forms.
+    The vendor V0 steps without aliases and branches: NFKC, case-fold, strip
+    accents, ``&`` -> ``and``, remove punctuation, collapse whitespace, drop a
+    leading "the", remove trailing legal forms.
     """
-    if value is None or (isinstance(value, float) and value != value):
-        return ""
-    s = unicodedata.normalize("NFKC", str(value)).casefold()
-    s = "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
-    s = s.replace("&", " and ")
-    s = re.sub(r"[.'’]", "", s)
-    s = re.sub(r"[^\w\s]", " ", s).replace("_", " ")
-    tokens = s.split()
-    if tokens and tokens[0] == "the":
-        tokens = tokens[1:]
-    while tokens and tokens[-1] in _LEGAL_FORMS:
-        tokens = tokens[:-1]
-    return " ".join(tokens)
+    return normalise_name(value)
 
 
 def manufacturers_compatible(a: object, b: object) -> bool:

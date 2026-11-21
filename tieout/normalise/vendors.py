@@ -8,7 +8,8 @@ The steps run in the PRD order:
 4. ``&`` -> ``and``, remove punctuation, collapse whitespace, drop a leading "the".
 5. Remove legal-form tokens from the end of the name only, repeatedly.
 
-The original name is always kept.
+The original name is always kept. :func:`normalise_name` applies steps 1, 4 and
+5 only; it is the V0 form of a manufacturer name.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ __all__ = [
     "LEGAL_FORMS",
     "VendorName",
     "normalise_country",
+    "normalise_name",
     "normalise_tax_id",
     "normalise_vendor_name",
 ]
@@ -141,6 +143,13 @@ def normalise_vendor_name(original: object) -> VendorName:
             names.append(name)
     primary = names[0] if names else ""
     return VendorName(original=raw, name=primary, aliases=tuple(names[1:]), branch=branch)
+
+
+def normalise_name(original: object) -> str:
+    """V0 steps 1, 4 and 5 (no aliases, no branch); ``""`` when blank."""
+    if _is_blank(original):
+        return ""
+    return _strip_legal_forms(_clean(_fold(str(original))))
 
 
 def normalise_tax_id(value: object) -> str | None:

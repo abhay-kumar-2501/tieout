@@ -26,6 +26,9 @@ FRAME_NAMES = (
     "payment_terms",
     "phasing",
     "data_quality",
+    "vendor_pairs",
+    "item_pairs",
+    "vendor_parents",
 )
 _JSON_NAMES = ("meta", "assumptions", "totals", "trace", "scorecard")
 _JSON_FILE = "results.json"
@@ -37,7 +40,14 @@ def _empty_frame() -> pd.DataFrame:
 
 @dataclass(frozen=True)
 class Results:
-    """Everything one pipeline run produces. Frames are never mutated in place."""
+    """Everything one pipeline run produces. Frames are never mutated in place.
+
+    ``vendor_pairs`` and ``item_pairs`` are the full pair logs of vendor and
+    item matching, which double as the cached pair scores: passing them back as
+    ``cached_pairs`` re-runs clustering and one-to-one assembly without
+    rescoring (PRD 4.5). ``vendor_parents`` is the parent table the run used,
+    kept so that re-assembly needs nothing but this object.
+    """
 
     meta: dict[str, Any] = field(default_factory=dict)
     assumptions: dict[str, Any] = field(default_factory=dict)
@@ -53,6 +63,9 @@ class Results:
     payment_terms: pd.DataFrame = field(default_factory=_empty_frame)
     phasing: pd.DataFrame = field(default_factory=_empty_frame)
     data_quality: pd.DataFrame = field(default_factory=_empty_frame)
+    vendor_pairs: pd.DataFrame = field(default_factory=_empty_frame)
+    item_pairs: pd.DataFrame = field(default_factory=_empty_frame)
+    vendor_parents: pd.DataFrame = field(default_factory=_empty_frame)
     totals: dict[str, Any] = field(default_factory=dict)
     trace: dict[str, list[str]] = field(default_factory=dict)
     scorecard: dict[str, Any] | None = None
