@@ -329,3 +329,12 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **Determinism.** The file's creation time is the report date, so the same results give byte-identical files.
 - **LibreOffice.** The recalculation test writes a throwaway profile setting `OOXMLRecalcMode` to 0 (always recalculate) and converts with `soffice --headless --convert-to xlsx`. It is skipped when `soffice` is absent. LibreOffice was not available here, so neither the test nor the setting name has been confirmed.
 - **Size and time (demo, 60,012 lines).** The clean workbook is 5.5 MB with 40,763 formulas and builds in about 4 s. The masked workbook is 0.09 MB and builds in about 0.4 s. The test evaluator re-evaluates every clean formula in about 3 s.
+## Deck and static charts
+
+- **Fonts.** The IBM Plex faces are woff2, which matplotlib cannot load, so the PNGs use Arial (the deck's body face) when installed, else DejaVu Sans.
+- **Slide 3 baseline.** No view gives spend by category and company, and the deck does not recompute figures, so the chart shows in-scope spend by company (`data_quality_summary`) beside the Pareto.
+- **Waterfall axis.** Baseline spend is about 100 times the levers, so the waterfall (slide 5 and `waterfall_png`) starts its axis above zero and says where in its axis title.
+- **Native chart labels.** Stacked columns cannot place labels outside the bar, so an invisible extra series carries them; legend entries for helper series are deleted in the XML.
+- **Matrix labels.** On the slide the top ten bubbles carry their rank 1 to 10; the five-row table beside it and the speaker notes give the names. The PNG draws numbered badges and a key.
+- **Masked slide 8.** Review decisions are hidden (the view is not available); volumes, tiers and the scorecard stay.
+- **Not rendered.** No LibreOffice here and PowerPoint did not respond to automation, so slide layout is verified by geometry tests and a text-fit estimate, not by eye.
