@@ -96,6 +96,25 @@ def test_check_blocks_a_missing_required_column(blobs: dict[str, bytes]) -> None
     assert check.suggestions.empty
 
 
+def test_apply_category_file_sets_known_codes_and_counts_the_rest(
+    blobs: dict[str, bytes], small_files
+) -> None:
+    mapping = _mapping(blobs)
+    check = upload.check_upload(blobs["acquirer"], blobs["target"], mapping)
+    shipped = small_files["category_map"].read_bytes()
+    out, applied, skipped = upload.apply_category_file(check.suggestions, shipped)
+    assert applied > 0 and out["l2_code"].notna().sum() >= applied
+    extra = shipped + b"acquirer,No such category,L01.01\nacquirer,x,NOPE\n"
+    _, _, skipped_extra = upload.apply_category_file(check.suggestions, extra)
+    assert skipped_extra == skipped + 2
+
+
+def test_apply_category_file_needs_its_columns() -> None:
+    choices = pd.DataFrame({"company": [], "category_native": [], "spend": [], "l2_code": []})
+    with pytest.raises(ValueError, match="needs the columns"):
+        upload.apply_category_file(choices, b"a,b\n1,2\n")
+
+
 def test_category_map_drops_unmapped_rows() -> None:
     choices = pd.DataFrame(
         {

@@ -41,6 +41,7 @@ __all__ = [
     "FilePeek",
     "UploadCheck",
     "category_map_from",
+    "apply_category_file",
     "check_upload",
     "mapping_problems",
     "peek_file",
@@ -171,6 +172,49 @@ def category_map_from(choices: pd.DataFrame) -> pd.DataFrame:
     mapped = choices.dropna(subset=["l2_code"])
     mapped = mapped[mapped["l2_code"].astype(str).str.strip() != ""]
     return mapped[list(CATEGORY_MAP_COLUMNS)].reset_index(drop=True)
+
+
+def apply_category_file(choices: pd.DataFrame, data: bytes) -> tuple[pd.DataFrame, int, int]:
+    """Apply a ``category_map.csv`` (PRD 3.2) to the category choices.
+
+    Rows are matched on company and native category (trimmed, case-insensitive).
+    Returns the updated choices, how many categories were set, and how many file
+    rows were skipped (no such category, or an ``l2_code`` not in the taxonomy).
+    Raises ``ValueError`` when the file lacks a required column.
+    """
+    try:
+        file = pd.read_csv(io.BytesIO(data), dtype=str, keep_default_na=False)
+    except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError) as exc:
+        raise ValueError("The category map could not be read as CSV.") from exc
+    missing = [c for c in CATEGORY_MAP_COLUMNS if c not in file.columns]
+    if missing:
+        raise ValueError(f"The category map needs the columns {', '.join(CATEGORY_MAP_COLUMNS)}.")
+    known = set(load_taxonomy()["l2_code"])
+
+    def key(company: pd.Series, label: pd.Series) -> pd.Series:
+        return (
+            company.astype(str).str.strip().str.lower()
+            + "|"
+            + label.astype(str).str.strip().str.casefold()
+        )
+
+    wanted = dict(
+        zip(
+            key(file["company"], file["category_native"]),
+            file["l2_code"].str.strip(),
+            strict=True,
+        )
+    )
+    out = choices.copy()
+    keys = key(out["company"], out["category_native"])
+    applied = 0
+    for i, k in zip(out.index, keys, strict=True):
+        code = wanted.get(k)
+        if code in known:
+            out.at[i, "l2_code"] = code
+            applied += 1
+    skipped = len(file) - sum(1 for k in set(keys) if wanted.get(k) in known)
+    return out, applied, max(skipped, 0)
 
 
 def run_upload(
