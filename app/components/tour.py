@@ -115,8 +115,13 @@ def _tour() -> None:
     render_step()
 
 
-def render_tour_button() -> None:
+def render_tour_button(*, primary: bool = False) -> None:
     """The "Take the 2-minute tour" button; the tour opens only when it is clicked."""
-    if st.button("Take the 2-minute tour", key="tour_open", icon=":material/tour:"):
+    if st.button(
+        "Take the 2-minute tour",
+        key="tour_open",
+        icon=":material/tour:",
+        type="primary" if primary else "secondary",
+    ):
         st.session_state[_STEP] = 0
         _tour()

@@ -61,7 +61,7 @@ def _tier_figure(counts: dict[str, Any]) -> tuple[go.Figure, pd.DataFrame]:
     fig.update_layout(barmode="stack")
     fig.update_xaxes(title_text="Records")
     fig.update_yaxes(autorange="reversed")
-    fig = themed(fig, height=210, legend=True)
+    fig = themed(fig, height=250, legend=True)
     table = frame.assign(tier=frame["tier"].map(_TIER_LABEL)).rename(
         columns={"kind": "List", "tier": "Tier", "count": "Records"}
     )
@@ -84,7 +84,7 @@ def render_stages(counts: dict[str, Any]) -> None:
         f"{items['pending_review']:,} item pairs."
     )
     chart_with_table(fig, table, "mt_tiers", caption)
-    left, right = st.columns(2)
+    left, right = st.container(key="to_grid_mt_stages").columns(2, gap="medium")
     for column, title, data, names in (
         (left, "Vendor records by stage", vendors, _VENDOR_STAGES),
         (right, "Item records by stage", items, _ITEM_STAGES),

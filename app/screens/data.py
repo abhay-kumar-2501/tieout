@@ -16,7 +16,7 @@ from components.data_view import (
     render_received,
 )
 from components.page import next_question, page_question
-from components.style import headline, muted
+from components.style import headline
 
 from tieout.views import data_quality_summary
 
@@ -30,21 +30,27 @@ else:
     mode = state.view()
     summary = data_quality_summary(results, mode)
     headline(finding_headline(summary))
+    row = st.container(horizontal=True, vertical_alignment="center", gap="medium")
     if state.is_demo():
-        left, right = st.columns([3, 1], vertical_alignment="center")
-        with left:
-            muted("These are the committed demo files for a fictional merger.")
-        if right.button("Use your own data", key="data_use_own", type="primary"):
+        row.markdown(
+            '<div class="to-muted">These are the committed demo files for a fictional merger. '
+            "You can size your own merger from two purchasing files instead.</div>",
+            unsafe_allow_html=True,
+            width="content",
+        )
+        if row.button("Use your own data", key="data_use_own", type="primary"):
             upload_ui.start()
             st.rerun()
     else:
-        left, right = st.columns([3, 1], vertical_alignment="center")
-        with left:
-            muted("These are your uploaded files. They exist in this session's memory only.")
-        with right:
-            if st.button("Back to demo", key="data_back_to_demo"):
-                state.reset_to_demo()
-                st.rerun()
+        row.markdown(
+            '<div class="to-muted">These are your uploaded files. They exist in this '
+            "session's memory only.</div>",
+            unsafe_allow_html=True,
+            width="content",
+        )
+        if row.button("Back to demo", key="data_back_to_demo"):
+            state.reset_to_demo()
+            st.rerun()
     render_received(results, summary)
     render_findings(summary)
     render_pareto(results, mode)

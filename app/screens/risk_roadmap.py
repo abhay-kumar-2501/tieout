@@ -63,7 +63,9 @@ def _on_cap_change(level: str, key: str) -> None:
 def _cap_controls() -> None:
     """Three sliders, outside any form (PRD 9.3), editing the values Assumptions edits."""
     caps = state.assumptions()["caps"]
-    for column, (level, name, key) in zip(st.columns(3), _CAPS, strict=True):
+    for column, (level, name, key) in zip(
+        st.container(key="to_grid_risk_caps").columns(3, gap="large"), _CAPS, strict=True
+    ):
         with column:
             st.slider(
                 f"Cap, {name.lower()} categories",
@@ -94,7 +96,9 @@ def _concentration(results, mode: str) -> None:
         return
     forgone = float(results.totals["lever2"]["savings_forgone"])
     _cap_controls()
-    left, right = st.columns([1, 2], vertical_alignment="top")
+    left, right = st.container(key="to_grid_risk_conc").columns(
+        [1, 2], vertical_alignment="top", gap="large"
+    )
     with left:
         figure_card(
             "Recurring, every year",
@@ -201,7 +205,7 @@ def _matrix(results, mode: str) -> None:
         f"and carry {money(wave1['base'].sum())} a year. Bubble size is the spend behind each; "
         "the ten largest savings are labelled."
     )
-    index = chart_with_table(matrix_figure(matrix), table, "risk_matrix", caption)
+    index = chart_with_table(matrix_figure(matrix), table, "risk_matrix", caption, shape="wide")
     if index is not None and index < len(matrix):
         _matrix_detail(matrix, index, mode)
     else:
@@ -218,7 +222,7 @@ def _phasing(results, mode: str) -> None:
     quarters = phasing_by_quarter(results, mode)
     years = phasing_by_year(results, mode)
     net = years.iloc[-1]
-    c1, c2 = st.columns([2, 1])
+    c1, c2 = st.container(key="to_grid_risk_phasing").columns([2, 1], gap="large")
     with c2:
         figure_card(
             "Three-year value",
@@ -242,7 +246,7 @@ def _phasing(results, mode: str) -> None:
             f"quarter 12; one-time costs of {thousands(-quarters['cost'].sum())} fall "
             "mostly in the early quarters."
         )
-        chart_with_table(phasing_figure(quarters), shown, "risk_phasing", caption)
+        chart_with_table(phasing_figure(quarters), shown, "risk_phasing", caption, shape="half")
     st.markdown("**By year**")
     st.dataframe(year_table(years), hide_index=True, width="stretch", key="risk_years")
     beyond = totals.get("beyond_month_36") or []

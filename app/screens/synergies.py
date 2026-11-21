@@ -71,7 +71,7 @@ def _waterfall(results, mode: str) -> None:
         f"{money(net['amount'])} once both recurring levers are in place "
         f"(range {money_range(net['low'], net['high'])})."
     )
-    index = chart_with_table(fig, table, "syn_waterfall", caption)
+    index = chart_with_table(fig, table, "syn_waterfall", caption, shape="half")
     if index is not None and index < len(frame):
         bar = frame.iloc[index]
         with st.container(border=True):
@@ -175,7 +175,7 @@ st.caption(
     )
 )
 
-left, right = st.columns(2)
+left, right = st.container(key="to_grid_syn_lower").columns(2, gap="large")
 with left:
     section("From baseline spend to net run-rate spend")
     _waterfall(results, mode)

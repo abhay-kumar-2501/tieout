@@ -17,6 +17,18 @@ from components.trace import show_working
 from tieout.views import confidence_strip, overview_figures, percent, worth_a_look
 from tieout.views import headline as headline_view
 
+_INTRO = {
+    True: (
+        "Tie-Out sizes the procurement savings two merging companies can defend, and opens "
+        "the working behind every figure. This is a fictional merger; new here? The tour "
+        "takes two minutes."
+    ),
+    False: (
+        "Tie-Out has sized the procurement savings your two files can defend; select any "
+        "figure or bar to see what it is made of. The tour takes two minutes."
+    ),
+}
+
 
 def render_tour_hook() -> None:
     """The guided-tour button (PRD 2.2 step 5), when ``components.tour`` is installed."""
@@ -24,7 +36,26 @@ def render_tour_hook() -> None:
         from components.tour import render_tour_button
     except ImportError:
         return
-    render_tour_button()
+    render_tour_button(primary=True)
+
+
+def render_intro() -> None:
+    """One plain sentence on what this is and what to do first, with the tour beside it."""
+    with (
+        st.container(border=True, key="to_intro"),
+        st.container(
+            horizontal=True,
+            vertical_alignment="center",
+            horizontal_alignment="distribute",
+            gap="medium",
+        ),
+    ):
+        st.markdown(
+            f'<div class="to-lead">{esc(_INTRO[state.is_demo()])}</div>',
+            unsafe_allow_html=True,
+            width="stretch",
+        )
+        render_tour_hook()
 
 
 def _figure(column, figure: dict, key: str) -> None:
@@ -40,27 +71,30 @@ def _figure(column, figure: dict, key: str) -> None:
 results = state.current_results()
 mode = state.view()
 
+render_intro()
 page_question("What is the answer, and how sure are we?")
 top = headline_view(results, mode)
 headline(top["text"])
-left, right = st.columns([3, 1], vertical_alignment="center")
-with left:
-    show_working(top["figure_id"], "the defensible run-rate saving", key="ov_headline")
-with right:
-    render_tour_hook()
+show_working(top["figure_id"], "the defensible run-rate saving", key="ov_headline")
 
 run_rate, cash, cost = overview_figures(results, mode)
-recurring_box, one_time_box = st.columns([1, 2])
-with recurring_box, st.container(border=True):
-    _figure(st.container(), run_rate, "ov_run_rate")
-with one_time_box, st.container(border=True):
-    st.markdown(
-        '<div class="to-caption">One-time amounts are never added to the run-rate saving.</div>',
-        unsafe_allow_html=True,
-    )
-    c1, c2 = st.columns(2)
-    _figure(c1, cash, "ov_cash")
-    _figure(c2, cost, "ov_cost")
+with st.container(key="to_grid_ov_figures"):
+    recurring_box, one_time_box = st.columns([1, 2], gap="medium")
+    with recurring_box, st.container(border=True, height="stretch"):
+        st.markdown(
+            '<div class="to-caption">Recurring amounts make up the run-rate saving.</div>',
+            unsafe_allow_html=True,
+        )
+        _figure(st.container(), run_rate, "ov_run_rate")
+    with one_time_box, st.container(border=True, height="stretch"):
+        st.markdown(
+            '<div class="to-caption">One-time amounts are never added to the run-rate '
+            "saving.</div>",
+            unsafe_allow_html=True,
+        )
+        c1, c2 = st.columns(2, gap="medium")
+        _figure(c1, cash, "ov_cash")
+        _figure(c2, cost, "ov_cost")
 
 section("From the naive figure to the defensible range")
 bar = render_bridge("ov_bridge")
@@ -79,8 +113,9 @@ with st.container(border=True):
         strip["figure_ids"]["pending_review"], "the saving pending review", key="ov_pending"
     )
 
-section("Worth a look")
-for column, card in zip(st.columns(3), worth_a_look(results, mode), strict=True):
+section("Worth a look", "Three findings worth opening; each shows its working.")
+cards = st.container(key="to_cards_ov_worth")
+for column, card in zip(cards.columns(3, gap="medium"), worth_a_look(results, mode), strict=True):
     with column, st.container(border=True, height="stretch"):
         st.markdown(f"**{esc(card['title'])}**")
         st.markdown(esc(card["text"]), unsafe_allow_html=True)

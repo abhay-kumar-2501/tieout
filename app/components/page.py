@@ -59,14 +59,22 @@ def empty_state(
     *,
     link_text: str | None = None,
     target_module: str | None = None,
+    icon: str = ":material/info:",
 ) -> None:
-    """Nothing to show, said plainly, with where to go next (e.g. "Nothing left to review")."""
+    """Nothing to show, said plainly, with where to go next (e.g. "Nothing left to review").
+
+    ``icon`` is a Material icon shortcode; a finished task uses ``:material/check_circle:``.
+    """
     with st.container(border=True):
-        st.markdown(f"**{esc(title)}**")
-        st.markdown(esc(message))
+        st.markdown(f"{icon} **{esc(title)}**")
+        muted(message)
         if link_text and target_module:
             try:
-                st.page_link(f"screens/{target_module}.py", label=link_text)
+                st.page_link(
+                    f"screens/{target_module}.py",
+                    label=link_text,
+                    icon=":material/arrow_forward:",
+                )
             except StreamlitAPIException:
                 muted(link_text)
 
