@@ -30,8 +30,14 @@ from tieout.ingest.load import (
 )
 from tieout.ingest.mapping import ColumnSuggestion, missing_required, suggest_mapping
 from tieout.ingest.schema import COLUMNS, COMPANIES, MAX_BYTES, MAX_ROWS
+from tieout.ingest.validate import parse_dates
 from tieout.normalise.taxonomy import suggest_categories
-from tieout.pipeline import CATEGORY_MAP_COLUMNS, PipelineInputs, run_pipeline
+from tieout.pipeline import (
+    CATEGORY_MAP_COLUMNS,
+    PipelineInputs,
+    read_category_settings,
+    run_pipeline,
+)
 from tieout.reference import load_fx_rates, load_taxonomy
 from tieout.results import Results
 
@@ -39,7 +45,11 @@ __all__ = [
     "MAX_BYTES",
     "MAX_ROWS",
     "FilePeek",
+    "ParsedOptions",
     "UploadCheck",
+    "UploadOptions",
+    "detect_period_end",
+    "parse_options",
     "category_map_from",
     "apply_category_file",
     "check_upload",
@@ -117,6 +127,109 @@ def _source(data: bytes, name: str) -> io.BytesIO:
 
 
 @dataclass(frozen=True)
+class UploadOptions:
+    """The optional files (raw bytes, PRD 3.2) and settings; defaults change nothing."""
+
+    fx: bytes | None = None
+    vendor_parents: bytes | None = None
+    category_settings: bytes | None = None
+    period_end: str | None = None  # "YYYY-MM"; None = the earlier of the files' latest months
+    reporting_currency: str = "USD"
+    aggregated: bool = False
+
+
+@dataclass(frozen=True)
+class ParsedOptions:
+    """:class:`UploadOptions` read and checked: frames ready for the pipeline."""
+
+    fx: pd.DataFrame | None
+    vendor_parents: pd.DataFrame | None
+    category_settings: pd.DataFrame | None
+    period_end: str | None
+    reporting_currency: str
+    aggregated: bool
+
+
+def _csv(data: bytes, what: str, required: tuple[str, ...]) -> pd.DataFrame:
+    try:
+        frame = pd.read_csv(
+            io.BytesIO(data), dtype=str, keep_default_na=False, encoding_errors="replace"
+        )
+    except (pd.errors.ParserError, pd.errors.EmptyDataError) as exc:
+        raise ValueError(f"The {what} file could not be read as CSV.") from exc
+    frame.columns = pd.Index([str(c).strip().lower() for c in frame.columns])
+    missing = [c for c in required if c not in frame.columns]
+    if missing:
+        raise ValueError(
+            f"The {what} file needs the columns {', '.join(required)}; "
+            f"missing {', '.join(missing)}."
+        )
+    return frame
+
+
+def parse_options(options: UploadOptions) -> ParsedOptions:
+    """Read and check the optional inputs; raises ``ValueError`` with a plain message."""
+    fx = None
+    if options.fx is not None:
+        fx = _csv(options.fx, "FX rates", ("currency", "rate"))
+        for currency, rate in zip(fx["currency"], fx["rate"], strict=True):
+            try:
+                ok = float(rate) > 0
+            except ValueError:
+                ok = False
+            if not ok:
+                raise ValueError(
+                    f"The FX rates file has a rate for {currency} that is not positive."
+                )
+        fx = fx[["currency", "rate"]].assign(rate=fx["rate"].astype(float))
+    parents = None
+    if options.vendor_parents is not None:
+        parents = _csv(options.vendor_parents, "vendor parents", ("key_type", "key", "parent_name"))
+        bad = sorted(set(parents["key_type"].str.strip().str.lower()) - {"name", "tax_id"})
+        if bad:
+            raise ValueError(
+                f"The vendor parents file has key_type values other than name or tax_id: {bad}."
+            )
+    settings = None
+    if options.category_settings is not None:
+        settings = _csv(options.category_settings, "category settings", ("l2_code",))
+        try:
+            read_category_settings(settings)
+        except ValueError as exc:
+            raise ValueError(f"The category settings file is not valid: {exc}") from exc
+    period = options.period_end
+    if period is not None:
+        try:
+            period = str(pd.Period(period, "M"))
+        except (ValueError, TypeError) as exc:
+            raise ValueError("The period end must be a month such as 2025-12.") from exc
+    currency = options.reporting_currency.strip().upper()
+    if not (len(currency) == 3 and currency.isalpha()):
+        raise ValueError("The reporting currency must be a three-letter code such as USD.")
+    if currency != "USD" and fx is None:
+        raise ValueError(
+            f"The shipped FX rates are in USD. Add an FX rates file with rates into {currency}."
+        )
+    return ParsedOptions(fx, parents, settings, period, currency, options.aggregated)
+
+
+def detect_period_end(
+    acquirer: bytes, target: bytes, mapping: Mapping[str, Mapping[str, str | None]]
+) -> str | None:
+    """The default period end: the earlier of the two files' latest ``doc_date`` months."""
+    latest = []
+    for company, data in zip(COMPANIES, (acquirer, target), strict=True):
+        frame = load_file(_source(data, company), company, _clean(mapping.get(company, {})))
+        if "doc_date" not in frame:
+            return None
+        dates = parse_dates(frame["doc_date"]).dropna()
+        if dates.empty:
+            return None
+        latest.append(dates.max().to_period("M"))
+    return str(min(latest))
+
+
+@dataclass(frozen=True)
 class UploadCheck:
     """Outcome of validating a file pair.
 
@@ -137,11 +250,10 @@ def check_upload(
     target: bytes,
     mapping: Mapping[str, Mapping[str, str | None]],
     *,
-    period_end: str | None = None,
-    aggregated: bool = False,
-    fx: Mapping[str, float] | None = None,
+    options: UploadOptions | None = None,
 ) -> UploadCheck:
     """Validate the pair under the column ``mapping`` (``{"acquirer": {...}, "target": {...}}``)."""
+    parsed = parse_options(options or UploadOptions())
     frames = {
         company: load_file(_source(data, company), company, _clean(mapping.get(company, {})))
         for company, data in zip(COMPANIES, (acquirer, target), strict=True)
@@ -152,10 +264,11 @@ def check_upload(
         prepared = prepare(
             frames["acquirer"],
             frames["target"],
-            fx=fx if fx is not None else load_fx_rates(),
+            fx=parsed.fx if parsed.fx is not None else load_fx_rates(),
             taxonomy=taxonomy,
-            period_end=period_end,
-            aggregated=aggregated,
+            period_end=parsed.period_end,
+            aggregated=parsed.aggregated,
+            reporting_currency=parsed.reporting_currency,
         )
     except BlockingValidationError as exc:
         empty = pd.DataFrame(
@@ -223,8 +336,7 @@ def run_upload(
     mapping: Mapping[str, Mapping[str, str | None]],
     category_map: pd.DataFrame,
     *,
-    period_end: str | None = None,
-    aggregated: bool = False,
+    options: UploadOptions | None = None,
     names: Mapping[str, str] | None = None,
     progress: Callable[[str, Mapping[str, Any]], None] | None = None,
 ) -> Results:
@@ -233,13 +345,18 @@ def run_upload(
     ``names`` gives each file's display name (kept as ``source_file`` on the lines).
     """
     given = names or {}
+    parsed = parse_options(options or UploadOptions())
     inputs = PipelineInputs(
         acquirer=_source(acquirer, given.get("acquirer", "acquirer")),  # type: ignore[arg-type]
         target=_source(target, given.get("target", "target")),  # type: ignore[arg-type]
         mapping={c: _clean(mapping.get(c, {})) for c in COMPANIES},
         category_map=category_map_from(category_map),
-        period_end=period_end,
-        aggregated=aggregated,
+        fx=parsed.fx,
+        vendor_parents=parsed.vendor_parents,
+        category_settings=parsed.category_settings,
+        period_end=parsed.period_end,
+        aggregated=parsed.aggregated,
+        reporting_currency=parsed.reporting_currency,
         scenario="custom",
     )
     return run_pipeline(inputs, progress=progress)

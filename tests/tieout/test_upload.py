@@ -117,6 +117,80 @@ def test_apply_category_file_needs_its_columns() -> None:
         upload.apply_category_file(choices, b"a,b\n1,2\n")
 
 
+def test_default_options_change_nothing() -> None:
+    parsed = upload.parse_options(upload.UploadOptions())
+    assert parsed == upload.ParsedOptions(None, None, None, None, "USD", False)
+
+
+@pytest.mark.parametrize(
+    ("options", "message"),
+    [
+        (upload.UploadOptions(fx=b"cur,rate\nEUR,1.1\n"), "needs the columns currency, rate"),
+        (upload.UploadOptions(fx=b"currency,rate\nEUR,abc\n"), "EUR that is not positive"),
+        (upload.UploadOptions(fx=b"currency,rate\nEUR,-1\n"), "EUR that is not positive"),
+        (upload.UploadOptions(vendor_parents=b"a,b\n1,2\n"), "vendor parents file needs"),
+        (
+            upload.UploadOptions(vendor_parents=b"key_type,key,parent_name\nzip,1,X\n"),
+            "key_type values",
+        ),
+        (upload.UploadOptions(category_settings=b"code\nL01.01\n"), "category settings file needs"),
+        (
+            upload.UploadOptions(category_settings=b"l2_code,cap\nL01.01,7\n"),
+            "category settings file is not valid",
+        ),
+        (upload.UploadOptions(period_end="soon"), "period end must be a month"),
+        (upload.UploadOptions(reporting_currency="DOLLARS"), "three-letter"),
+        (upload.UploadOptions(reporting_currency="EUR"), "Add an FX rates file"),
+    ],
+)
+def test_malformed_options_give_a_plain_message(
+    options: upload.UploadOptions, message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        upload.parse_options(options)
+
+
+def test_good_options_are_parsed() -> None:
+    parsed = upload.parse_options(
+        upload.UploadOptions(
+            fx=b"currency,rate\nEUR,1.1\nUSD,1\n",
+            vendor_parents=b"key_type,key,parent_name\nname,Acme,Acme Group\n",
+            category_settings=b"l2_code,cap\nL01.01,0.4\n",
+            period_end="2025-06",
+            reporting_currency="usd",
+            aggregated=True,
+        )
+    )
+    assert parsed.fx["rate"].tolist() == [1.1, 1.0]
+    assert parsed.period_end == "2025-06" and parsed.reporting_currency == "USD"
+    assert parsed.aggregated and len(parsed.vendor_parents) == 1
+
+
+def test_detect_period_end_is_the_earlier_latest_month(blobs: dict[str, bytes]) -> None:
+    mapping = _mapping(blobs)
+    found = upload.detect_period_end(blobs["acquirer"], blobs["target"], mapping)
+    latest = [
+        pd.to_datetime(pd.read_csv(io.BytesIO(blobs[c]))["doc_date"]).max().to_period("M")
+        for c in ("acquirer", "target")
+    ]
+    assert found == str(min(latest))
+
+
+def test_options_reach_the_run(blobs: dict[str, bytes], small_files) -> None:
+    mapping = _mapping(blobs)
+    options = upload.UploadOptions(
+        vendor_parents=small_files["vendor_parents"].read_bytes(),
+        period_end=upload.detect_period_end(blobs["acquirer"], blobs["target"], mapping),
+    )
+    check = upload.check_upload(blobs["acquirer"], blobs["target"], mapping, options=options)
+    assert not check.blocked
+    results = upload.run_upload(
+        blobs["acquirer"], blobs["target"], mapping, check.suggestions, options=options
+    )
+    assert results.meta["inputs"]["vendor_parents"] is True
+    assert results.meta["period"]["end"] == options.period_end
+
+
 def test_category_map_drops_unmapped_rows() -> None:
     choices = pd.DataFrame(
         {

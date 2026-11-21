@@ -124,6 +124,7 @@ class PipelineInputs:
     period_end: str | None = None
     as_of: str | None = None
     aggregated: bool = False
+    reporting_currency: str = "USD"
     view: str = "clean"
     thresholds: Thresholds | None = None
     scenario: str = "custom"
@@ -280,6 +281,7 @@ def _prepare(
         "taxonomy": taxonomy,
         "period_end": inputs.period_end,
         "aggregated": inputs.aggregated,
+        "reporting_currency": inputs.reporting_currency,
     }
     if inputs.category_map is not None:
         category_map = _with_columns(
