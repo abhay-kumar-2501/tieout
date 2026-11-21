@@ -42,8 +42,9 @@ def _inputs(files: dict[str, Path], **overrides: object) -> PipelineInputs:
 
 
 @pytest.fixture(scope="module")
-def results(small_files: dict[str, Path]) -> Results:
-    return run_pipeline(_inputs(small_files))
+def results(small_results: Results) -> Results:
+    """The session's run of the small dataset (made with the same inputs as ``_inputs``)."""
+    return small_results
 
 
 def test_lines_carry_matching_ids(results: Results) -> None:

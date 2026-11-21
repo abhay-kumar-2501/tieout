@@ -37,7 +37,7 @@ tieout = ["reference/*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-q"
+addopts = "-q --dist loadfile"
 markers = ["slow: needs the full demo dataset"]
 
 [tool.ruff]
