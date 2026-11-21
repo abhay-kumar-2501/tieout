@@ -225,12 +225,17 @@ def run_upload(
     *,
     period_end: str | None = None,
     aggregated: bool = False,
+    names: Mapping[str, str] | None = None,
     progress: Callable[[str, Mapping[str, Any]], None] | None = None,
 ) -> Results:
-    """Run the full pipeline on the confirmed mappings; raises ``BlockingValidationError``."""
+    """Run the full pipeline on the confirmed mappings; raises ``BlockingValidationError``.
+
+    ``names`` gives each file's display name (kept as ``source_file`` on the lines).
+    """
+    given = names or {}
     inputs = PipelineInputs(
-        acquirer=_source(acquirer, "acquirer"),  # type: ignore[arg-type]
-        target=_source(target, "target"),  # type: ignore[arg-type]
+        acquirer=_source(acquirer, given.get("acquirer", "acquirer")),  # type: ignore[arg-type]
+        target=_source(target, given.get("target", "target")),  # type: ignore[arg-type]
         mapping={c: _clean(mapping.get(c, {})) for c in COMPANIES},
         category_map=category_map_from(category_map),
         period_end=period_end,

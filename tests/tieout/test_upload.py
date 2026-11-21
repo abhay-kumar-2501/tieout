@@ -77,8 +77,10 @@ def test_check_then_run(blobs: dict[str, bytes]) -> None:
         blobs["target"],
         mapping,
         check.suggestions,
+        names={"acquirer": "buyer.csv", "target": "seller.xlsx"},
         progress=lambda stage, counts: seen.append(stage),
     )
+    assert set(results.lines["source_file"]) == {"buyer.csv", "seller.xlsx"}
     assert seen == ["ingest", "vendor_matching", "item_matching", "synergy"]
     assert results.meta["scenario"] == "custom"
     assert results.meta["category_mapping"]["source"] == "supplied"
