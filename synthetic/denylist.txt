@@ -1,0 +1,311 @@
+# Well-known industrial, distribution, logistics and services company names.
+# Generated vendor, manufacturer and company names must not contain any of these
+# (compared after name normalisation, as whole words, joined, or as a substring
+# of six or more letters). One name per line.
+3M
+ABB
+Ace Hardware
+Advanced Drainage Systems
+Air Liquide
+Air Products
+Airgas
+Alcoa
+Allegion
+Allied Electronics
+Altra Industrial Motion
+Ametek
+Amphenol
+Applied Industrial Technologies
+Arconic
+Arrow Electronics
+Atlas Copco
+Avery Dennison
+Avnet
+Baldor
+Ball Corporation
+Banner Engineering
+BASF
+Bechtel
+Belden
+Berry Global
+Bosch
+Brady
+Brenntag
+Bunzl
+Bureau Veritas
+C.H. Robinson
+Carboline
+Cargill
+Carhartt
+Carlisle
+Carpenter Technology
+Caterpillar
+CDW
+Celanese
+Chevron
+Cintas
+Clarcor
+Cleveland-Cliffs
+Colfax
+Commercial Metals
+Cooper Industries
+Covestro
+Crane
+Crown Holdings
+Cummins
+Danaher
+Deere
+Deloitte
+Dematic
+DHL
+Dodge
+Donaldson
+Dorman
+Dover
+Dow
+DSV
+DuPont
+Eastman
+Eaton
+Ecolab
+Emerson
+Endress Hauser
+Enerpac
+EnPro
+Expeditors
+ExxonMobil
+Fastenal
+FedEx
+Ferguson
+Festo
+Flowserve
+Fluke
+Fortive
+Fortune Brands
+Gates
+GE
+General Electric
+Genuine Parts
+Georgia-Pacific
+Gerdau
+Graco
+Grainger
+Graphic Packaging
+Greif
+Hach
+Harbor Freight
+Hayward
+Henkel
+Hillman
+Hilti
+Hitachi
+Home Depot
+Honeywell
+Hubbell
+Huntsman
+IDEX
+IFM
+Illinois Tool Works
+Ingersoll Rand
+International Paper
+Interstate Batteries
+ITT
+J.B. Hunt
+Jacobs
+Johnson Controls
+Kaman
+Kennametal
+Keyence
+Kimberly-Clark
+Klein Tools
+Koch
+Kone
+KPMG
+Kuehne Nagel
+Lawson Products
+Leviton
+Lincoln Electric
+Linde
+Lowe's
+LyondellBasell
+Makita
+Manpower
+Marmon
+McKinsey
+McMaster-Carr
+Mersen
+Michelin
+Milwaukee Tool
+Mitsubishi
+Mobil
+Motion Industries
+MRC Global
+MSC Industrial
+Mueller Industries
+NAPA
+Nibco
+Nidec
+NOV
+Nucor
+Office Depot
+Oldcastle
+Olin
+Omron
+Otis
+Owens Corning
+Packaging Corporation of America
+Panduit
+Parker Hannifin
+Pentair
+Pepperl Fuchs
+Pfannenberg
+Phoenix Contact
+Pitney Bowes
+PPG
+Precision Castparts
+Proto Labs
+PwC
+R.S. Hughes
+Regal Rexnord
+Reliance Steel
+Rexel
+Rittal
+Rockwell Automation
+Ryder
+Ryerson
+Saint-Gobain
+Samsonite
+Sandvik
+Schaeffler
+Schneider Electric
+Sealed Air
+Sherwin-Williams
+Siemens
+Sika
+SKF
+SMC
+Snap-on
+Sonepar
+Sonoco
+Southwire
+Stanley Black & Decker
+Staples
+Steel Dynamics
+Stryker
+Sulzer
+Sun Hydraulics
+Swagelok
+Teknor
+Textron
+Thermo Fisher
+ThyssenKrupp
+Timken
+Total
+Trane
+TransDigm
+Tsubaki
+Uline
+United Rentals
+UPS
+Uline Shipping
+US Steel
+Valmont
+Veolia
+Victaulic
+Vishay
+Vulcan Materials
+W.W. Grainger
+Wabtec
+WAGO
+Watsco
+Watts Water
+Weidmuller
+Werner
+WESCO
+WestRock
+Weyerhaeuser
+Whirlpool
+Wilson Industries
+Wurth
+Xylem
+Yaskawa
+Yokogawa
+Zebra Technologies
+Zurn
+Kaeser
+Lapp
+Igus
+Bossard
+Optimas
+Wajax
+Kimball
+Bearing Distributors
+BDI
+Kaman Distribution
+Global Industrial
+Zoro
+Northern Tool
+Tractor Supply
+Mouser
+Digi-Key
+Newark
+Graybar
+Border States
+CED
+Crescent Electric
+Kirby Risk
+Van Meter
+Turtle
+Mayer Electric
+Womack
+DXP
+Hisco
+Bisco
+Production Tool
+Rutland
+Ferguson Enterprises
+Core and Main
+Hajoca
+Winsupply
+Mcjunkin
+Edgen Murray
+Cardinal Health
+Medline
+Sysco
+Aramark
+Sodexo
+Iron Mountain
+Randstad
+Adecco
+Kelly Services
+Robert Half
+Accenture
+Infosys
+Wipro
+Oracle
+SAP
+Microsoft
+Amazon
+Google
+IBM
+Cisco
+Dell
+Lenovo
+Verizon
+Comcast
+Maersk
+XPO
+Old Dominion
+Estes
+Saia
+Yellow
+ArcBest
+Schneider National
+Werner Enterprises
+Landstar
+Penske
+Purolator
+Canpar
+TForce
+Loomis
+Brinks
