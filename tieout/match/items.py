@@ -48,6 +48,7 @@ from tieout.match.attributes import (
     numeric_tokens,
     parse_attributes,
 )
+from tieout.match.differences import describe, unexplained_tokens
 from tieout.normalise.items import (
     extract_mpn_like_tokens,
     item_key,
@@ -57,6 +58,7 @@ from tieout.normalise.items import (
     normalise_manufacturer,
 )
 from tieout.normalise.packs import strip_pack_tokens
+from tieout.normalise.truncation import cut_length
 
 __all__ = [
     "ITEM_MAP_COLUMNS",
@@ -107,6 +109,7 @@ SCORED_COLUMNS = [
     "conflict",
     "subset_only",
     "number_mismatch",
+    "word_mismatch",
     "critical_agreements",
     "mpn_token",
     "facts",
@@ -126,6 +129,7 @@ PAIR_COLUMNS = [
     "conflict",
     "subset_only",
     "number_mismatch",
+    "word_mismatch",
     "critical_agreements",
     "mpn_token",
     "facts",
@@ -241,6 +245,7 @@ class _Prepared:
     l2: list[str]
     family: list[str]
     norm: list[str]
+    guard: list[str]
     raw: list[str]
     attrs: list[Attributes]
     mpn: list[str | None]
@@ -258,18 +263,28 @@ def _prepare(records: pd.DataFrame) -> tuple[pd.DataFrame, _Prepared]:
         recs["item_record_id"] = recs["company"].astype(str) + ":" + recs["item_key"].astype(str)
     recs = recs.sort_values("item_record_id", kind="mergesort").reset_index(drop=True)
     norms: list[str] = []
+    guards: list[str] = []
     raws: list[str] = []
     attrs: list[Attributes] = []
-    cache: dict[tuple[str, str], tuple[str, Attributes]] = {}
+    cache: dict[tuple[str, str, bool], tuple[str, str, Attributes]] = {}
     families = [(_clean(f) or "generic").lower() for f in recs["family"]]
-    for desc, fam in zip(recs["description"], families, strict=False):
-        key = (_clean(desc) or "", fam)
+    limits = {
+        str(company): cut_length(group["description"])
+        for company, group in recs.groupby("company", sort=True)
+    }
+    for desc, fam, company in zip(recs["description"], families, recs["company"], strict=False):
+        text = _clean(desc) or ""
+        key = (text, fam, len(text) == limits.get(str(company)))
         if key not in cache:
-            norm = normalise_description(strip_pack_tokens(key[0]))
-            cache[key] = (norm, parse_attributes(norm, fam))
-        norm, parsed = cache[key]
+            norm = normalise_description(strip_pack_tokens(text))
+            # A description cut at its field length may end in a partial token
+            # ("SCH 8" for "SCH 80"); attributes and guards ignore that token.
+            guard = norm.rsplit(" ", 1)[0] if key[2] and " " in norm else norm
+            cache[key] = (norm, guard, parse_attributes(guard, fam))
+        norm, guard, parsed = cache[key]
         norms.append(norm)
-        raws.append(strip_pack_tokens(key[0]))
+        guards.append(guard)
+        raws.append(strip_pack_tokens(text))
         attrs.append(parsed)
     ids = recs["item_record_id"].astype(str).tolist()
     prepared = _Prepared(
@@ -278,6 +293,7 @@ def _prepare(records: pd.DataFrame) -> tuple[pd.DataFrame, _Prepared]:
         l2=[_clean(v) or "" for v in recs["l2_code"]],
         family=families,
         norm=norms,
+        guard=guards,
         raw=raws,
         attrs=attrs,
         mpn=[mpn_key(v) for v in recs["mpn"]],
@@ -435,6 +451,11 @@ def _score(prep: _Prepared, review_cosine: float, top_k: int) -> pd.DataFrame:
             na, nb = bare_numbers(prep.norm[i]), bare_numbers(prep.norm[j])
             if na - nb and nb - na:
                 mismatch = f"{', '.join(sorted(na - nb))} vs {', '.join(sorted(nb - na))}"
+        difference = ""
+        if stage == "I3" and not mismatch:
+            only_a, only_b = unexplained_tokens(prep.norm[i], prep.norm[j])
+            if only_a and only_b:
+                difference = describe(only_a, only_b)
         if stage == "I3" and cosine < review_cosine - 1e-12 and token is None:
             continue
         a, b = prep.ids[i], prep.ids[j]
@@ -453,6 +474,8 @@ def _score(prep: _Prepared, review_cosine: float, top_k: int) -> pd.DataFrame:
         facts += _comparison_facts(cmp)
         if mismatch:
             facts += f" Other numbers in the descriptions differ ({mismatch})."
+        if difference:
+            facts += f" Each description states something the other does not ({difference})."
         rows_out.append(
             {
                 "pair_id": _pair_id(a, b),
@@ -465,6 +488,7 @@ def _score(prep: _Prepared, review_cosine: float, top_k: int) -> pd.DataFrame:
                 "conflict": cmp.veto,
                 "subset_only": cmp.subset_only,
                 "number_mismatch": bool(mismatch),
+                "word_mismatch": bool(difference),
                 "critical_agreements": cmp.critical_agreements,
                 "mpn_token": token,
                 "facts": facts,
@@ -518,6 +542,7 @@ def _proposal(row: dict[str, Any], auto: float, review: float) -> tuple[str | No
         cosine >= auto - 1e-12
         and not row["subset_only"]
         and not row["number_mismatch"]
+        and not row["word_mismatch"]
         and agree >= 2
     ):
         return (
@@ -533,6 +558,8 @@ def _proposal(row: dict[str, Any], auto: float, review: float) -> tuple[str | No
             why = "one side's numeric attributes are a subset of the other's"
         elif row["number_mismatch"]:
             why = "other numbers in the descriptions differ"
+        elif row["word_mismatch"]:
+            why = "each description states something the other does not"
         else:
             why = f"only {agree} critical attribute(s) agree on both sides (two needed)"
         return "C", "pending", f"Tier C, review only: {why}. Text similarity alone never matches."
@@ -559,6 +586,7 @@ def _assemble(
         rec["conflict"] = bool(rec["conflict"])
         rec["subset_only"] = bool(rec["subset_only"])
         rec["number_mismatch"] = bool(rec["number_mismatch"])
+        rec["word_mismatch"] = bool(rec["word_mismatch"])
         rows[rec["pair_id"]] = dict(rec)
 
     # Approved pairs the matcher did not propose this run still count.
@@ -584,6 +612,7 @@ def _assemble(
             "conflict": False,
             "subset_only": False,
             "number_mismatch": False,
+            "word_mismatch": False,
             "critical_agreements": 0,
             "mpn_token": None,
             "facts": "Not proposed by the matcher in this run.",
@@ -671,6 +700,7 @@ def _assemble(
         pairs["conflict"] = pairs["conflict"].astype(bool)
         pairs["subset_only"] = pairs["subset_only"].astype(bool)
         pairs["number_mismatch"] = pairs["number_mismatch"].astype(bool)
+        pairs["word_mismatch"] = pairs["word_mismatch"].astype(bool)
         pairs["critical_agreements"] = pairs["critical_agreements"].astype(int)
 
     accepted: dict[str, tuple[str, str, str, float, str]] = {}

@@ -64,8 +64,9 @@ _BEARING_FULL = ("seal", "clearance", "suffix")
 
 # ----------------------------------------------------------------- numbers
 
-# A space-separated mixed number ("1 1/2") only with a one- or two-digit whole part.
-NUM = r"(?:\d+-\d+/\d+|(?<!\d)\d{1,2} \d+/\d+|\d+/\d+|\d*\.\d+|\d+)"
+# Mixed numbers are hyphenated by I0 ("1 1/2" -> "1-1/2"), so a space always
+# separates two numbers ("90 3/4IN" is a 90 degree elbow of 3/4 inch).
+NUM = r"(?:\d+-\d+/\d+|\d+/\d+|\d*\.\d+|\d+)"
 _B = r"(?<![A-Z0-9])"  # token start
 _E = r"(?![A-Z0-9])"  # token end
 
@@ -435,8 +436,13 @@ def parse_bearings(text: str) -> Attributes:
                 other.add(f"-{chunk}")  # inch bore of insert units, e.g. UC205-16
             else:
                 other.add(chunk)
-        # Space-separated suffix tokens straight after the designation.
+        # Space-separated suffix tokens straight after the designation. A one- or
+        # two-digit token straight after a bare designation is the inch bore that a
+        # hyphen would attach ("UC205 16" reads as "UC205-16").
         rest = text[base.end() :].split()
+        if rest and not chunks and rest[0].isdigit() and len(rest[0]) <= 2:
+            other.add(f"-{rest[0]}")
+            rest = rest[1:]
         for token in rest:
             parts = [p for p in re.split(r"[-/.]", token) if p]
             split = [_split_suffix_chunk(p) for p in parts]
@@ -476,7 +482,7 @@ _PVF_SIZE_GROUP = re.compile(
 )
 _PVF_SIZE_UNIT = re.compile(rf"(?<![\d./A-Z#-])(?P<v>{NUM})IN{_E}|NPS\s*(?P<n>{NUM})")
 _PVF_SIZE_BARE = re.compile(
-    rf"(?<![\d./A-Z#-])(?P<v>\d+-\d+/\d+|\d+ \d+/\d+|\d+/\d+|\d*\.\d+|1[0-2]|[1-9])"
+    rf"(?<![\d./A-Z#-])(?P<v>\d+-\d+/\d+|\d+/\d+|\d*\.\d+|1[0-2]|[1-9])"
     rf"(?![\d/.]|\s*(?:PC|PIECE|WAY|DEG|#|LB|PSI|WOG|FT|MM|M{_E}|X))"
 )
 _PVF_MATERIAL = [
@@ -813,7 +819,7 @@ def parse_ppe(text: str) -> Attributes:
     materials = sorted({v for p, v in _PPE_MATERIALS if re.search(p, work)})
     if materials:
         out["material"] = "+".join(materials)
-    sm = re.search(r"(?:SIZE|SZ)\s*[:#]?\s*(\d{1,2}(?:\.5)?)(?![\d.])", text)
+    sm = re.search(r"(?:SIZE|SZ)\s*[:#]?\s*(\d{1,2}(?:\.5)?)(?![\d.A-Z])", text)
     if sm:
         out["size"] = fmt(float(sm.group(1)))
     else:
@@ -957,14 +963,19 @@ def parse_abrasives(text: str) -> Attributes:
                 out["bore"] = _dim(v, u or _abrasive_unit([(v, None)]))
             work = work[: b.start()] + " " + work[b.end() :]
     if "diameter" not in out:
-        d = re.search(
-            rf"(?:DIAMETER|DIA|OD)\s*[:=]?\s*(?P<v2>{NUM})(?P<u2>IN|MM)"
-            rf"|(?<![\d./A-Z#-])(?P<v>{NUM})(?P<u>IN|MM){_E}",
-            work,
-        )
+        named = re.search(rf"(?:DIAMETER|DIA|OD)\s*[:=]?\s*(?P<v>{NUM})(?P<u>IN|MM)", work)
+        # Otherwise the largest stated size that is not a depth, length or width
+        # qualifier ("2IN DEEP"), so word order never changes the reading.
+        sizes = [
+            (to_float(m.group("v")) * (25.4 if m.group("u") == "IN" else 1.0), m.start(), m)
+            for m in re.finditer(
+                rf"(?<![\d./A-Z#-])(?P<v>{NUM})(?P<u>IN|MM){_E}(?!\s*(?:DEEP|DEPTH|LONG|WIDE))",
+                work,
+            )
+        ]
+        d = named or (max(sizes, key=lambda s: (s[0], -s[1]))[2] if sizes else None)
         if d:
-            v, u = (d.group("v"), d.group("u")) if d.group("v") else (d.group("v2"), d.group("u2"))
-            out["diameter"] = _dim(v, u)
+            out["diameter"] = _dim(d.group("v"), d.group("u"))
         else:
             d2 = re.search(r"(?<![\d./A-Z#-])(?P<v>\d+-\d+/\d+|\d+/\d+|\d*\.\d+)(?![\d/.])", work)
             if d2 and not re.search(r"GRIT", work[d2.end() : d2.end() + 6]):
@@ -1144,7 +1155,7 @@ def bare_numbers(text: str) -> frozenset[str]:
     """Whole tokens that are plain numbers (``46``, ``1/2``, ``1-1/2``), canonical."""
     out = set()
     for token in re.split(r"[\s,;()]+", text):
-        if re.fullmatch(NUM, token) and not re.fullmatch(r"\d+ \d+/\d+", token):
+        if re.fullmatch(NUM, token):
             out.add(_num(token))
     return frozenset(out)
 

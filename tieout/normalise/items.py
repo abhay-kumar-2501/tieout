@@ -19,6 +19,7 @@ from functools import lru_cache
 
 from rapidfuzz import fuzz
 
+from tieout.normalise.spelling import is_abbreviation
 from tieout.normalise.vendors import normalise_name
 from tieout.reference import load_abbreviations
 
@@ -53,6 +54,14 @@ _UNIT_SPACE = re.compile(rf"(?<=\d)\s+(?=(?:{_JOIN_UNITS})(?![A-Z0-9]))")
 _TIMES = re.compile(r"(?<=\d)((?:IN|MM|CM|FT)?)(?:\s+[X×\*]\s*|[X×\*])(?=\.?\d|#\d)")
 # Metric thread with a dash before an integer length: "M8-40" -> "M8X40".
 _METRIC_DASH = re.compile(r"(?<![A-Z0-9])M(\d+(?:\.\d+)?)\s*-\s*(\d+)(?![\d./])")
+# A mixed number written with a space ("1 1/2") becomes "1-1/2" before anything
+# else, so that later steps never read two neighbouring fields as one number.
+_MIXED_NUMBER = re.compile(r"(?<![\w#./-])(\d{1,2}) (\d+/\d+)(?![\d/])")
+# Field separators: "BELT,TIMING,920" reads as the words "BELT TIMING 920". Commas are
+# never decimal or thousands marks in descriptions (a field-per-comma style puts
+# numbers side by side: "BELT,TIMING,2560,850MM"). They are replaced after units
+# and dimensions are joined, so nothing is joined across a comma.
+_LIST_SEPARATOR = re.compile(r"[,;]")
 _WORD = re.compile(r"(?<![A-Z0-9])[A-Z]+(?![A-Z0-9])")
 _SPACES = re.compile(r"\s+")
 
@@ -65,18 +74,22 @@ def _default_abbreviations() -> dict[str, str]:
 def normalise_description(text: str | None, abbreviations: Mapping[str, str] | None = None) -> str:
     """Return the I0-normalised description.
 
-    Upper-cases, turns inch and foot marks into ``IN`` / ``FT``, standardises
-    dimension separators (``M8 x 40``, ``M8-40`` -> ``M8X40``), glues units to
-    their numbers, expands whole-token abbreviations and collapses whitespace.
+    Upper-cases, writes mixed numbers with a hyphen (``1 1/2`` -> ``1-1/2``),
+    turns inch and foot marks into ``IN`` / ``FT``, standardises dimension
+    separators (``M8 x 40``, ``M8-40`` -> ``M8X40``), glues units to their
+    numbers, reads commas and semicolons as word breaks, expands whole-token
+    abbreviations and collapses whitespace.
     """
     if text is None:
         return ""
     s = unicodedata.normalize("NFKC", str(text)).upper()
+    s = _MIXED_NUMBER.sub(r"\1-\2", s)
     s = _INCH_MARK.sub("IN", s)
     s = _FOOT_MARK.sub("FT", s)
     s = _UNIT_SPACE.sub("", s)
     s = _METRIC_DASH.sub(r"M\1X\2", s)
     s = _TIMES.sub(r"\1X", s)
+    s = _LIST_SEPARATOR.sub(" ", s)
     abbr = _default_abbreviations() if abbreviations is None else abbreviations
     s = _WORD.sub(lambda m: abbr.get(m.group(0), m.group(0)), s)
     return _SPACES.sub(" ", s).strip()
@@ -121,12 +134,34 @@ def normalise_manufacturer(value: object) -> str:
     return normalise_name(value)
 
 
+def _is_short_form(short: list[str], long: list[str]) -> bool:
+    """``short`` is ``long`` with later words abbreviated or dropped.
+
+    The first words are equal, and each later word of ``short`` is equal to,
+    the start of, or an abbreviation of the word in the same place in ``long``
+    (``PRESTVA`` / ``Prestva Bearing``, ``ALESTUV ELEC`` / ``Alestuv Electric``).
+    """
+    if not short or len(short) > len(long) or short[0] != long[0]:
+        return False
+    return all(
+        s == w or w.startswith(s) or is_abbreviation(s, w)
+        for s, w in zip(short[1:], long[1:], strict=False)
+    )
+
+
 def manufacturers_compatible(a: object, b: object) -> bool:
-    """Equal after V0, either blank, or ``token_sort_ratio`` >= 90."""
+    """Equal after V0, either blank, ``token_sort_ratio`` >= 90, or a short form.
+
+    The short-form case (:func:`_is_short_form`) goes beyond PRD 4.4: purchasing
+    systems often keep only a manufacturer's leading word or an abbreviation.
+    """
     na, nb = normalise_manufacturer(a), normalise_manufacturer(b)
     if not na or not nb or na == nb:
         return True
-    return fuzz.token_sort_ratio(na, nb) >= MANUFACTURER_MIN_RATIO
+    if fuzz.token_sort_ratio(na, nb) >= MANUFACTURER_MIN_RATIO:
+        return True
+    ta, tb = na.split(), nb.split()
+    return _is_short_form(ta, tb) or _is_short_form(tb, ta)
 
 
 def item_key(item_code: object, mpn: object, manufacturer: object) -> str | None:

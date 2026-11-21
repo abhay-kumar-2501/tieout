@@ -225,14 +225,43 @@ def test_v2_group_with_two_tax_ids_in_one_country_is_split() -> None:
         assert (review["status"], review["tier"]) == ("pending", "C")
 
 
-def test_same_name_different_countries_uses_name_stages() -> None:
+def test_same_name_different_countries_are_offered_as_siblings() -> None:
+    # The tax IDs are not compared across countries; the name stage proposes the
+    # pair, but a legal entity is registered in one country, so it is not merged.
     result = match_vendors(
         frame(
             rec("acquirer:V1", "Acme Inc", "111", "US"), rec("target:T1", "Acme Inc", "222", "CA")
         )
     )
+    assert not same(result, "acquirer:V1", "target:T1")
+    held = pair(result, "vendor_sibling", "acquirer:V1", "target:T1")
+    assert held["stage"] == "V2" and held["status"] == "pending"
+    assert "Different countries (US vs CA)" in held["evidence"]
+
+
+def test_different_countries_block_fuzzy_merges() -> None:
+    result = match_vendors(
+        frame(
+            rec("acquirer:V1", "Bolton Precision Machining", country="US"),
+            rec("target:T1", "Bolton Precission Machining", country="CA"),
+        )
+    )
+    assert not same(result, "acquirer:V1", "target:T1")
+    held = pair(result, "vendor_sibling", "acquirer:V1", "target:T1")
+    assert held["status"] == "pending"
+
+
+def test_exact_name_group_is_resolved_per_country() -> None:
+    result = match_vendors(
+        frame(
+            rec("acquirer:V1", "Acme Inc", country="US"),
+            rec("target:T1", "ACME INC", country="US"),
+            rec("target:T2", "Acme Inc", country="CA"),
+        )
+    )
     assert same(result, "acquirer:V1", "target:T1")
-    assert row(result, "target:T1")["stage"] == "V2"
+    assert not same(result, "acquirer:V1", "target:T2")
+    assert pair(result, "vendor_sibling", "acquirer:V1", "target:T2")["status"] == "pending"
 
 
 # ------------------------------------------------------------------ V3
@@ -416,7 +445,11 @@ def test_descending_score_order_with_key_tie_break(monkeypatch: pytest.MonkeyPat
 
 
 def _patch_scores(monkeypatch: pytest.MonkeyPatch, scores: dict[tuple[str, str], float]) -> None:
-    """Replace the name scorer and blocking with a fixed score table."""
+    """Replace the name scorer and blocking with a fixed score table.
+
+    The distinctive-word guard and the review-at-most caps are switched off too:
+    these tests are about V5 clustering order, with made-up one-word names.
+    """
     from tieout.match import vendors
 
     def score(self: NameScorer, x: str, y: str) -> vendors.FuzzyScore:
@@ -433,6 +466,8 @@ def _patch_scores(monkeypatch: pytest.MonkeyPatch, scores: dict[tuple[str, str],
         return out
 
     monkeypatch.setattr(vendors.NameScorer, "score", score)
+    monkeypatch.setattr(vendors.NameScorer, "distinctive_difference", lambda self, x, y: None)
+    monkeypatch.setattr(vendors.NameScorer, "review_cap", lambda self, x, y: None)
     monkeypatch.setattr(vendors, "_candidate_name_pairs", candidates)
 
 
