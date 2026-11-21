@@ -13,7 +13,7 @@ import streamlit as st
 
 from components import state
 from components.page import unavailable
-from components.plotting import chart_with_table, themed
+from components.plotting import axis_money, chart_with_table, hover_amount, themed
 from tieout import theme as t
 from tieout.views import Unavailable, scorecard_table, sensitivity_curves, thousands
 
@@ -104,11 +104,11 @@ def _curve(name: str, frame: pd.DataFrame, current: dict) -> None:
         mode="lines+markers",
         line={"color": t.TEAL, "width": 2},
         name="Base case",
-        hovertemplate="Threshold %{x}<br>Base %{y:$,.0f}<extra></extra>",
+        hovertemplate=f"Threshold %{{x}}<br>Base {hover_amount()}<extra></extra>",
     )
     fig.add_vline(x=current[name], line={"color": t.INK, "width": 1, "dash": "dash"})
     fig.update_xaxes(title_text=_CURVES[name])
-    fig.update_yaxes(title_text="Recurring saving", tickformat="$.3~s")
+    fig.update_yaxes(title_text="Recurring saving", **axis_money())
     fig = themed(fig, height=300, legend=True)
     table = pd.DataFrame(
         {

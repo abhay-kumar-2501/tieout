@@ -44,6 +44,7 @@ from tieout.views import (
     bridge,
     concentration,
     confidence_strip,
+    currency_sign,
     data_quality_summary,
     headline,
     matching_counts,
@@ -60,6 +61,13 @@ from tieout.views import (
     thousands,
 )
 from tieout.views.common import resolve_view
+
+
+def _excel_money(pattern: str) -> str:
+    """An Excel number format with the reporting currency as a literal prefix."""
+    sign = currency_sign()
+    return f'"{sign if sign == "$" else sign + " "}"{pattern}'
+
 
 if TYPE_CHECKING:
     from tieout.results import Results
@@ -380,7 +388,7 @@ def _floating_chart(
         label.points[i].data_label.position = XL_LABEL_POSITION.INSIDE_BASE
     _style_axis(
         chart.value_axis,
-        '"$"#,##0,,"M"',
+        _excel_money('#,##0,,"M"'),
         minimum=bottom,
         maximum=top + carrier * 1.05,
         title=axis_title,
@@ -428,7 +436,7 @@ def _phasing_chart(
         series[5].points[i].data_label.position = XL_LABEL_POSITION.INSIDE_BASE
     _style_axis(
         chart.value_axis,
-        '"$"#,##0.0,,"M"',
+        _excel_money('#,##0.0,,"M"'),
         minimum=-peak * 0.5,
         maximum=peak * 1.3,
         title="Realised in the year",
@@ -477,7 +485,9 @@ def _matrix_chart(
         title="Complexity (1 easy, 5 hard)",
         gridlines=False,
     )
-    _style_axis(chart.value_axis, '"$"#,##0,"k"', minimum=0, title="Base-case saving a year")
+    _style_axis(
+        chart.value_axis, _excel_money('#,##0,"k"'), minimum=0, title="Base-case saving a year"
+    )
     return chart
 
 
@@ -694,7 +704,7 @@ def _slide_baseline(prs: Any, ctx: _Context) -> None:
         series.points[i].data_label.position = XL_LABEL_POSITION.OUTSIDE_END
     _style_axis(
         chart.value_axis,
-        '"$"#,##0,,"M"',
+        _excel_money('#,##0,,"M"'),
         minimum=0,
         maximum=spend["acquirer"] * 1.2,
         title="In-scope spend",

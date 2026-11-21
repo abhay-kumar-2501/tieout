@@ -404,3 +404,9 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **`make demo`.** The Makefile now quotes `$(PYTHON)` so an interpreter path with spaces works. After the demo results it runs `scripts/make_site_assets.py`, which writes `site/assets/bridge.png`, `tieout_workbook.xlsx` and `tieout_deck.pptx` (clean view) and regenerates `site/data.js`. It never writes to `data/demo/`.
 - **Asset sizes.** Workbook 5.5 MB, deck 0.3 MB, bridge image 0.13 MB (2000 x 1080; the page declares 1600 x 900 and CSS sets `height: auto`).
 - **Site tests.** The new checks are in `tests/site/test_site_assets.py` rather than inside `test_site.py`, so they do not collide with the landing-page branch. `requirements.txt` already matched `pyproject.toml`; `tests/test_requirements.py` keeps it so.
+
+## Final polish
+
+- **Reporting currency.** Money text follows `totals["currency"]`: `$` for USD, else the ISO code as a prefix (`EUR 6–13M`). The code sits in a context variable (`tieout.views.common.set_currency`) that `resolve_view` sets from the results every view function reads, so the formatters kept their signatures. Charts (Plotly axes and hovers via `axis_money()` / `hover_amount()`, matplotlib axes and labels) and the deck (text and chart number formats) follow it. Not changed: workbook number formats are unitless (the Summary and cover name the currency); the upload preview's "Annual spend" column is `$%d` (source amounts before any conversion); the cost-of-switching assumption is named `fixed_usd` and stays in USD. A non-USD run is tested in `tests/tieout/test_currency.py`.
+- **Toolbar.** `toolbarMode = "viewer"` hides Streamlit's Deploy button and menu.
+- **Page top padding** is 80 px so the header card clears the fixed navigation bar.
