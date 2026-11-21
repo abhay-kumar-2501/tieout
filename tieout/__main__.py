@@ -113,6 +113,20 @@ def _summary(results: Results, out: Path) -> str:
     )
 
 
+def write_exports(results: Results, out: Path, view: str) -> list[Path]:
+    """Write ``tieout_workbook.xlsx`` and ``tieout_deck.pptx`` to ``out`` in ``view`` (PRD 7)."""
+    from tieout.export.deck import build_deck
+    from tieout.export.workbook import build_workbook
+
+    out.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name, build in (("tieout_workbook.xlsx", build_workbook), ("tieout_deck.pptx", build_deck)):
+        path = out / name
+        path.write_bytes(build(results, view))
+        written.append(path)
+    return written
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Parse ``argv``, run the pipeline, write ``DIR/results/`` and return the exit code."""
     args = build_parser().parse_args(argv)
@@ -133,7 +147,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     results.save(out)
     print(_summary(results, out))
     if not args.no_exports:
-        print("Workbook and deck exports are not built yet; skipped.", file=sys.stderr)
+        for path in write_exports(results, args.out, args.view):
+            print(f"Wrote {path}")
     return EXIT_OK
 
 
