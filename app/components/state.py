@@ -41,6 +41,7 @@ __all__ = [
     "demo_results",
     "is_demo",
     "record_decision",
+    "record_decisions",
     "reset_assumptions",
     "reset_to_demo",
     "save_scenario",
@@ -235,6 +236,35 @@ def record_decision(
     new = validate_decisions(pd.DataFrame([row], columns=list(DECISION_COLUMNS)))
     previous = decisions()
     kept = previous[previous["pair_id"] != pair_id]
+    st.session_state[_DECISIONS] = validate_decisions(
+        pd.concat([kept, new], ignore_index=True) if not kept.empty else new
+    )
+    _bump("decisions")
+    try:
+        current_results()
+    except ValueError:
+        st.session_state[_DECISIONS] = previous
+        _bump("decisions")
+        raise
+
+
+def record_decisions(pair_ids: list[str], decision: str, note: str = "") -> None:
+    """Record one decision on many pairs (bulk approve) with a single ``apply_decisions`` run."""
+    when = datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
+    rows = [
+        {
+            "pair_id": p,
+            "type": p.split("|", 1)[0],
+            "decision": decision,
+            "pack_qty": None,
+            "note": note or None,
+            "decided_at": when,
+        }
+        for p in pair_ids
+    ]
+    new = validate_decisions(pd.DataFrame(rows, columns=list(DECISION_COLUMNS)))
+    previous = decisions()
+    kept = previous[~previous["pair_id"].isin(pair_ids)]
     st.session_state[_DECISIONS] = validate_decisions(
         pd.concat([kept, new], ignore_index=True) if not kept.empty else new
     )

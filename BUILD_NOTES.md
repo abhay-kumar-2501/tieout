@@ -361,3 +361,15 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **Tornado and scenario totals** run the arithmetic dozens of times, so they are kept in session state until the results in force, the saved scenarios or the view change. A form submit therefore takes about a second on the demo data; the cap slider (no tornado on its page) is faster.
 - **Scenarios.** The shipped presets are those of `scenario_table` (Central, Conservative, Stretch, plus the current assumptions); a saved scenario can be put back in force with "Use this scenario".
 - **Not drawn:** the sole-source flag (PRD 5.5) has no view function and is not shown on Risk & roadmap.
+
+## Matching screen
+
+- **Layout.** Stage counts by tier (chart with table), the review queue, the scorecard against the naive baseline, the two threshold curves, then the "What is that worth?" link. In the integration-office view the queue shows the standard "not available" block; counts, scorecard and curves stay (PRD 6.9).
+- **Reject shortcut.** Streamlit reserves `R` (rerun) for button shortcuts, so Reject is `X`; Approve is `A`, Defer `D`, Undo `Z`. Labels show the keys.
+- **Queue list.** Largest dollars at stake first, pending before deferred, top 100 rows drawn; the focus is the top row unless a row is selected. The list is cleared after every action so the selection never points at a moved row.
+- **Defer.** Moves the pair to the end of the queue (the view's status column), so the focus advances.
+- **Pack quantity.** Shown for unit-of-measure flags; Approve with a quantity above zero records it, with zero it clears the flag as a real gap.
+- **Bulk approval.** Per queue type (vendor match, vendor sibling, item match), a score slider on that type's scale, and the pair count and dollars shown before the button. Needs `view.bulk_approve_preview` and `state.record_decisions` (one `apply_decisions` run for the batch). Undo reverses a whole bulk action at once.
+- **Running figure.** The queue shows the exact base and range under the progress bar because the header's rounded range ($6-13M) hides small changes.
+- **Pipe in record keys.** 700 demo queue pairs (MPN-keyed items) have pair ids that `parse_pair_id` rejects, so a decision cannot be written for them. `review_item` now reads the keys from the queue row so they can be inspected; their buttons are disabled with a note. The id format needs fixing in the engine (`tieout/match/review.py`).
+- **Not built.** The "no overlap found" state with nearest misses (PRD 6.13) needs data no view returns; the staged "matching in progress" state is not needed for the precomputed demo.
