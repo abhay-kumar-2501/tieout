@@ -1,0 +1,61 @@
+l1_code,l1_name,l2_code,l2_name,keywords,family,uom_dimension,category_type,criticality
+L01,Raw materials & metals,L01.01,Carbon & alloy steel,carbon;chromoly;rebar;billet;a36;4140;1018;flatbar;ibeam;mild,generic,mass,commodity,standard
+L01,Raw materials & metals,L01.02,Stainless steel,stainless;304;316;304l;316l;duplex;2205;inox;austenitic;ferritic,generic,mass,commodity,critical
+L01,Raw materials & metals,L01.03,Aluminium & non-ferrous,aluminum;aluminium;6061;7075;copper;brass;bronze;titanium;nonferrous;extrusion,generic,mass,commodity,standard
+L01,Raw materials & metals,L01.04,"Plastics, resins & rubber stock",resin;polyethylene;polypropylene;nylon;polycarbonate;acetal;delrin;hdpe;pellets;masterbatch;elastomer,generic,mass,commodity,standard
+L01,Raw materials & metals,L01.05,Castings & forgings,casting;forging;foundry;ductile;sandcast;diecast;pattern;ironcast;castings;forgings,generic,count,engineered,critical
+L02,Fasteners & hardware,L02.01,Bolts & screws,bolt;screw;capscrew;carriage;lag;setscrew;shoulder;tapping;eyebolt;ubolt;hexbolt;torx,fasteners,count,commodity,standard
+L02,Fasteners & hardware,L02.02,Nuts & washers,nut;washer;locknut;nylock;wingnut;castle;lockwasher;flatwasher;fender;belleville;jam;acorn,fasteners,count,commodity,standard
+L02,Fasteners & hardware,L02.03,Anchors,anchor;wedge;sleeve;dropin;concrete;expansion;toggle;masonry;tapcon;undercut,fasteners,count,mro,standard
+L02,Fasteners & hardware,L02.04,Rivets,rivet;blind;pop;tubular;clinch;rivnut;lockbolt;mandrel;brazier;dome,fasteners,count,commodity,standard
+L02,Fasteners & hardware,L02.05,Threaded rod & studs,threaded;rod;stud;allthread;acme;leadscrew;b7;doubleend;turnbuckle;tierod,fasteners,length,commodity,standard
+L03,Bearings & power transmission,L03.01,Ball bearings,ball;deepgroove;angular;2rs;zz;6204;6205;miniature;hybrid;contact;sealed,bearings,count,engineered,critical
+L03,Bearings & power transmission,L03.02,Roller & tapered bearings,roller;tapered;cylindrical;spherical;needle;thrust;30205;22210;cone;cup;cage,bearings,count,engineered,critical
+L03,Bearings & power transmission,L03.03,Mounted units & plain bushings,pillow;pillowblock;mounted;plummer;takeup;bushing;plain;flangette;ucp;ucf,bearings,count,engineered,standard
+L03,Bearings & power transmission,L03.04,Belts & pulleys,belt;vbelt;timing;synchronous;cogged;pulley;sheave;taperlock;serpentine;polyv,generic,count,engineered,standard
+L03,Bearings & power transmission,L03.05,"Chains, sprockets & couplings",chain;sprocket;coupling;jaw;masterlink;spider;idler;gear;shaftcollar;universal,generic,count,engineered,standard
+L04,"Pipe, valves & fittings",L04.01,Pipe & tube,pipe;tubing;seamless;schedule;sch40;sch80;pvc;cpvc;nipple;erw,pvf,length,commodity,standard
+L04,"Pipe, valves & fittings",L04.02,Valves,valve;gate;globe;butterfly;check;solenoid;actuator;relief;regulator;diaphragm,pvf,count,engineered,critical
+L04,"Pipe, valves & fittings",L04.03,Fittings & flanges,fitting;fittings;flange;elbow;tee;reducer;union;npt;ferrule;compression,pvf,count,commodity,standard
+L04,"Pipe, valves & fittings",L04.04,Hose & hose assemblies,hose;hydraulic;crimp;camlock;barb;hoseclamp;braided;100r2;pneumatic;quickcoupler,generic,length,commodity,standard
+L04,"Pipe, valves & fittings",L04.05,Gaskets & seals,gasket;oring;seal;packing;ptfe;viton;buna;epdm;lipseal;graphite,generic,count,commodity,standard
+L05,Electrical & automation,L05.01,Wire & cable,wire;cable;awg;thhn;mtw;coax;shielded;conduit;lug;cat6,electrical,length,commodity,standard
+L05,Electrical & automation,L05.02,Circuit protection & switchgear,breaker;fuse;disconnect;panelboard;switchgear;transformer;surge;mccb;gfci;busbar,electrical,count,engineered,standard
+L05,Electrical & automation,L05.03,Motors & drives,motor;vfd;inverter;servo;stepper;gearmotor;nema;tefc;frequency;softstarter,electrical,count,engineered,critical
+L05,Electrical & automation,L05.04,Relays & contactors,relay;contactor;starter;pushbutton;pilot;selector;terminalblock;ssr;timer;dpdt,electrical,count,engineered,standard
+L05,Electrical & automation,L05.05,"Sensors, PLCs & controls",sensor;proximity;photoeye;encoder;plc;hmi;thermocouple;transmitter;rtd;inductive,generic,count,engineered,critical
+L06,Abrasives & cutting tools,L06.01,Grinding & cutting wheels,grinding;cutoff;wheel;flap;type27;type1;depressed;zirconia;bonded;reinforced,abrasives,count,mro,standard
+L06,Abrasives & cutting tools,L06.02,Coated abrasives,sandpaper;sanding;grit;emery;hookloop;nonwoven;deburring;polishing;buffing;sponge,abrasives,count,mro,standard
+L06,Abrasives & cutting tools,L06.03,Drill bits & taps,drill;bit;tap;reamer;hss;cobalt;twist;countersink;jobber;spotdrill,abrasives,count,commodity,standard
+L06,Abrasives & cutting tools,L06.04,Milling cutters & inserts,endmill;insert;carbide;cnmg;apmt;facemill;boring;toolholder;collet;flute,abrasives,count,engineered,standard
+L06,Abrasives & cutting tools,L06.05,Saw blades,saw;sawblade;bandsaw;hacksaw;holesaw;kerf;tpi;recip;jigsaw;bimetal,abrasives,count,commodity,standard
+L07,Safety & PPE,L07.01,Gloves,glove;gloves;nitrile;latex;leather;anticut;palm;knit;gauntlet;disposable,ppe,count,mro,non_critical
+L07,Safety & PPE,L07.02,Eye & face protection,glasses;goggles;faceshield;lens;antifog;visor;spectacles;z87;eyewash;shade,ppe,count,mro,standard
+L07,Safety & PPE,L07.03,Hearing & respiratory protection,earplug;earmuff;respirator;n95;cartridge;mask;dustmask;p100;nrr;powered,ppe,count,mro,standard
+L07,Safety & PPE,L07.04,Protective clothing & footwear,coverall;apron;vest;hivis;boots;steeltoe;sleeves;flameresistant;hardhat;overalls,ppe,count,mro,non_critical
+L07,Safety & PPE,L07.05,Fall protection & first aid,harness;lanyard;firstaid;spillkit;extinguisher;lockout;tagout;barricade;signage;gauze,generic,count,mro,critical
+L08,Packaging,L08.01,Corrugated boxes & cartons,corrugated;carton;box;cardboard;rsc;diecut;ect;mailer;partition;chipboard,generic,count,commodity,non_critical
+L08,Packaging,L08.02,Pallets & crating,pallet;skid;crate;crating;gaylord;ispm15;cleat;dunnage;lumber;woodbox,generic,count,commodity,non_critical
+L08,Packaging,L08.03,"Stretch film, tape & strapping",stretch;film;tape;strapping;shrink;banding;buckle;masking;duct;cling,generic,count,commodity,non_critical
+L08,Packaging,L08.04,Labels & tags,label;barcode;thermal;tag;ribbon;sticker;hangtag;rfid;gs1;printer,generic,count,commodity,non_critical
+L08,Packaging,L08.05,Protective packaging & void fill,bubble;foam;peanuts;voidfill;kraft;airpillow;cushion;cornerboard;polybag;vci,generic,count,commodity,non_critical
+L09,Chemicals & lubricants,L09.01,Lubricating oils & greases,oil;grease;gearoil;aw46;iso68;lithium;synthetic;nlgi;ep2;lubricant,generic,volume,commodity,standard
+L09,Chemicals & lubricants,L09.02,Cutting fluids & coolants,coolant;cutting;fluid;soluble;emulsion;metalworking;cuttingoil;glycol;antifreeze;mist,generic,volume,commodity,standard
+L09,Chemicals & lubricants,L09.03,Solvents & cleaners,solvent;degreaser;acetone;isopropyl;ipa;mek;cleaner;mineralspirits;toluene;naphtha,generic,volume,mro,standard
+L09,Chemicals & lubricants,L09.04,Adhesives & sealants,adhesive;sealant;silicone;epoxy;threadlocker;cyanoacrylate;rtv;caulk;polyurethane;hotmelt,generic,volume,mro,standard
+L09,Chemicals & lubricants,L09.05,Paints & coatings,paint;primer;enamel;coating;powdercoat;lacquer;zincrich;topcoat;aerosol;marking,generic,volume,commodity,standard
+L10,MRO general & facilities,L10.01,Hand & power tools,wrench;socket;ratchet;screwdriver;pliers;hammer;cordless;impact;torque;toolbox,generic,count,mro,non_critical
+L10,MRO general & facilities,L10.02,Welding supplies,electrode;mig;tig;e7018;er70s6;flux;nozzle;torch;stinger;gouging,generic,mass,mro,standard
+L10,MRO general & facilities,L10.03,Janitorial & breakroom,janitorial;mop;broom;towel;tissue;sanitizer;soap;dispenser;breakroom;trashliner,generic,count,mro,non_critical
+L10,MRO general & facilities,L10.04,Facility maintenance & HVAC,filter;hvac;lamp;led;ballast;thermostat;plumbing;caster;hinge;roofing,generic,count,mro,non_critical
+L10,MRO general & facilities,L10.05,Test equipment & gauges,gauge;gage;caliper;micrometer;multimeter;calibration;thermometer;feeler;height;indicator,generic,count,mro,standard
+L11,Logistics & freight,L11.01,Truckload & LTL freight,truckload;ltl;flatbed;reefer;drayage;linehaul;fuelsurcharge;detention;accessorial;intermodal,generic,time,indirect,standard
+L11,Logistics & freight,L11.02,Parcel & express,parcel;ups;fedex;express;overnight;courier;nextday;dhl;residential;signature,generic,time,indirect,non_critical
+L11,Logistics & freight,L11.03,Ocean & air freight,ocean;airfreight;container;teu;vessel;forwarder;fcl;lcl;awb;bunker,generic,time,indirect,standard
+L11,Logistics & freight,L11.04,Warehousing & 3PL,warehousing;3pl;storage;fulfillment;crossdock;pickpack;handling;inventory;slotting;warehouse,generic,time,indirect,standard
+L11,Logistics & freight,L11.05,Customs & brokerage,customs;broker;brokerage;duty;tariff;hts;importer;bond;clearance;drawback,generic,time,indirect,non_critical
+L12,Professional & IT services,L12.01,Software & cloud,software;saas;license;licence;subscription;cloud;hosting;erp;azure;aws,generic,time,indirect,standard
+L12,Professional & IT services,L12.02,IT hardware & telecom,laptop;server;router;firewall;telecom;voip;wireless;monitor;desktop;broadband,generic,time,indirect,standard
+L12,Professional & IT services,L12.03,Temporary staffing & contractors,staffing;temp;temporary;contractor;agency;recruiting;placement;payrolling;hourly;timesheet,generic,time,indirect,non_critical
+L12,Professional & IT services,L12.04,Engineering & consulting,consulting;consultant;engineering;advisory;architect;feasibility;survey;implementation;training;study,generic,time,indirect,standard
+L12,Professional & IT services,L12.05,"Legal, audit & insurance",legal;attorney;audit;accounting;tax;insurance;premium;actuarial;notary;counsel,generic,time,indirect,standard

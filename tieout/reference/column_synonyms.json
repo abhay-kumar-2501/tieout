@@ -1,0 +1,257 @@
+{
+  "site": [
+    "site",
+    "plant",
+    "location",
+    "business unit",
+    "plant code",
+    "facility",
+    "warehouse",
+    "branch",
+    "division"
+  ],
+  "doc_date": [
+    "doc date",
+    "document date",
+    "po date",
+    "posting date",
+    "invoice date",
+    "order date",
+    "transaction date",
+    "creation date"
+  ],
+  "vendor_id": [
+    "vendor id",
+    "vendor number",
+    "vendor no",
+    "supplier id",
+    "supplier number",
+    "supplier code",
+    "vendor code",
+    "lifnr"
+  ],
+  "vendor_name": [
+    "vendor name",
+    "supplier name",
+    "supplier",
+    "vendor",
+    "name1",
+    "payee name",
+    "vendor legal name",
+    "vendor description"
+  ],
+  "vendor_tax_id": [
+    "vendor tax id",
+    "tax id",
+    "tax number",
+    "vat number",
+    "vat id",
+    "ein",
+    "tax reg no",
+    "supplier tax id",
+    "stcd1"
+  ],
+  "vendor_country": [
+    "vendor country",
+    "country",
+    "country code",
+    "supplier country",
+    "vendor country code",
+    "ship from country",
+    "land1"
+  ],
+  "item_code": [
+    "item code",
+    "item number",
+    "item no",
+    "material",
+    "material number",
+    "sku",
+    "part number",
+    "product code",
+    "matnr",
+    "item id"
+  ],
+  "item_description": [
+    "item description",
+    "description",
+    "material description",
+    "line description",
+    "product description",
+    "short text",
+    "item name",
+    "txz01",
+    "part description"
+  ],
+  "mpn": [
+    "mpn",
+    "manufacturer part number",
+    "mfr part number",
+    "mfg part no",
+    "manufacturer part no",
+    "vendor part number",
+    "mfr part no",
+    "mfrpn"
+  ],
+  "manufacturer": [
+    "manufacturer",
+    "mfr",
+    "mfg",
+    "manufacturer name",
+    "brand",
+    "make",
+    "maker",
+    "producer"
+  ],
+  "category_native": [
+    "category",
+    "category name",
+    "commodity",
+    "commodity code",
+    "material group",
+    "matkl",
+    "product category",
+    "spend category",
+    "item category"
+  ],
+  "uom": [
+    "uom",
+    "unit of measure",
+    "unit",
+    "meins",
+    "purchasing uom",
+    "order unit",
+    "unit of issue",
+    "measure"
+  ],
+  "pack_qty": [
+    "pack qty",
+    "pack quantity",
+    "pack size",
+    "units per pack",
+    "qty per pack",
+    "case qty",
+    "items per pack",
+    "conversion factor"
+  ],
+  "quantity": [
+    "quantity",
+    "qty",
+    "order quantity",
+    "qty ordered",
+    "received quantity",
+    "menge",
+    "units purchased",
+    "invoiced quantity"
+  ],
+  "unit_price": [
+    "unit price",
+    "price",
+    "price per unit",
+    "net price",
+    "netpr",
+    "unit cost",
+    "cost per unit",
+    "po price"
+  ],
+  "line_amount": [
+    "line amount",
+    "amount",
+    "line total",
+    "extended price",
+    "extended amount",
+    "ext price",
+    "net value",
+    "netwr",
+    "invoice amount"
+  ],
+  "currency": [
+    "currency",
+    "currency code",
+    "curr",
+    "waers",
+    "doc currency",
+    "transaction currency",
+    "po currency",
+    "invoice currency"
+  ],
+  "payment_terms_days": [
+    "payment terms days",
+    "payment terms",
+    "terms days",
+    "net days",
+    "zterm",
+    "days payable",
+    "payment days",
+    "credit terms"
+  ],
+  "payment_date": [
+    "payment date",
+    "paid date",
+    "date paid",
+    "check date",
+    "payment clear date",
+    "clearing date",
+    "pay date"
+  ],
+  "contract_id": [
+    "contract id",
+    "contract number",
+    "contract no",
+    "agreement number",
+    "agreement id",
+    "outline agreement",
+    "blanket po",
+    "contract ref"
+  ],
+  "contract_end_date": [
+    "contract end date",
+    "contract expiry",
+    "expiration date",
+    "contract end",
+    "valid to",
+    "agreement end date",
+    "expiry date",
+    "contract expiration"
+  ],
+  "incoterm": [
+    "incoterm",
+    "incoterms",
+    "inco terms",
+    "freight terms",
+    "shipping terms",
+    "delivery terms",
+    "inco1",
+    "fob terms"
+  ],
+  "spend_type": [
+    "spend type",
+    "direct indirect",
+    "direct or indirect",
+    "purchase type",
+    "spend class",
+    "expense type",
+    "material type",
+    "procurement type"
+  ],
+  "po_number": [
+    "po number",
+    "po no",
+    "purchase order",
+    "purchase order number",
+    "ebeln",
+    "order number",
+    "po num",
+    "po id"
+  ],
+  "po_line": [
+    "po line",
+    "po line number",
+    "line number",
+    "line no",
+    "po item",
+    "ebelp",
+    "po line item",
+    "order line"
+  ]
+}
