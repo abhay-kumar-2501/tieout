@@ -15,6 +15,7 @@ from tieout.views.charts import (
     prioritisation_matrix,
     scenario_table,
     sensitivity_curves,
+    sole_source,
     spend_pareto,
     tornado_chart,
 )
@@ -79,6 +80,7 @@ __all__ = [
     "scenario_table",
     "scorecard_table",
     "sensitivity_curves",
+    "sole_source",
     "spend_pareto",
     "synergy_waterfall",
     "thousands",

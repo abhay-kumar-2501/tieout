@@ -45,6 +45,7 @@ __all__ = [
     "prioritisation_matrix",
     "scenario_table",
     "sensitivity_curves",
+    "sole_source",
     "spend_pareto",
     "tornado_chart",
 ]
@@ -351,6 +352,70 @@ def concentration(results: Results, view: str | None = None) -> dict[str, Any]:
         "categories": ordered.reset_index().rename(columns={"index": "category"}),
         "other_label": OTHER,
     }
+
+
+def sole_source(results: Results, view: str | None = None) -> dict[str, Any]:
+    """Sole-source flags (PRD 5.5): categories left with one parent vendor after consolidation,
+    and canonical items both companies buy from one parent vendor only.
+
+    ``categories``: each category with a flag, whether it is left with one vendor
+    (``category_sole_source``, and that vendor) and its number of flagged items (masked:
+    vendors are codes and thin categories sit in "Other"). ``items``: one row
+    per flagged item with its description and category; empty in the masked view, which
+    carries no item-level detail.
+    """
+    mode = resolve_view(results, view)
+    risk = results.category_risk
+    labels = category_labels(results, mode)
+    names = parent_labels(results, mode)
+    empty_items = pd.DataFrame(columns=["item", "description", "category"])
+    if risk.empty:
+        return {
+            "categories": pd.DataFrame(
+                columns=["category", "category_sole_source", "vendor", "items"]
+            ),
+            "items": empty_items,
+        }
+    per_category = risk.drop_duplicates("l2_code")
+    sole_vendor = (
+        risk[risk["sole_source_category"].astype(bool) & (risk["spend_after"] > 0)]
+        .drop_duplicates("l2_code")
+        .set_index("l2_code")["parent_id"]
+    )
+    hit = per_category[
+        per_category["sole_source_category"].astype(bool) | (per_category["sole_source_items"] > 0)
+    ]
+    categories = pd.DataFrame(
+        {
+            "category": [category_label(labels, c) for c in hit["l2_code"]],
+            "category_sole_source": hit["sole_source_category"].astype(bool).to_numpy(),
+            "vendor": [names.get(sole_vendor.get(c), "") for c in hit["l2_code"]],
+            "items": hit["sole_source_items"].to_numpy(dtype=int),
+        }
+    )
+    categories = categories.groupby("category", as_index=False).agg(
+        category_sole_source=("category_sole_source", "max"),
+        vendor=("vendor", "max"),
+        items=("items", "sum"),
+    )
+    categories = categories.sort_values(
+        ["category_sole_source", "items", "category"], ascending=[False, False, True]
+    )
+    if mode == MASKED:
+        return {"categories": categories.reset_index(drop=True), "items": empty_items}
+    described = item_labels(results)
+    rows = []
+    for l2, ids in zip(per_category["l2_code"], per_category["sole_source_item_ids"], strict=True):
+        for item in [i for i in str(ids).split(", ") if i]:
+            rows.append(
+                {
+                    "item": item,
+                    "description": described.get(item, ""),
+                    "category": category_label(labels, l2),
+                }
+            )
+    items = pd.DataFrame(rows, columns=list(empty_items.columns))
+    return {"categories": categories.reset_index(drop=True), "items": items}
 
 
 # ---------------------------------------------------------------- assumptions
