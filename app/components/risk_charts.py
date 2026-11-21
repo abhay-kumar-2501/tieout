@@ -59,7 +59,7 @@ def concentration_figure(vendors: pd.DataFrame, categories: list[str]) -> go.Fig
                 },
                 text=[percent(s) if s >= 0.08 else "" for s in part[column]],
                 textposition="inside",
-                textfont={"color": t.INK if slot else t.SURFACE, "size": 11},
+                textfont={"color": t.INK if slot else t.SURFACE, "size": t.CHART_LABEL},
                 hovertext=[
                     f"{v}<br>{when.lower()} consolidation: {percent(s)} of category spend"
                     for v, s in zip(part["vendor"], part[column], strict=True)
@@ -120,7 +120,7 @@ def matrix_figure(matrix: pd.DataFrame) -> go.Figure:
             for label, show in zip(matrix["label"], labelled, strict=True)
         ],
         textposition="top center",
-        textfont={"size": 11, "color": t.INK},
+        textfont={"size": t.CHART_LABEL, "color": t.INK},
         hovertext=[
             f"{label}<br>Saving {exact_money(base)} a year<br>Complexity {c:.1f}"
             f"<br>Spend {money(s)}<br>{WAVE_NAMES.get(int(w), '')}"

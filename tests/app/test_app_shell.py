@@ -47,6 +47,9 @@ def test_config_hexes_match_tokens():
     assert t["linkColor"] == theme.TEAL
     assert t["borderColor"] == theme.BORDER
     assert t["base"] == "light"
+    assert t["baseFontSize"] == theme.BASE_FONT_SIZE
+    assert t["headingFontSizes"] == list(theme.HEADING_FONT_SIZES)
+    assert t["baseRadius"] == f"{theme.CARD_RADIUS}px"
     assert cfg["server"]["maxUploadSize"] == 50
     assert cfg["server"]["enableStaticServing"] is True
 

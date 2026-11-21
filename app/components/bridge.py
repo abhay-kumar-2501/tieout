@@ -60,7 +60,7 @@ def render_bridge(key: str, *, height: int = 440) -> Mapping[str, Any] | None:
     """The bridge chart with its table toggle and caption; returns the selected bar's row."""
     frame = bridge(state.current_results(), state.view())
     fig = bridge_figure(frame, hover=_hover(frame), height=height)
-    index = chart_with_table(fig, _table(frame), key, bridge_caption(frame))
+    index = chart_with_table(fig, _table(frame), key, bridge_caption(frame), shape="main")
     if index is None or index >= len(frame):
         return None
     return frame.iloc[index].to_dict()

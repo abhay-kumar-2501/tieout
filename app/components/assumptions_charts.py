@@ -36,7 +36,7 @@ def tornado_figure(frame: pd.DataFrame) -> go.Figure:
             marker={"color": color},
             text=[money(v) if abs(v) >= 5e4 else "" for v in frame[column]],
             textposition="outside",
-            textfont={"size": 11, "color": t.INK},
+            textfont={"size": t.CHART_LABEL, "color": t.INK},
             cliponaxis=False,
             hovertext=[
                 f"{label}<br>At {_setting(path, s)}: {exact_money(v)} against the base"
