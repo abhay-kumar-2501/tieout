@@ -293,3 +293,39 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **Headlines.** The Overview headline is the `headline` view's sentence. The Synergies headline is built from the bridge rows: what each lever gives, and which step removed most of the naive figure.
 - **Tour hook.** The Overview calls `components.tour.render_tour_button()` when that module imports, and shows nothing otherwise.
 - **Deep links.** The page scripts live in `app/screens/`, not `app/pages/` as PRD 9.2 sketches. Streamlit treats a `pages/` folder beside the entry script as its older multipage layout, so a first request to `/synergies` on a fresh server ran that page alone, without the header. With the folder renamed, every address goes through `main.py`.
+## Workbook export
+
+- **Formula chain.** Every saving is a capture probability times a fixed gross amount, so each downstream base is a fixed share of upstream savings. `build_workbook` re-runs the arithmetic once (`_engine`, using the synergy stage's helpers), reads those shares and stores them as values; the formulas multiply them by the live savings.
+  - Lever-1 rows are `G1 × π`, with `π` looked up in `Category_Settings`.
+  - Lever-2 rows deduct lever-1 savings through `Links`: `IF(f > 0, MAX(post-move spend − deduction, 0), 0) × d × π2`.
+  - `Payment_Terms` computes `S = MAX(retained spend − deductions, 0)` and cash `= days gained / 365 × S × π3`.
+  - Costs are `(fixed × switch-event share + pct × spend moved) × π`.
+- **Extra tab `Links`.** PRD 7.1 lists no tab for the lever-1 and lever-2 savings that carry into the lever-2 and lever-3 bases. `Links` holds them in two tables, one row per (target, source opportunity), with the share as a value.
+- **No circular references.** Price, volume and cash savings sit in separate column triples on `Opportunities`, and the two link tables use separate columns. With a single savings column, the `SUMIFS` ranges would include cells that depend on the formula itself, and Excel flags a range-level circular reference even when the criteria exclude those cells. `Summary` sums each lever's columns, so recurring and one-time amounts never share a column.
+- **Keys.** `SUMIFS` criteria are row numbers (the `No.` columns), never free-text ids. Excel would read `*`, `?`, `~` or a leading `<`, `>` or `=` in an id as a wildcard or an operator.
+- **Category_Settings.** A category without its own override shows a formula linking to the named global assumption (black), so editing the global value recalculates every such category. An override shows as a blue input. Caps are recorded values.
+- **Check cell.** The check tests internal consistency only, so it stays OK after any assumption edit. Its formula is `IF(ABS(diff) < 0.5, "OK", diff)`, where `diff` sums the identity differences listed under "Consistency checks" on `Summary`:
+  - **Clean:** each lever total on `Summary` against an independent sum over its detail tab:
+    - lever 1 against Σ gross × π over in-range lever-1 rows;
+    - lever 2 against Σ B2 × d × π2;
+    - cash against the `Payment_Terms` total;
+    - raw bridge steps 1–6 against `Bridge_Detail`;
+    - naive − seven steps against lever 1.
+  - **Masked:** `Bridge_By_Category` (naive − all raw steps) against lever 1 on `Opportunities`, plus the bridge residual.
+  
+  The tool's figures sit beside the live ones in "As exported" columns, with a "Change since export (base)" column. Neither is part of the check.
+- **Bridge.**
+  - Raw steps 1–6 are `SUMIFS` over `Bridge_Detail`.
+  - A carry column reproduces "a negative step is shown as zero and moves to the next step".
+  - Step 7 is `naive − Σ shown steps 1–6 − lever-1 base`, as PRD 7.1 specifies, so any remaining carry lands where the engine puts it.
+  - Amounts are shown as positive removals.
+- **Spend_Cube.** Lines are summed over identical company, site, parent vendor, legal entity, L1, L2, canonical item and base unit, since none of the listed columns identifies a single line. Price is spend ÷ base-unit quantity, and an `Addressable` column feeds the addressable-spend formula. On the demo this gives 22,242 rows instead of 60,012.
+- **Masked workbook.** The aggregated tabs hold values taken from the masked view functions (`concentration`, `phasing_by_year`, `phasing_by_quarter`, `opportunity_labels`, `category_labels`). `Summary` and `Bridge` are formulas over those tabs.
+  - The workbook is not assumption-live: a merged "Other" row cannot carry one capture probability per category. Only the financing memo and the band checks recalculate, and the README and the Assumptions tab say so.
+  - `Opportunities` is grouped by the views' labels: lever × category, with lever 3 as one "Payment terms" row. It also carries the tier A, tier B and pending-upside columns the Summary needs.
+  - `Bridge_By_Category` holds raw step amounts; the carry is applied on `Bridge`.
+  - `Links` and `Payment_Terms` are omitted because they name items and vendors.
+- **A1 label.** "Illustrative — synthetic data" appears when `meta.scenario == "demo"` or a seed is recorded; otherwise A1 reads "Tie-Out".
+- **Determinism.** The file's creation time is the report date, so the same results give byte-identical files.
+- **LibreOffice.** The recalculation test writes a throwaway profile setting `OOXMLRecalcMode` to 0 (always recalculate) and converts with `soffice --headless --convert-to xlsx`. It is skipped when `soffice` is absent. LibreOffice was not available here, so neither the test nor the setting name has been confirmed.
+- **Size and time (demo, 60,012 lines).** The clean workbook is 5.5 MB with 40,763 formulas and builds in about 4 s. The masked workbook is 0.09 MB and builds in about 0.4 s. The test evaluator re-evaluates every clean formula in about 3 s.
