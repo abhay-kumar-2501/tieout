@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import math
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import IO
@@ -62,12 +63,25 @@ def make_pair_id(pair_type: str, side_a: str, side_b: str) -> str:
     return f"{pair_type}|{first}|{second}"
 
 
+_SIDE_START = re.compile(r"\|(?=(?:acquirer|target):)")
+
+
 def parse_pair_id(pair_id: str) -> tuple[str, str, str]:
-    """Split a pair id into ``(type, side_a, side_b)``."""
-    parts = pair_id.split("|")
-    if len(parts) != 3 or parts[0] not in QUEUE_TYPES:
+    """Split a pair id into ``(type, side_a, side_b)``.
+
+    A record key may itself contain ``|`` (part-number keys are ``MPN:{mpn}|{maker}``), so the
+    id is split on the type prefix and then on a ``|`` that is followed by ``acquirer:`` or
+    ``target:``. If a key contains that text too the split is ambiguous; the last boundary is
+    taken (the second side is then the shortest possible).
+    """
+    pair_type, _, rest = pair_id.partition("|")
+    starts = [m.start() for m in _SIDE_START.finditer(rest)]
+    if pair_type not in QUEUE_TYPES or not rest.startswith(("acquirer:", "target:")):
         raise ValueError(f"malformed pair id {pair_id!r}")
-    return parts[0], parts[1], parts[2]
+    if not starts:
+        raise ValueError(f"malformed pair id {pair_id!r}")
+    cut = starts[-1]
+    return pair_type, rest[:cut], rest[cut + 1 :]
 
 
 def empty_decisions() -> pd.DataFrame:

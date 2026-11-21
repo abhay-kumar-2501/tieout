@@ -49,6 +49,7 @@ from tieout.match.attributes import (
     parse_attributes,
 )
 from tieout.match.differences import describe, unexplained_tokens
+from tieout.match.review import parse_pair_id
 from tieout.normalise.items import (
     extract_mpn_like_tokens,
     item_key,
@@ -593,10 +594,12 @@ def _assemble(
     for pid, dec in sorted(decisions.items()):
         if dec != "approve" or pid in rows:
             continue
-        parts = pid.split("|")
-        if len(parts) != 3 or parts[0] != PAIR_TYPE:
+        try:
+            pair_type, a, b = parse_pair_id(pid)
+        except ValueError:
             continue
-        a, b = parts[1], parts[2]
+        if pair_type != PAIR_TYPE:
+            continue
         if a not in prep.index or b not in prep.index:
             continue
         if prep.company[prep.index[a]] == prep.company[prep.index[b]]:
