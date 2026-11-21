@@ -83,7 +83,7 @@ Remaining for you:
 
 ## 6. Excel and PowerPoint open check (done)
 
-Done on 2026-11-22 with Excel and PowerPoint for Mac, on the committed samples in `site/assets/`.
+Done on 2026-11-21 with Excel and PowerPoint for Mac, on the committed samples in `site/assets/`.
 
 - The deck opens with no repair prompt. Slides 1 and 3 to 8 were paged through at full size and slide 2 was seen as a thumbnail: no clipped or overlapping text, and the charts are native and editable.
 - The workbook opens with no repair prompt. `Summary` shows the same figures as the app. Changing the same-vendor base capture probability on `Assumptions` moved the lever 1 base figure on `Summary` at once, so the formulas recalculate in Excel.
