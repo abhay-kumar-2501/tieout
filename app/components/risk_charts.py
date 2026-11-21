@@ -147,8 +147,13 @@ def matrix_figure(matrix: pd.DataFrame) -> go.Figure:
             hoverinfo="skip",
         )
     fig.update_xaxes(title_text="Complexity (1 easy, 5 hard)", range=[0.8, 5.2])
+    peak = float(matrix["base"].max()) if len(matrix) else 0.0
+    # Headroom so the labels of the largest bubbles are not cut off at the top edge.
     fig.update_yaxes(
-        title_text="Annual saving, base case", tickformat=AXIS_MONEY, rangemode="tozero"
+        title_text="Annual saving, base case",
+        tickformat=AXIS_MONEY,
+        range=[0, peak * 1.3] if peak > 0 else None,
+        rangemode="tozero",
     )
     return themed(fig, height=520, legend=True)
 

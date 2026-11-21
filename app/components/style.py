@@ -12,7 +12,7 @@ _CSS = f"""
 <style>
 .block-container {{
     max-width: {t.MAX_CONTENT_WIDTH}px;
-    padding-top: {t.SPACING[2]}px;
+    padding-top: {t.SPACING[2] + 56}px;  /* clear the fixed top navigation bar */
 }}
 h1, h2, h3, h4 {{ color: {t.INK}; font-weight: 600; }}
 .to-headline {{

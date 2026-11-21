@@ -172,7 +172,7 @@ def test_tornado_lists_twelve_inputs_and_toggles_to_a_table() -> None:
     at.toggle(key="asm_tornado_as_table").set_value(True).run()
     table = next(f.value for f in at.dataframe if "Swing" in f.value.columns)
     assert len(table) == 12
-    assert "Lever 2 · capture · base" in list(table["Assumption"])
+    assert "Volume consolidation: chance of capturing the discount" in list(table["Assumption"])
 
 
 def test_masked_page_shows_no_vendor_name(demo: Results) -> None:

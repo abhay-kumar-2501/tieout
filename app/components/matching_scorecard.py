@@ -23,6 +23,15 @@ _CURVES = {
 }
 
 
+def target_text(raw: str) -> str:
+    """``>= 0.98`` as ``at least 98.0%``, so targets read like the figures beside them."""
+    direction, _, bound = str(raw).partition(" ")
+    if not bound:
+        return ""
+    words = {">=": "at least", "<=": "at most"}.get(direction, direction)
+    return f"{words} {float(bound):.1%}"
+
+
 def _pct(value: object) -> str:
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return "n/a"
@@ -56,7 +65,7 @@ def _scorecard(table: pd.DataFrame) -> None:
             "Metric": table["label"],
             "Tie-Out": [_pct(v) for v in table["tool"]],
             "Naive baseline": [_pct(v) for v in table["baseline"]],
-            "Target": table["target"],
+            "Target": [target_text(v) for v in table["target"]],
             "Gate": [_gate(p) for p in table["passed"]],
         }
     )

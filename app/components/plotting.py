@@ -141,6 +141,14 @@ def bridge_figure(
             f"{label}<br>{exact_money(amount)}"
             for label, amount in zip(frame["label"], frame["amount"], strict=True)
         ]
+    # A bar with a range whisker would have its label drawn through the whisker, so the
+    # label moves to an annotation above the whisker's top end.
+    errors = _range_errors(frame)
+    above = (
+        [a > 0 or b > 0 for a, b in zip(errors["array"], errors["arrayminus"], strict=True)]
+        if errors
+        else [False] * len(labels)
+    )
     fig = go.Figure()
     fig.add_bar(
         x=labels,
@@ -154,17 +162,30 @@ def bridge_figure(
         x=labels,
         y=frame["bar_height"],
         marker={"color": list(colors or bridge_colors(frame)), "line": {"width": 0}},
-        text=list(frame["text"]),
+        text=["" if up else text for text, up in zip(frame["text"], above, strict=True)],
         textposition="outside",
         textfont={"color": t.INK, "size": 12},
         cliponaxis=False,
         hovertext=list(hover),
         hoverinfo="text",
-        error_y=_range_errors(frame),
+        error_y=errors,
         showlegend=False,
         name="amount",
     )
     fig.update_layout(barmode="stack", bargap=0.35)
+    if errors:
+        for i, up in enumerate(above):
+            if not up:
+                continue
+            top = float(frame["bar_base"].iloc[i] + frame["bar_height"].iloc[i])
+            fig.add_annotation(
+                x=labels[i],
+                y=top + errors["array"][i],
+                text=str(frame["text"].iloc[i]),
+                showarrow=False,
+                yshift=10,
+                font={"color": t.INK, "size": 12},
+            )
     fig.update_yaxes(title_text=y_title, tickformat=AXIS_MONEY, rangemode="tozero")
     fig.update_xaxes(tickangle=0)
     return themed(fig, height=height)

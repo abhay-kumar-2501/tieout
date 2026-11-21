@@ -17,6 +17,7 @@ from evaluation.scorecard import build_scorecard
 from tieout import results as views
 from tieout.results import NOT_IN_VIEW, Results, Unavailable
 from tieout.synergy.trace import figure_value
+from tieout.views.charts import _assumption_label
 from tieout.views.common import category_labels
 
 MODES = ("clean", "masked")
@@ -251,6 +252,9 @@ def test_thin_categories_merge_into_other_when_masked() -> None:
 def test_tornado_and_scenarios(results: Results) -> None:
     tornado = views.tornado_chart(results)
     assert 0 < len(tornado) <= 12 and tornado["swing"].is_monotonic_decreasing
+    # Plain names, never the dotted path or "Lever 2 · capture · base" (PRD 6.12).
+    assert not tornado["label"].str.contains("·|_|lever", case=False).any()
+    assert _assumption_label("lever2.capture.base").startswith("Volume consolidation")
     table = views.scenario_table(results, {"Mine": results.assumptions})
     assert list(table["scenario"]) == [
         "Current assumptions",
