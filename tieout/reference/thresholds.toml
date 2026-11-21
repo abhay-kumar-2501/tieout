@@ -1,0 +1,9 @@
+# Matching thresholds. The auto values are overwritten by evaluation/tune.py
+# (PRD 4.7); the review values are fixed.
+[vendor]
+auto = 92
+review = 75
+
+[item]
+auto_cosine = 0.80
+review_cosine = 0.60
