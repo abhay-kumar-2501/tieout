@@ -258,3 +258,11 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
   
   Reference bands, the close date and the settings file are not moved. Rows are sorted by the larger absolute effect, ties by path. "Central (defaults)" keeps only the `category_settings` file. "Conservative" and "Stretch" set every global base probability, and every `pi*_base` cell in the settings file, to its low or high value. When the low or high cell is blank, the base cell is cleared so that it falls back to the moved global value.
 - **Performance.** `compute_synergy` on seed 1 (59,902 lines) takes about 0.29 s. The tornado (around 60 base-case evaluations on the cache) takes about 0.4 s.
+
+## Landing page (site/)
+
+- The README has no "run locally" section yet (only "Development"); the page links to its `#development` anchor on the repository page.
+- The headline range is the recurring defensible run-rate (levers 1 and 2), low to high, rounded per PRD 6.11 ($6–13M); the naive figure is lever 1's naive figure.
+- Headline figures are rendered by `site/main.js` from `site/data.js`; with scripts off the hero shows an ellipsis and a note pointing to the bridge image.
+- `site/assets/bridge.png` is a neutral placeholder until `make demo` regenerates it; the sample workbook and deck links are plain anchors that 404 until then.
+- The traceability section shows the lever 2 chain from the trace design, not a live figure.
