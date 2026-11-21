@@ -18,14 +18,17 @@ test:
 	pytest
 
 # Generate the held-out seed (the demo dataset), score it, precompute the threshold
-# sensitivity, then run the engine on it and save the demo results with both embedded.
+# sensitivity, run the engine on it and save the demo results with both embedded, then
+# write the landing page's sample outputs (bridge image, workbook, deck, data.js) to site/.
 demo:
-	$(PYTHON) -m synthetic --seed 4 --out $(SEED4) --truth-dir data/truth/seed_4
+	"$(PYTHON)" -m synthetic --seed 4 --out $(SEED4) --truth-dir data/truth/seed_4
 	cp $(SEED4)/vendor_parents.csv $(SEED4)/category_map.csv data/demo/
-	$(PYTHON) -m evaluation score
-	$(PYTHON) -m evaluation sensitivity
+	"$(PYTHON)" -m evaluation score
+	"$(PYTHON)" -m evaluation sensitivity
 	rm -rf data/demo/results
-	$(PYTHON) -m tieout run $(SEED4)/acquirer.csv $(SEED4)/target.csv --out data/demo \
+	"$(PYTHON)" -m tieout run $(SEED4)/acquirer.csv $(SEED4)/target.csv --out data/demo \
 		--category-map data/demo/category_map.csv --vendor-parents data/demo/vendor_parents.csv \
 		--as-of 2026-01-15 --scenario demo --scorecard data/demo/scorecard.json \
 		--sensitivity data/demo/sensitivity.json --no-exports
+	"$(PYTHON)" scripts/make_site_assets.py --results data/demo/results \
+		--scorecard data/demo/scorecard.json --site site
