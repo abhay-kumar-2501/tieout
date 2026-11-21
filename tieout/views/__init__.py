@@ -42,7 +42,12 @@ from tieout.views.overview import (
     synergy_waterfall,
     worth_a_look,
 )
-from tieout.views.review import review_item, review_progress, review_queue_items
+from tieout.views.review import (
+    bulk_approve_preview,
+    review_item,
+    review_progress,
+    review_queue_items,
+)
 from tieout.views.tables import (
     CANNOT_SEE,
     data_quality_summary,
@@ -58,6 +63,7 @@ __all__ = [
     "NOT_IN_VIEW",
     "Unavailable",
     "bridge",
+    "bulk_approve_preview",
     "concentration",
     "confidence_strip",
     "data_quality_summary",

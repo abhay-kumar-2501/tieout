@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "QUEUE_ITEM_COLUMNS",
+    "bulk_approve_preview",
     "review_item",
     "review_progress",
     "review_queue_items",
@@ -197,5 +198,42 @@ def review_progress(results: Results, view: str | None = None) -> dict[str, Any]
             "Nothing left to review"
             if queue.empty
             else f"{thousands(cleared_dollars)} cleared, {thousands(remaining)} still to review"
+        ),
+    }
+
+
+def bulk_approve_preview(
+    results: Results, queue_type: str, min_score: float | None = None, view: str | None = None
+) -> dict[str, Any] | Unavailable:
+    """What "approve all at or above ``min_score``" would touch, for one queue type (PRD 6.5).
+
+    Scores are the type's own scale (vendors 0-100, items cosine 0-1); types with
+    no score (unit flags, incoterms) are not bulk-approvable. With ``min_score``
+    omitted the whole scored range is previewed.
+    """
+    if resolve_view(results, view) == MASKED:
+        return NOT_IN_VIEW
+    queue = results.review_queue
+    queue = queue[(queue["type"] == queue_type) & (queue["status"] == "pending")]
+    scored = queue[queue["score"].notna()]
+    if scored.empty:
+        return Unavailable(f"{queue_type} candidates have no score to approve in bulk.")
+    low, high = float(scored["score"].min()), float(scored["score"].max())
+    cut = low if min_score is None else float(min_score)
+    chosen = scored[scored["score"] >= cut]
+    dollars = float(chosen["dollars_at_stake"].sum())
+    stake = float(chosen["stake"].fillna(0.0).sum())
+    return {
+        "type": queue_type,
+        "min_score": cut,
+        "score_low": low,
+        "score_high": high,
+        "pair_ids": chosen["pair_id"].tolist(),
+        "count": int(len(chosen)),
+        "dollars_at_stake": dollars,
+        "stake": stake,
+        "text": (
+            f"{len(chosen):,} pairs, {thousands(dollars)} of annual spend"
+            + (f", {thousands(stake)} added to the gross gap" if stake > 0 else "")
         ),
     }
