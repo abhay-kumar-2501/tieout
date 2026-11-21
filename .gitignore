@@ -1,0 +1,33 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+coverage/
+
+# Local data and generated outputs
+data/raw/
+data/interim/
+outputs/
