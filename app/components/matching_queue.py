@@ -2,7 +2,7 @@
 
 Layout: the queue on the left (largest dollars at stake first), the candidate in focus on the
 right with both records side by side, differing tokens highlighted, the evidence, the stake
-line and Approve / Reject / Defer (A, R, D), Undo (Z), and a bulk-approve action with its dollar
+line and Approve / Reject / Defer (A, X, D), Undo (Z), and a bulk-approve action with its dollar
 effect shown first. Decisions go through ``components.state``; every figure is a view's.
 """
 
@@ -213,7 +213,7 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
     meaning = _MEANING.get(pair_type, ("", ""))
     approve, reject, defer, undo = st.columns(4)
     approve.button(
-        "Approve (A)",
+        "Approve",
         key="mt_approve",
         type="primary",
         shortcut="a",
@@ -223,7 +223,7 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
         args=(pair_id, pair_type, "approve"),
     )
     reject.button(
-        "Reject (X)",  # Streamlit reserves R (rerun)
+        "Reject",  # Streamlit reserves R (rerun)
         key="mt_reject",
         shortcut="x",
         width="stretch",
@@ -232,7 +232,7 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
         args=(pair_id, pair_type, "reject"),
     )
     defer.button(
-        "Defer (D)",
+        "Defer",
         key="mt_defer",
         shortcut="d",
         width="stretch",
@@ -241,7 +241,7 @@ def _focus(item: dict[str, Any], remaining: int) -> None:
         args=(pair_id, pair_type, "defer"),
     )
     undo.button(
-        "Undo (Z)",
+        "Undo",
         key="mt_undo",
         shortcut="z",
         width="stretch",
@@ -358,7 +358,7 @@ def render_queue() -> None:
             target_module="synergies",
         )
         if st.session_state.get(_UNDO):
-            st.button("Undo (Z)", key="mt_undo_empty", shortcut="z", on_click=_undo)
+            st.button("Undo", key="mt_undo_empty", shortcut="z", on_click=_undo)
         return
     counts = items["type"].value_counts()
     names = {_ALL: f"{_ALL} ({len(items):,})"} | {

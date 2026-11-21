@@ -77,7 +77,7 @@ def test_matching_renders_in_the_clean_team_view() -> None:
     text = "\n".join(_texts(at))
     assert "Which vendors and items are the same, and how do we know?" in text
     assert "vendor records resolve to" in text
-    assert "Approve (A)" in text and "Reject (X)" in text and "Defer (D)" in text
+    assert "Approve" in text and "Reject" in text and "Defer" in text
     assert "Vendor precision" in text  # the scorecard
     assert "What is that worth?" in text  # the closing link (a page link inside the shell)
     assert not at.get("spinner")
