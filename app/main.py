@@ -25,7 +25,7 @@ PAGES = [
 st.set_page_config(page_title="Tie-Out", layout="wide", initial_sidebar_state="collapsed")
 
 pages = [
-    st.Page(str(APP_DIR / "pages" / f"{module}.py"), title=title, url_path=module, default=i == 0)
+    st.Page(str(APP_DIR / "screens" / f"{module}.py"), title=title, url_path=module, default=i == 0)
     for i, (title, module) in enumerate(PAGES)
 ]
 current = st.navigation(pages, position="top")
