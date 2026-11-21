@@ -1,8 +1,10 @@
 (function () {
   "use strict";
 
-  // Demo button: not a link while DEMO_URL is "#".
+  // Demo button: not a link while DEMO_URL is "#". Once the demo is live it becomes the
+  // primary action and the workbook download steps back to a secondary button.
   var btn = document.getElementById("demo-button");
+  var workbook = document.getElementById("workbook-button");
   var url = typeof DEMO_URL === "string" ? DEMO_URL : "#";
   if (btn) {
     if (url === "#") {
@@ -10,9 +12,14 @@
       btn.removeAttribute("href");
       btn.setAttribute("aria-disabled", "true");
       btn.classList.add("is-disabled");
+      // The live primary action comes first; while the demo is not live, that is the workbook.
+      if (workbook && btn.parentNode === workbook.parentNode) {
+        btn.parentNode.insertBefore(workbook, btn);
+      }
     } else {
       btn.textContent = "Open the live demo";
       btn.setAttribute("href", url);
+      if (workbook) workbook.classList.add("ghost");
     }
   }
 
@@ -38,8 +45,12 @@
   text("naive", money(TIEOUT.naive));
   // The upper end sets the precision of both ends.
   var dp = r.high >= 1e7 ? 0 : 1;
-  text("range", "$" + (r.low / 1e6).toFixed(dp) + "–" + (r.high / 1e6).toFixed(dp) + "M");
+  var range = "$" + (r.low / 1e6).toFixed(dp) + "–" + (r.high / 1e6).toFixed(dp) + "M";
+  text("range", range);
 
+  // The bridge as floating bars: removals step down from the naive figure to the
+  // defensible price-harmonisation saving; volume consolidation (the rest of the
+  // run-rate saving) steps back up to the defensible run-rate figure and its range.
   var labels = [
     "Unit-of-measure errors",
     "Unverified matches",
@@ -49,33 +60,53 @@
     "Contract lock-in",
     "Capture probability"
   ];
-  var list = document.getElementById("bridge-steps");
-  if (list) {
-    var rows = [["Naive figure", TIEOUT.naive, "start"]];
+  var ladder = document.getElementById("ladder");
+  if (ladder) {
+    var scale = TIEOUT.naive;
+    var level = TIEOUT.naive;
+    // [label, value text, bar from, bar to, classes, extra line]
+    var rows = [["Naive figure", money1(TIEOUT.naive), 0, level, "total start"]];
     TIEOUT.lever1.steps.forEach(function (v, i) {
-      rows.push([labels[i], v, "cut"]);
+      rows.push([labels[i], "−" + money1(v), level - v, level, "cut"]);
+      level -= v;
     });
-    rows.push(["Defensible price harmonisation", TIEOUT.lever1.defensible, "end"]);
-    rows.forEach(function (row, i) {
+    var l1 = TIEOUT.lever1.defensible;
+    rows.push(["Defensible price harmonisation", money1(l1), 0, l1, "total keep"]);
+    var volume = r.base - l1;
+    if (volume > 0) {
+      rows.push(["+ Volume consolidation", "+" + money1(volume), l1, r.base, "keep"]);
+    }
+    rows.push(["Defensible run-rate saving", money1(r.base), 0, r.base, "total keep end", "range " + range]);
+    rows.forEach(function (row) {
       var li = document.createElement("li");
-      li.className = row[2];
+      li.className = row[4];
       var name = document.createElement("span");
       name.className = "name";
-      name.textContent = (row[2] === "cut" ? "Remove: " : "") + row[0];
+      name.textContent = row[0];
       var val = document.createElement("span");
       val.className = "val";
-      val.textContent = (row[2] === "cut" ? "−" : "") + "$" + (row[1] / 1e6).toFixed(1) + "M";
-      var bar = document.createElement("span");
-      bar.className = "bar";
-      bar.setAttribute("aria-hidden", "true");
+      val.textContent = row[1];
+      if (row[5]) {
+        var extra = document.createElement("span");
+        extra.className = "range";
+        extra.textContent = row[5];
+        val.appendChild(extra);
+      }
+      var track = document.createElement("span");
+      track.className = "track";
+      track.setAttribute("aria-hidden", "true");
       var fill = document.createElement("i");
-      fill.style.width = Math.max(0.8, (row[1] / TIEOUT.naive) * 100).toFixed(1) + "%";
-      bar.appendChild(fill);
+      fill.style.left = ((row[2] / scale) * 100).toFixed(2) + "%";
+      fill.style.width = Math.max(0.6, ((row[3] - row[2]) / scale) * 100).toFixed(2) + "%";
+      track.appendChild(fill);
       li.appendChild(name);
+      li.appendChild(track);
       li.appendChild(val);
-      li.appendChild(bar);
-      list.appendChild(li);
+      ladder.appendChild(li);
     });
+  }
+  function money1(x) {
+    return "$" + (x / 1e6).toFixed(1) + "M";
   }
 
   var names = {
@@ -97,7 +128,10 @@
       [names[k], pct(m.tool), pct(m.baseline), target].forEach(function (s, i) {
         var c = document.createElement(i === 0 ? "th" : "td");
         if (i === 0) c.scope = "row";
-        else c.className = "num" + (i === 1 ? " strong" : "");
+        else {
+          c.className = "num" + (i === 1 ? " strong" : "");
+          c.setAttribute("data-label", ["Tie-Out", "Naive", "Target"][i - 1]);
+        }
         c.textContent = s;
         tr.appendChild(c);
       });

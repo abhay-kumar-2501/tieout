@@ -8,6 +8,7 @@
 <meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F6E63'/%3E%3Cpath d='M8 11h16M16 11v13' stroke='%23FAF8F4' stroke-width='3.2' fill='none' stroke-linecap='square'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
+<noscript><style>.ladder-card { display: none; } .hero-grid { grid-template-columns: minmax(0, 1fr); }</style></noscript>
 <script src="config.js" defer></script>
 <script src="data.js" defer></script>
 <script src="main.js" defer></script>
@@ -16,138 +17,189 @@
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
-  <div class="wrap bar">
-    <span class="brand">Tie-Out</span>
+  <div class="wrap header-bar">
+    <a class="brand" href="#main" aria-label="Tie-Out, top of page">
+      <svg class="brand-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0F6E63"/><path d="M8 11h16M16 11v13" stroke="#FAF8F4" stroke-width="3.2" fill="none" stroke-linecap="square"/></svg>
+      <span>Tie-Out</span>
+    </a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#bridge">The bridge</a>
+      <a href="#scorecard">Scorecard</a>
+      <a href="#limits">Limits</a>
+      <a href="#samples">Samples</a>
+    </nav>
     <span class="tag">Illustrative: synthetic data</span>
   </div>
 </header>
 
 <main id="main">
-  <section class="hero wrap" aria-labelledby="pitch">
-    <p class="eyebrow">A clean-team workbench for merger procurement synergies</p>
-    <h1 id="pitch">Tie-Out takes two messy purchasing extracts and produces a synergy estimate that is smaller than the naive one, expressed as a range, measured for accuracy, and traceable to the source rows.</h1>
+  <section class="hero" aria-labelledby="pitch">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <p class="eyebrow">A clean-team workbench for merger procurement synergies</p>
+        <h1 id="pitch">A smaller synergy figure you can defend, line by line.</h1>
+        <p class="lede">Tie-Out takes two messy purchasing extracts and produces a synergy estimate that is smaller than the naive one, expressed as a range, measured for accuracy, and traceable to the source rows.</p>
 
-    <p class="finding">
-      The naive synergy figure is <strong data-bind="naive">…</strong>.
-      The defensible range is <strong data-bind="range">…</strong> a year.
-      <span class="finding-why">Why?</span>
-    </p>
+        <div class="finding" role="group" aria-label="Headline figures">
+          <p class="stat">
+            <span class="stat-label">Naive synergy figure</span>
+            <strong class="stat-value naive" data-bind="naive">…</strong>
+          </p>
+          <span class="stat-arrow" aria-hidden="true">&rarr;</span>
+          <p class="stat">
+            <span class="stat-label">Defensible range, a year</span>
+            <strong class="stat-value defensible" data-bind="range">…</strong>
+          </p>
+        </div>
+        <p class="why"><a href="#bridge">Why is the defensible figure so much smaller?</a></p>
 
-    <div class="actions">
-      <a id="demo-button" class="button" href="#">Open the live demo</a>
-      <a class="button ghost" href="assets/tieout_workbook.xlsx" download>Sample workbook</a>
-      <a class="button ghost" href="assets/tieout_deck.pptx" download>Sample deck</a>
+        <div class="actions">
+          <a id="demo-button" class="button" href="#">Open the live demo</a>
+          <a id="workbook-button" class="button" href="assets/tieout_workbook.xlsx" download>Download sample workbook</a>
+          <a class="button ghost" href="assets/tieout_deck.pptx" download>Sample deck</a>
+        </div>
+        <p class="here">On this page: read the bridge, check the accuracy scorecard, see the limits, and take the sample workbook and deck.</p>
+      </div>
+
+      <figure class="ladder-card" aria-labelledby="ladder-h">
+        <figcaption>
+          <span class="card-title" id="ladder-h">From the naive figure to the defensible one</span>
+          <span class="card-note">Annual price gap. Grey bars are removed; teal is what remains. Illustrative: synthetic data.</span>
+        </figcaption>
+        <ol class="ladder" id="ladder" aria-label="Bridge from the naive figure to the defensible run-rate saving"></ol>
+      </figure>
     </div>
-
-    <figure class="bridge">
-      <img src="assets/bridge.png" width="1600" height="900" alt="Bridge chart: the naive savings figure falls through seven removal steps to a defensible price-harmonisation saving, then volume consolidation is added, ending on a defensible run-rate range.">
-      <figcaption>The bridge from the naive figure to the defensible one. Illustrative: synthetic data.</figcaption>
-    </figure>
-
-    <noscript><p class="note">Figures on this page are filled in by a small script. With scripts off, see the bridge chart above.</p></noscript>
   </section>
 
   <!-- Video block (PRD 9.4). Uncomment when the 90-second video exists, and
-       remove the bridge image above or keep it as the poster.
-  <section class="wrap video" aria-labelledby="video-h">
-    <h2 id="video-h">Ninety seconds</h2>
-    <video controls preload="none" poster="assets/bridge.png" width="1600" height="900">
-      <source src="assets/tieout_demo.mp4" type="video/mp4">
-    </video>
+       remove the bridge image below or keep it as the poster.
+  <section class="video" aria-labelledby="video-h">
+    <div class="wrap">
+      <h2 id="video-h">Ninety seconds</h2>
+      <video controls preload="none" poster="assets/bridge.png" width="2000" height="1080">
+        <source src="assets/tieout_demo.mp4" type="video/mp4">
+      </video>
+    </div>
   </section>
   -->
 
-  <section class="wrap band" aria-labelledby="bridge-h">
-    <div class="band-text">
-      <p class="eyebrow">The bridge</p>
-      <h2 id="bridge-h">Most of the naive figure is not savings.</h2>
-      <p>A plain &ldquo;pay the lower of the two prices on everything&rdquo; formula counts unit-of-measure errors, unverified matches, one-off spot prices and gaps that exist inside a single company. Each step below removes one of these, and each dollar is attributed to the first step that removes it, so the steps sum exactly to the difference.</p>
-    </div>
-    <div class="band-body">
-      <ol class="steps" id="bridge-steps" aria-label="Price harmonisation bridge, in dollars"></ol>
-    </div>
-  </section>
-
-  <section class="wrap band" aria-labelledby="score-h">
-    <div class="band-text">
-      <p class="eyebrow">The scorecard</p>
-      <h2 id="score-h">The matching is measured, not asserted.</h2>
-      <p>The demo data is synthetic, so the tool is scored against hidden ground truth it never reads. Tuning used three other seeds; the figures here are for a fourth, held-out seed. The same data is run through a naive design: fuzzy names and plain text similarity, with no attribute checks.</p>
-    </div>
-    <div class="band-body">
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Accuracy scorecard, scrollable">
-        <table>
-          <caption class="sr">Held-out accuracy, Tie-Out against the naive baseline</caption>
-          <thead>
-            <tr><th scope="col">Measure</th><th scope="col" class="num">Tie-Out</th><th scope="col" class="num">Naive</th><th scope="col" class="num">Target</th></tr>
-          </thead>
-          <tbody id="score-rows"></tbody>
-        </table>
+  <section class="section alt" id="bridge" aria-labelledby="bridge-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">The bridge</p>
+          <h2 id="bridge-h">Most of the naive figure is not savings.</h2>
+        </div>
+        <p>A plain &ldquo;pay the lower of the two prices on everything&rdquo; formula counts unit-of-measure errors, unverified matches, one-off spot prices and gaps that exist inside a single company. Each step removes one of these, and each dollar is attributed to the first step that removes it, so the steps sum exactly to the difference.</p>
       </div>
-      <p class="caption">Targets are acceptance criteria, not claims. Planted-savings recall is reported without a target.</p>
+      <figure class="bridge">
+        <a class="bridge-link" href="assets/bridge.png">
+          <img src="assets/bridge.png" width="2000" height="1080" loading="lazy" alt="Bridge chart: the naive savings figure falls through seven removal steps to a defensible price-harmonisation saving, then volume consolidation is added, ending on a defensible run-rate range.">
+        </a>
+        <figcaption>The bridge chart as exported by the tool. <a href="assets/bridge.png">Open it full size</a>. Illustrative: synthetic data.</figcaption>
+      </figure>
+      <noscript><p class="note">Figures in the summary above are filled in by a small script. With scripts off, this chart shows the same bridge.</p></noscript>
     </div>
   </section>
 
-  <section class="wrap band" aria-labelledby="trace-h">
-    <div class="band-text">
-      <p class="eyebrow">Traceability</p>
-      <h2 id="trace-h">Every dollar ties out to a purchasing line.</h2>
-      <p>Each headline figure has a chain back to the source rows, and re-sums from them to the cent. The workbook export carries the same figures as live formulas.</p>
+  <section class="section" id="scorecard" aria-labelledby="score-h">
+    <div class="wrap band">
+      <div class="band-text">
+        <p class="eyebrow">The scorecard</p>
+        <h2 id="score-h">The matching is measured, not asserted.</h2>
+        <p>The demo data is synthetic, so the tool is scored against hidden ground truth it never reads. Tuning used three other seeds; the figures here are for a fourth, held-out seed. The same data is run through a naive design: fuzzy names and plain text similarity, with no attribute checks.</p>
+      </div>
+      <div class="band-body">
+        <div class="table-scroll card" tabindex="0" role="region" aria-label="Accuracy scorecard, scrollable">
+          <table>
+            <caption class="sr">Held-out accuracy, Tie-Out against the naive baseline</caption>
+            <thead>
+              <tr><th scope="col">Measure</th><th scope="col" class="num">Tie-Out</th><th scope="col" class="num">Naive</th><th scope="col" class="num">Target</th></tr>
+            </thead>
+            <tbody id="score-rows"></tbody>
+          </table>
+        </div>
+        <p class="caption">Targets are acceptance criteria, not claims. Planted-savings recall is reported without a target.</p>
+      </div>
     </div>
-    <div class="band-body">
-      <pre class="chain" aria-label="Example trace chain"><code>lever:2
+  </section>
+
+  <section class="section alt" id="trace" aria-labelledby="trace-h">
+    <div class="wrap band">
+      <div class="band-text">
+        <p class="eyebrow">Traceability</p>
+        <h2 id="trace-h">Every dollar ties out to a purchasing line.</h2>
+        <p>Each headline figure has a chain back to the source rows, and re-sums from them to the cent. The workbook export carries the same figures as live formulas.</p>
+      </div>
+      <div class="band-body">
+        <pre class="chain" aria-label="Example trace chain"><code>lever:2
  &rarr; L2:{category-level opportunity}
    &rarr; line_id</code></pre>
-      <p class="caption">The chain for one lever. Click-through from any figure to its lines is in the live app.</p>
+        <p class="caption">The chain for one lever. Click-through from any figure to its lines is in the live app.</p>
+      </div>
     </div>
   </section>
 
-  <section class="wrap band" aria-labelledby="limits-h">
-    <div class="band-text">
-      <p class="eyebrow">Limits</p>
-      <h2 id="limits-h">What this analysis cannot see.</h2>
-      <p>Stated on screen, in the deck and in the workbook, so nobody has to find out later.</p>
-    </div>
-    <div class="band-body">
-      <ul class="limits">
-        <li>Rebates, credits and off-invoice discounts</li>
-        <li>Specification, quality and lead-time differences between apparently identical items</li>
-        <li>Freight and delivery terms, unless incoterms are supplied</li>
-        <li>Contract clauses such as minimum volumes, exclusivity and change of control</li>
-        <li>Index-linked prices caught at different dates</li>
-        <li>Supplier capacity and willingness to serve the combined volume</li>
-        <li>Services and other spend with neither an item code nor a part number, beyond vendor and category totals</li>
-        <li>Corporate parent links not supplied in the parent table</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="wrap band" aria-labelledby="dl-h">
-    <div class="band-text">
-      <p class="eyebrow">Sample outputs</p>
-      <h2 id="dl-h">Take the working with you.</h2>
-      <p>Both files are generated from the same committed results as this page.</p>
-    </div>
-    <div class="band-body">
-      <ul class="downloads">
-        <li><a href="assets/tieout_workbook.xlsx" download>Sample workbook <span class="mono">(.xlsx)</span></a><span class="caption">Formula-live, with a tie-out check.</span></li>
-        <li><a href="assets/tieout_deck.pptx" download>Sample deck <span class="mono">(.pptx)</span></a><span class="caption">The bridge, the range and the limits.</span></li>
-      </ul>
+  <section class="section" id="limits" aria-labelledby="limits-h">
+    <div class="wrap band">
+      <div class="band-text">
+        <p class="eyebrow">Limits</p>
+        <h2 id="limits-h">What this analysis cannot see.</h2>
+        <p>Stated on screen, in the deck and in the workbook, so nobody has to find out later.</p>
+      </div>
+      <div class="band-body">
+        <ul class="limits">
+          <li>Rebates, credits and off-invoice discounts</li>
+          <li>Specification, quality and lead-time differences between apparently identical items</li>
+          <li>Freight and delivery terms, unless incoterms are supplied</li>
+          <li>Contract clauses such as minimum volumes, exclusivity and change of control</li>
+          <li>Index-linked prices caught at different dates</li>
+          <li>Supplier capacity and willingness to serve the combined volume</li>
+          <li>Services and other spend with neither an item code nor a part number, beyond vendor and category totals</li>
+          <li>Corporate parent links not supplied in the parent table</li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <section class="wrap honest" aria-labelledby="honest-h">
-    <h2 id="honest-h" class="sr">About this project</h2>
-    <p><strong>All data is synthetic and illustrative.</strong> The two companies, their vendors, items and prices are generated; no real company or supplier is represented.</p>
-    <p>This workflow is not new. Consulting firms and spend-analytics vendors do it with proprietary tooling. What Tie-Out offers is an open implementation in which every matching rule, every formula and every dollar can be audited. It is not legal advice, and its masked view is a presentation mode, not an access control.</p>
+  <section class="section alt" id="samples" aria-labelledby="dl-h">
+    <div class="wrap band">
+      <div class="band-text">
+        <p class="eyebrow">Sample outputs</p>
+        <h2 id="dl-h">Take the working with you.</h2>
+        <p>Both files are generated from the same committed results as this page.</p>
+      </div>
+      <div class="band-body">
+        <ul class="downloads">
+          <li><a href="assets/tieout_workbook.xlsx" download><span class="dl-name">Sample workbook</span> <span class="mono">.xlsx</span><span class="dl-note">Formula-live, with a tie-out check.</span></a></li>
+          <li><a href="assets/tieout_deck.pptx" download><span class="dl-name">Sample deck</span> <span class="mono">.pptx</span><span class="dl-note">The bridge, the range and the limits.</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="honest-h">
+    <div class="wrap">
+      <div class="honest">
+        <h2 id="honest-h" class="sr">About this project</h2>
+        <p><strong>All data is synthetic and illustrative.</strong> The two companies, their vendors, items and prices are generated; no real company or supplier is represented.</p>
+        <p>This workflow is not new. Consulting firms and spend-analytics vendors do it with proprietary tooling. What Tie-Out offers is an open implementation in which every matching rule, every formula and every dollar can be audited. It is not legal advice, and its masked view is a presentation mode, not an access control.</p>
+      </div>
+    </div>
   </section>
 </main>
 
 <footer class="site-footer">
   <div class="wrap foot">
-    <a href="https://github.com/abhay-kumar-2501/tieout">Source repository</a>
-    <a href="https://github.com/abhay-kumar-2501/tieout#run-it-locally">Run locally</a>
-    <span class="caption">Fonts: IBM Plex, <a href="assets/fonts/OFL.txt">SIL OFL</a>.</span>
+    <div class="foot-brand">
+      <span class="brand-name">Tie-Out</span>
+      <span class="caption">Procurement synergies, measured and traceable. Illustrative: synthetic data.</span>
+    </div>
+    <nav class="foot-links" aria-label="Project">
+      <a href="https://github.com/abhay-kumar-2501/tieout">Source repository</a>
+      <a href="https://github.com/abhay-kumar-2501/tieout#run-it-locally">Run locally</a>
+      <a href="assets/fonts/OFL.txt">Fonts: IBM Plex, SIL OFL</a>
+    </nav>
   </div>
 </footer>
 </body>
