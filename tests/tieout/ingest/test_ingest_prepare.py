@@ -23,7 +23,7 @@ def test_item_keys_follow_the_identifier_format(run):
     acq = lines[lines["company"] == "acquirer"].set_index("po_line")
     assert acq["item_key"].tolist() == [
         "FA-1",
-        "MPN:AB123|acme corp",
+        "MPN:AB123|acme",
         "MPN:AB123|",
         None,
         "FA-9",

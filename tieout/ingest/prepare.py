@@ -27,6 +27,7 @@ from tieout.ingest.validate import (
     to_period,
     window_months,
 )
+from tieout.normalise.items import normalise_manufacturer
 from tieout.normalise.taxonomy import apply_category_map, none_for_missing, unmapped_spend
 from tieout.normalise.units import convert_units
 
@@ -83,12 +84,14 @@ def make_item_keys(lines: pd.DataFrame) -> pd.Series:
     """``item_code``, else ``MPN:{mpn_norm}|{manufacturer_norm}``, else ``None``.
 
     ``mpn_norm`` is the MPN upper-cased with only letters and digits kept;
-    ``manufacturer_norm`` is lower-cased and trimmed.
+    ``manufacturer_norm`` is the V0-normalised manufacturer (PRD 4.3).
     """
     code = lines["item_code"].astype("string").str.strip()
     mpn = lines["mpn"].astype("string").str.upper().str.replace(r"[^A-Z0-9]", "", regex=True)
     mpn = mpn.where(mpn != "", pd.NA)
-    maker = lines["manufacturer"].astype("string").str.strip().str.lower().fillna("")
+    makers = lines["manufacturer"].astype(object)
+    names = {m: normalise_manufacturer(m) for m in makers.dropna().unique()}
+    maker = pd.Series([names.get(m, "") for m in makers], index=lines.index, dtype="string")
     fallback = "MPN:" + mpn + "|" + maker
     key = code.where(code.notna() & (code != ""), fallback)
     return none_for_missing(key)
