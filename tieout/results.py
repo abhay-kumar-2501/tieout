@@ -1,7 +1,8 @@
-"""The single results object every surface reads (PRD 9.2).
+"""The single results object every surface reads (PRD 9.2), and its view functions.
 
-View functions that turn a ``Results`` into displayed figures arrive in a later
-milestone.
+Pages, the workbook and the deck take every displayed figure from the view
+functions re-exported here (implemented in :mod:`tieout.views`), which is what
+the tie-out tests compare.
 """
 
 from __future__ import annotations
@@ -15,8 +16,12 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-from tieout.synergy.stage import SynergyCache
+from tieout.synergy.stage import SynergyCache, precompute
 from tieout.synergy.trace import TraceIndex
+from tieout.views import *  # noqa: F403 - the public view functions (PRD 9.2)
+from tieout.views import __all__ as _VIEW_NAMES
+
+__all__ = ["FRAME_NAMES", "Results", *_VIEW_NAMES]
 
 FRAME_NAMES = (
     "lines",
@@ -110,6 +115,19 @@ class Results:
     def trace_index(self) -> TraceIndex:
         """The three trace parts as one :class:`~tieout.synergy.trace.TraceIndex`."""
         return TraceIndex(self.trace, self.trace_amounts, self.trace_figures)
+
+    def cached_synergy(self) -> SynergyCache:
+        """The synergy cache: the in-memory one, else built from this object's frames."""
+        if self.synergy_cache is not None:
+            return self.synergy_cache
+        return precompute(
+            self.lines,
+            self.vendor_map,
+            self.item_map,
+            self.item_pairs,
+            self.review_log,
+            self.meta,
+        )
 
     def save(self, directory: str | Path) -> None:
         """Write one Parquet file per frame, the trace and ``results.json`` into ``directory``.
