@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from tieout.ingest.prepare import make_item_keys
+
 VENDOR_TRUTH_COLUMNS = ["company", "vendor_id", "true_legal_entity", "true_parent"]
 ITEM_TRUTH_COLUMNS = ["company", "item_key", "true_item_id"]
 SAVINGS_TRUTH_COLUMNS = [
@@ -70,6 +72,26 @@ def load_item_truth(directory: str | Path) -> pd.DataFrame:
     if frame.duplicated(["company", "item_key"]).any():
         raise ValueError("truth_item_map.csv: duplicate (company, item_key)")
     return frame[ITEM_TRUTH_COLUMNS]
+
+
+def load_item_truth_engine_keys(directory: str | Path) -> pd.DataFrame:
+    """Item truth keyed the way the engine keys item records.
+
+    The generator writes ``item_code``, ``mpn`` and ``manufacturer`` next to its
+    own ``item_key``; the key is rebuilt from them with the engine's rule
+    (``tieout.ingest.prepare.make_item_keys``), so that differences in
+    manufacturer normalisation never count as matching errors. Records that
+    collapse onto one engine key keep the smallest ``true_item_id``.
+    """
+    path = Path(directory) / "truth_item_map.csv"
+    frame = _read(path, ITEM_TRUTH_COLUMNS, {})
+    frame = frame.astype(str)
+    if {"item_code", "mpn", "manufacturer"} <= set(frame.columns):
+        source = frame[["item_code", "mpn", "manufacturer"]].replace("", None)
+        frame = frame.assign(item_key=make_item_keys(source))
+    frame = frame.sort_values(["company", "item_key", "true_item_id"], kind="stable")
+    frame = frame.drop_duplicates(["company", "item_key"], keep="first")
+    return frame[ITEM_TRUTH_COLUMNS].reset_index(drop=True)
 
 
 def load_savings_truth(directory: str | Path) -> pd.DataFrame:

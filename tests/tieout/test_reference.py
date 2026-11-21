@@ -175,9 +175,11 @@ def test_uom():
 
 
 def test_thresholds():
+    # The automatic values come from evaluation/tune.py's PRD 4.7 grids; the
+    # review values are fixed.
     t = load_thresholds()
-    assert (t.vendor_auto, t.vendor_review) == (92.0, 75.0)
-    assert (t.item_auto_cosine, t.item_review_cosine) == (0.80, 0.60)
+    assert 85 <= t.vendor_auto <= 97 and t.vendor_review == 75.0
+    assert 0.70 <= t.item_auto_cosine <= 0.90 and t.item_review_cosine == 0.60
     assert "overwritten" in _ref("thresholds.toml").read_text()
 
 

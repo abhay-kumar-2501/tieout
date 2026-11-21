@@ -139,7 +139,6 @@ def test_load_truth_column_and_file_checks(tmp_path: Path) -> None:
         load_truth(tmp_path)
 
 
-@pytest.mark.parametrize("command", ["tune", "score", "baseline", "sensitivity"])
-def test_cli_commands_raise_not_wired(command: str) -> None:
-    with pytest.raises(NotWiredError, match="wired in at integration"):
-        main([command])
+def test_sensitivity_waits_for_the_synergy_engine() -> None:
+    with pytest.raises(NotWiredError, match="synergy engine"):
+        main(["sensitivity"])
