@@ -9,7 +9,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from components.assumptions_spec import field_by_dotted, format_value
-from components.plotting import AXIS_MONEY, exact_money, themed, wrap_label
+from components.plotting import axis_money, exact_money, themed, wrap_label
 from tieout import theme as t
 from tieout.views import money, money_range, thousands
 
@@ -47,7 +47,7 @@ def tornado_figure(frame: pd.DataFrame) -> go.Figure:
             hoverinfo="text",
         )
     fig.update_layout(barmode="relative", bargap=0.3)
-    fig.update_xaxes(title_text="Change in base recurring saving", tickformat=AXIS_MONEY)
+    fig.update_xaxes(title_text="Change in base recurring saving", **axis_money())
     fig.update_yaxes(
         type="category",
         categoryorder="array",

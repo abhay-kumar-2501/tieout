@@ -36,6 +36,8 @@ from tieout.views import (
     Unavailable,
     bridge,
     concentration,
+    currency_prefix,
+    currency_sign,
     money_range,
     percent,
     phasing_by_quarter,
@@ -154,7 +156,7 @@ def _money_axis(ax: Axes, axis: str = "y", signed: bool = False) -> None:
             else f"{abs(scaled):,.0f}"
         )
         sign = "−" if scaled < 0 else ("+" if signed and scaled > 0 else "")
-        return f"{sign}${text}{suffix}"
+        return f"{sign}{currency_prefix()}{text}{suffix}"
 
     (ax.yaxis if axis == "y" else ax.xaxis).set_major_formatter(FuncFormatter(fmt))
 
@@ -242,7 +244,7 @@ def bridge_png(results: Results, view: str | None = None) -> bytes:
             range_label=lambda r: "range " + money_range(float(r["low"]), float(r["high"])),
         )
         _money_axis(ax)
-        ax.set_ylabel("Annual price gap, $ (removals shown in grey)")
+        ax.set_ylabel(f"Annual price gap, {currency_sign()} (removals shown in grey)")
         fig.subplots_adjust(left=0.09, right=0.99, top=0.97, bottom=0.2)
         return _png(fig)
 
@@ -267,7 +269,9 @@ def waterfall_png(results: Results, view: str | None = None) -> bytes:
             range_label=lambda r: "range " + money_range(float(r["low"]), float(r["high"])),
         )
         _money_axis(ax)
-        ax.set_ylabel(f"Annual spend, $ (axis starts at {money_range(bottom, bottom)})")
+        ax.set_ylabel(
+            f"Annual spend, {currency_sign()} (axis starts at {money_range(bottom, bottom)})"
+        )
         fig.subplots_adjust(left=0.13, right=0.99, top=0.97, bottom=0.14)
         return _png(fig)
 
@@ -335,7 +339,7 @@ def phasing_png(results: Results, view: str | None = None, by: str = "year") -> 
         ax.grid(axis="y")
         ax.set_ylim(min(costs.min(), 0) - peak * 0.12, peak * 1.14)
         _money_axis(ax)
-        ax.set_ylabel("Savings realised in the period, $")
+        ax.set_ylabel(f"Savings realised in the period, {currency_sign()}")
         ax.legend(frameon=False, loc="upper left", fontsize=_BASE - 1.5, ncols=4)
         fig.subplots_adjust(left=0.13, right=0.99, top=0.97, bottom=0.1)
         return _png(fig)
@@ -369,7 +373,7 @@ def prioritisation_png(results: Results, view: str | None = None) -> bytes:
                 )
         ax.grid(True)
         ax.set_xlabel("Complexity (1 = easy, 5 = hard)")
-        ax.set_ylabel("Base-case annual saving, $")
+        ax.set_ylabel(f"Base-case annual saving, {currency_sign()}")
         _money_axis(ax)
         xs = frame["complexity"].to_numpy(dtype=float)
         ax.set_xlim(max(0.8, xs.min() - 0.3), xs.max() + 0.6)
@@ -509,7 +513,7 @@ def tornado_png(results: Results, view: str | None = None) -> bytes:
         ax.xaxis.set_major_locator(MaxNLocator(5))
         _money_axis(ax, axis="x", signed=True)
         ax.grid(axis="x")
-        ax.set_xlabel("Change in base run-rate saving, $")
+        ax.set_xlabel(f"Change in base run-rate saving, {currency_sign()}")
         ax.legend(frameon=False, loc="lower right", fontsize=_BASE - 2)
         fig.subplots_adjust(left=0.33, right=0.99, top=0.97, bottom=0.13)
         return _png(fig)
@@ -565,7 +569,7 @@ def pareto_png(results: Results, view: str | None = None) -> bytes:
                 ha="left" if reach < len(frame) * 0.6 else "right",
             )
             ax.grid(axis="y")
-        axes[0].set_ylabel("Spend per vendor, $")
+        axes[0].set_ylabel(f"Spend per vendor, {currency_sign()}")
         fig.subplots_adjust(left=0.08, right=0.94, top=0.9, bottom=0.14, wspace=0.42)
         return _png(fig)
 

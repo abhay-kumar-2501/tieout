@@ -11,7 +11,7 @@ import math
 import pandas as pd
 import plotly.graph_objects as go
 
-from components.plotting import AXIS_MONEY, exact_money, themed, wrap_label
+from components.plotting import axis_money, exact_money, themed, wrap_label
 from tieout import theme as t
 from tieout.views import money, percent, thousands
 
@@ -151,7 +151,7 @@ def matrix_figure(matrix: pd.DataFrame) -> go.Figure:
     # Headroom so the labels of the largest bubbles are not cut off at the top edge.
     fig.update_yaxes(
         title_text="Annual saving, base case",
-        tickformat=AXIS_MONEY,
+        **axis_money(),
         range=[0, peak * 1.3] if peak > 0 else None,
         rangemode="tozero",
     )
@@ -190,7 +190,7 @@ def phasing_figure(quarters: pd.DataFrame) -> go.Figure:
         hoverinfo="text",
     )
     fig.update_layout(barmode="relative")
-    fig.update_yaxes(title_text="Realised in the quarter", tickformat=AXIS_MONEY)
+    fig.update_yaxes(title_text="Realised in the quarter", **axis_money())
     fig.update_xaxes(title_text="Quarter after close", type="category")
     return themed(fig, height=420, legend=True)
 
