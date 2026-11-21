@@ -208,3 +208,15 @@ def test_scorecard_outputs_cover_matched_items_only() -> None:
     out = run(book.frames(ITEM, pending=[("A2", "T2", 0.7)]))
     gaps = out.item_gross_gaps.set_index("canonical_item_id")["gross_gap"]
     assert gaps.to_dict() == pytest.approx({"CI000001": 6_000})
+
+
+def test_no_mapped_category_reports_zero_levers_without_error() -> None:
+    book = Book()
+    book.buy("acquirer", None, 100, 2.00, l2=None, terms=30)
+    book.buy("target", None, 100, 2.00, vendor="V2", l2=None, terms=60)
+    book.buy("acquirer", "A1", 100, 2.00, l2=None, terms=30)
+    out = run(book.frames())
+    assert out.totals["recurring"] == {"low": 0.0, "base": 0.0, "high": 0.0}
+    assert out.totals["spend"]["baseline"] == pytest.approx(600)
+    assert out.totals["spend"]["addressable"] == 0
+    assert out.opportunities.empty

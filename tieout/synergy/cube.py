@@ -50,6 +50,14 @@ class SpendCube:
     def mapped(self) -> np.ndarray:
         return self.l2 >= 0
 
+    def per_line(self, values: np.ndarray) -> np.ndarray:
+        """Each line's entry of a per-category array; zero (``False``) on unmapped lines.
+
+        Safe when no category is mapped at all (``values`` is then empty).
+        """
+        padded = np.concatenate([values, np.zeros(1, dtype=values.dtype)])
+        return padded[np.where(self.mapped, self.l2, len(self.l2_codes))]
+
     def positions(self, line_ids: np.ndarray) -> np.ndarray:
         """Row of each given ``line_id`` in the cube."""
         return np.searchsorted(self.line_id, line_ids)

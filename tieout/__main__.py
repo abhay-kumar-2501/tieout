@@ -29,6 +29,8 @@ _FILE_OPTIONS = (
     "category_settings",
     "assumptions",
     "review_decisions",
+    "scorecard",
+    "sensitivity",
 )
 
 
@@ -51,6 +53,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--as-of", metavar="YYYY-MM-DD", help="report date")
     run.add_argument("--aggregated", action="store_true", help="inputs are pre-aggregated")
     run.add_argument("--view", choices=("clean", "masked"), default="clean")
+    run.add_argument("--scorecard", type=Path, help="accuracy scorecard to embed (JSON)")
+    run.add_argument("--sensitivity", type=Path, help="threshold sensitivity to embed (JSON)")
     run.add_argument("--no-exports", action="store_true", help="skip workbook and deck")
     return parser
 
@@ -71,6 +75,8 @@ def _inputs(args: argparse.Namespace) -> PipelineInputs:
         as_of=args.as_of,
         aggregated=args.aggregated,
         view=args.view,
+        scorecard=args.scorecard,
+        sensitivity=args.sensitivity,
     )
 
 
@@ -89,6 +95,7 @@ def format_report(frame: pd.DataFrame) -> str:
 def _summary(results: Results, out: Path) -> str:
     vendors = results.meta["matching"]["vendors"]
     items = results.meta["matching"]["items"]
+    recurring = results.totals["recurring"]
     return "\n".join(
         [
             f"Vendor records: {vendors['records']:,} -> {vendors['after_normalisation']:,} "
@@ -96,6 +103,9 @@ def _summary(results: Results, out: Path) -> str:
             f"Item records: {items['records']:,} -> {items['matchable_records']:,} in mapped "
             f"categories -> {items['canonical_items']:,} canonical items",
             f"Pending review: {len(results.review_queue):,} candidates",
+            f"Naive lever-1 figure: {results.totals['lever1']['naive']:,.0f}",
+            f"Defensible run-rate saving: {recurring['low']:,.0f} to {recurring['high']:,.0f} "
+            f"(base {recurring['base']:,.0f})",
             f"Results written to {out}",
         ]
     )

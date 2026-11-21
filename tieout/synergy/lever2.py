@@ -148,12 +148,12 @@ def lever2(
     overrides = assumptions["lever2"].get("preferred_vendor") or {}
     preferred = preferred_vendors(cube, spend, overrides)
     ok = reason == QUALIFIES
-    l2 = np.where(mapped, cube.l2, 0)
-    in_ok = mapped & ok[l2]
-    is_pref = in_ok & (cube.parent == preferred[l2])
+    in_ok = mapped & cube.per_line(ok)
+    is_pref = in_ok & (cube.parent == cube.per_line(preferred))
     eligible_line = in_ok & ~switch
     other = _vendor_spend(cube, eligible_line & ~is_pref)
-    positive_vendor = other[l2, cube.parent] > 0
+    cell = np.where(mapped, cube.l2 * other.shape[1] + cube.parent, other.size)
+    positive_vendor = np.append(other.ravel(), 0.0)[cell] > 0
     m_line = eligible_line & ~is_pref & positive_vendor
     p_line = eligible_line & is_pref
 
@@ -162,7 +162,8 @@ def lever2(
     P_eligible = _per_l2(cube, cube.amount, p_line)
     M = _per_l2(cube, cube.amount, m_line)
     frac = np.where(ok, f(caps, C, P, M), 0.0)
-    weight = np.where(p_line, 1.0, np.where(m_line, frac[l2], 0.0))
+    frac_line = cube.per_line(frac)
+    weight = np.where(p_line, 1.0, np.where(m_line, frac_line, 0.0))
 
     L1, b2, n2, line_b2, line_n2 = {}, {}, {}, {}, {}
     for case in CASES:
@@ -170,9 +171,9 @@ def lever2(
         b2[case] = B2(P_eligible, frac, M, L1[case])
         raw = P_eligible + frac * M - L1[case]
         kept = (frac > 0) & (raw > 0)
-        line_b2[case] = np.where(kept[l2], weight * (cube.amount - l1[case]), 0.0)
+        line_b2[case] = np.where(cube.per_line(kept), weight * (cube.amount - l1[case]), 0.0)
         n2[case] = N2(b2[case], params.d, params.pi2[case])
-        line_n2[case] = line_b2[case] * (params.d * params.pi2[case])[l2]
+        line_n2[case] = line_b2[case] * cube.per_line(params.d * params.pi2[case])
     return Lever2Result(
         reason=reason,
         preferred=np.where(ok, preferred, -1),
@@ -185,7 +186,7 @@ def lever2(
         N2=n2,
         eligible=p_line | m_line,
         weight=weight,
-        moved=np.where(m_line, frac[l2] * cube.amount, 0.0),
+        moved=np.where(m_line, frac_line * cube.amount, 0.0),
         line_B2=line_b2,
         line_N2=line_n2,
     )
