@@ -43,7 +43,7 @@ def concentration_figure(vendors: pd.DataFrame, categories: list[str]) -> go.Fig
     frame = vendors[vendors["category"].isin(categories)].copy()
     frame["slot"] = frame.groupby("category").cumcount()
     rows = [(c, w) for c in categories for w in ("After", "Before")]
-    ylabels = {(c, w): f"{wrap_label(c, 30)}<br>{w.lower()}" for c, w in rows}
+    ylabels = {(c, w): f"{wrap_label(c, 44)}<br>{w.lower()}" for c, w in rows}
     fig = go.Figure()
     for slot in range(int(frame["slot"].max()) + 1 if len(frame) else 0):
         part = frame[frame["slot"] == slot]
@@ -88,7 +88,7 @@ def concentration_figure(vendors: pd.DataFrame, categories: list[str]) -> go.Fig
         categoryarray=[ylabels[r] for r in reversed(rows)],
         automargin=True,
     )
-    return themed(fig, height=max(320, 36 * len(rows) + 70))
+    return themed(fig, height=max(320, 40 * len(rows) + 70))
 
 
 def matrix_figure(matrix: pd.DataFrame) -> go.Figure:
