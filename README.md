@@ -2,7 +2,7 @@
 
 Tie-Out sizes the procurement savings of a merger from the two companies' purchasing extracts. It matches vendors and items across them, then walks the naive savings figure down to a defensible range, with every dollar traceable to source rows.
 
-On the demo data (a synthetic merger of about 60,000 purchasing lines and $522M of in-scope spend) the naive figure is $32M and the defensible run-rate saving is $6–13M.
+On the demo data (a synthetic merger of about 60,000 purchasing lines and $522M of in-scope spend) the naive figure is $32M and the defensible run-rate saving is $6–13M. The landing page and the app open on one of four [sample mergers](#sample-mergers) at random.
 
 ![Bridge from the naive savings figure of $32M to the defensible run-rate saving of $6–13M](site/assets/bridge.png)
 
@@ -36,12 +36,25 @@ Matching is scored against hidden truth on a held-out synthetic dataset (seed 4)
 
 The figures come from `data/demo/scorecard.json`.
 
+## Sample mergers
+
+Four synthetic mergers, each a full engine run on its own generated data. The first is the held-out demo seed the scorecard above is measured on; the others use new seeds (never used for tuning) and a named generator profile from `synthetic/profiles.py` (`python -m synthetic --profile NAME`). Each extra sample is also scored against its own hidden truth; the app shows that scorecard, labelled with its seed.
+
+| Sample | Seed, profile, scale | Naive figure | Defensible run-rate saving |
+| --- | --- | --- | --- |
+| Two mid-size manufacturers, $522M combined spend | 4, default, 1.0 | $32M | $6–13M |
+| Small bolt-on acquisition, $232M combined spend | 5, bolt_on, 0.6 | $6.3M | $1.9–3.7M |
+| Merger with messy master data, $263M combined spend | 6, messy, 0.5 | $24M | $2.8–5.8M |
+| Two firms with overlapping suppliers, $312M combined spend | 7, high_overlap, 0.6 | $19M | $3.6–7.0M |
+
+The list is `data/samples.json`. The app starts a new session on a random sample (set `TIEOUT_SAMPLE=<id>` to pin one) and switches sample on the Data screen.
+
 ## Sample outputs
 
 - [Sample workbook](site/assets/tieout_workbook.xlsx): every figure is a formula over the detail tabs.
 - [Sample deck](site/assets/tieout_deck.pptx): eight slides, clean-team view.
 
-Both are generated from the demo data by `make demo`.
+Both are generated from the demo data by `make demo`; each other sample's workbook and deck are in `site/assets/samples/<id>/`.
 
 ## Run it locally
 
@@ -71,7 +84,7 @@ It writes `out/results/`, `out/tieout_workbook.xlsx` and `out/tieout_deck.pptx`.
 make demo
 ```
 
-This generates the held-out seed, scores it, runs the engine and rewrites `data/demo/` and the sample outputs in `site/assets/`.
+This generates the held-out seed, scores it, runs the engine and rewrites `data/demo/`, then builds the other sample mergers into `data/samples/` (`make samples`) and the sample outputs in `site/assets/` (`make site-assets`). Every step is deterministic.
 
 ## What is in the box
 
@@ -125,6 +138,7 @@ app/             Streamlit app: main.py, screens/, components/, static/
 site/            static landing page, sample outputs, config.js
 tests/           unit, app and site tests
 data/demo/       generated demo files, precomputed results, scorecard.json
+data/samples/    the other sample mergers' results; data/samples.json lists all four
 data/truth/      truth files per seed, read only by evaluation/
 docs/            PRD.md, ARCHITECTURE.md, screenshots/
 HUMAN_TODO.md    tasks left to the owner

@@ -431,6 +431,14 @@ Errors were diagnosed on the tuning seeds 1-3 only (false positives and false ne
 - **Toolbar.** `toolbarMode = "viewer"` hides Streamlit's Deploy button and menu.
 - **Page top padding** is 80 px so the header card clears the fixed navigation bar.
 
+### Sample mergers
+
+- **Four samples, one scorecard.** The landing page and the app open on a random sample from `data/samples.json`. Sample 1 is the held-out seed 4 at the default configuration; the README, landing-page and deck-headline scorecard is measured on it alone and did not change. The others are seeds 5, 6 and 7, never used for tuning, generated with a profile (`synthetic/profiles.py`, `--profile` on `python -m synthetic`) at reduced scale: `bolt_on` (target a quarter of its default size, fewer shared items), `messy` (more typos, aliases, missing tax ids and manufacturers, 300 unit traps, more spot buys and near-identical items) and `high_overlap` (more shared parents and items, stronger same-vendor routing and shared-item spend lift). Thresholds and engine unchanged.
+- **Built like the demo.** `scripts/make_samples.py` generates each sample into `data/seeds/<id>/` (not committed), runs the pipeline with the demo's inputs and report date, scores the run against the sample's own truth with `evaluation` (tool and baseline; the tuning-seed rows are copied from the demo scorecard because thresholds and tuning seeds are the same), computes its threshold sensitivity, and re-runs with both embedded into `data/samples/<id>/results/`. Regenerating is byte-identical.
+- **Per-sample accuracy (tool on the sample's own truth).** Seed 5 bolt_on: vendor P 100.0% R 97.2%, item P 97.9% R 80.9%, planted-savings recall 70.5%, false savings 0.6%, unit-error catch 91.7%. Seed 6 messy: vendor P 98.7% R 91.9%, item P 98.7% R 84.3%, planted 57.6%, false savings 0.3%, unit-error catch 98.0%. Seed 7 high_overlap: vendor P 99.8% R 96.0%, item P 99.0% R 83.5%, planted 53.3%, false savings 0.1%, unit-error catch 100.0%. The bolt-on sample misses the 95% unit-error gate (22 of 24 planted traps caught: a small sample); the app shows it as missed rather than hiding it. The app labels these scorecards with their seed; the landing page shows only the seed 4 scorecard.
+- **Size.** Extra results 5.4, 7.1 and 9.0 MB; extra site assets (bridge, workbook, deck) 2.3, 3.2 and 4.3 MB.
+- **Known gap.** The deck's audit slide describes any embedded scorecard as the "held-out demo seed"; for the extra samples that is the sample's own seed (also held out). The export text was left unchanged.
+
 ## Tests and CI
 
 ### Test suite runtime
