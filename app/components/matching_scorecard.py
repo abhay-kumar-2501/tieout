@@ -23,6 +23,20 @@ _CURVES = {
 }
 
 
+HEADLINE_SEED = 4  # the held-out seed the README and landing-page scorecard quote
+
+
+def truth_source(results) -> str:
+    """Which hidden truth the scorecard in ``results`` was measured on, in words."""
+    seed = (results.scorecard or {}).get("held_out_seed")
+    if seed is None or seed == HEADLINE_SEED:
+        return "the held-out seed"
+    return (
+        f"this sample's own seed ({seed}, never used for tuning; the headline scorecard is "
+        f"on held-out seed {HEADLINE_SEED})"
+    )
+
+
 def target_text(raw: str) -> str:
     """``>= 0.98`` as ``at least 98.0%``, so targets read like the figures beside them."""
     direction, _, bound = str(raw).partition(" ")
@@ -44,7 +58,7 @@ def _gate(passed: object) -> str:
     return "Passed" if passed else "Missed"
 
 
-def _scorecard(table: pd.DataFrame) -> None:
+def _scorecard(table: pd.DataFrame, source: str) -> None:
     fig = go.Figure()
     for column, name, color in (
         ("tool", "Tie-Out", t.ACQUIRER),
@@ -72,7 +86,7 @@ def _scorecard(table: pd.DataFrame) -> None:
     gap = (table["baseline"] - table["tool"]).abs()
     worst = table.loc[gap.idxmax()]
     caption = (
-        f"Measured against hidden truth on the held-out seed: {worst['label'].lower()} is "
+        f"Measured against hidden truth on {source}: {worst['label'].lower()} is "
         f"{_pct(worst['tool'])} for Tie-Out and {_pct(worst['baseline'])} for the naive baseline."
     )
     chart_with_table(fig, shown, "mt_scorecard", caption, shape="wide")
@@ -127,11 +141,12 @@ def _curve(name: str, frame: pd.DataFrame, current: dict) -> None:
 
 
 def render_scorecard() -> None:
-    table = scorecard_table(state.current_results(), state.view())
+    results = state.current_results()
+    table = scorecard_table(results, state.view())
     if isinstance(table, Unavailable):
         unavailable(table)
     else:
-        _scorecard(table)
+        _scorecard(table, truth_source(results))
 
 
 def render_sensitivity() -> None:

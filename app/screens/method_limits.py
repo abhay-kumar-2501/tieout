@@ -9,7 +9,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 from components import state
-from components.matching_scorecard import target_text
+from components.matching_scorecard import target_text, truth_source
 from components.page import page_question, section, unavailable
 from components.style import esc, headline
 
@@ -103,7 +103,8 @@ else:
     st.dataframe(frame, hide_index=True, width="stretch")
     st.caption(
         "The truth files are never read by the tool; only the evaluation scripts see them. "
-        "Targets are acceptance criteria on seed 4, not claims about your data."
+        f"Measured on {truth_source(results)}. "
+        "Targets are acceptance criteria on that seed, not claims about your data."
     )
 
 section("What this analysis cannot see")

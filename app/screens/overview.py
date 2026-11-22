@@ -20,8 +20,8 @@ from tieout.views import headline as headline_view
 _INTRO = {
     True: (
         "Tie-Out sizes the procurement savings two merging companies can defend, and opens "
-        "the working behind every figure. This is a fictional merger; new here? The tour "
-        "takes two minutes."
+        "the working behind every figure. This is a fictional sample merger (switch to "
+        "another on Data); new here? The tour takes two minutes."
     ),
     False: (
         "Tie-Out has sized the procurement savings your two files can defend; select any "

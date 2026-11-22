@@ -1,8 +1,9 @@
 """Data (PRD 6.3, 2.3): what did we receive and what state is it in?
 
 Demo mode and finished uploads show the same page: files, rows, period,
-currency, the data-quality summary and the spend Pareto. "Use your own data"
-swaps it for the five-step upload stepper.
+currency, the data-quality summary and the spend Pareto. In demo mode a picker
+switches between the committed sample mergers; "Use your own data" swaps the
+page for the five-step upload stepper, and "Back to demo" returns to the sample.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from components.data_view import (
     render_received,
 )
 from components.page import next_question, page_question
-from components.style import headline
+from components.style import esc, headline
 
 from tieout.views import data_quality_summary
 
@@ -30,21 +31,39 @@ else:
     mode = state.view()
     summary = data_quality_summary(results, mode)
     headline(finding_headline(summary))
-    row = st.container(horizontal=True, vertical_alignment="center", gap="medium")
+    row = st.container(horizontal=True, vertical_alignment="bottom", gap="medium")
     if state.is_demo():
-        row.markdown(
-            '<div class="to-muted">These are the committed demo files for a fictional merger. '
-            "You can size your own merger from two purchasing files instead.</div>",
-            unsafe_allow_html=True,
-            width="content",
-        )
+        options = state.samples()
+        current = state.sample()
+        if len(options) > 1:
+            ids = [s.id for s in options]
+            labels = {s.id: s.label for s in options}
+            # Keyed by the sample shown, so the picker always opens on it.
+            chosen = row.selectbox(
+                f"Sample merger ({len(options)} fictional mergers)",
+                ids,
+                index=ids.index(current.id),
+                format_func=labels.__getitem__,
+                key=f"data_sample_{current.id}",
+                width=460,
+            )
+            if chosen != current.id:
+                state.set_sample(chosen)
+                st.rerun()
         if row.button("Use your own data", key="data_use_own", type="primary"):
             upload_ui.start()
             st.rerun()
+        st.markdown(
+            '<div class="to-muted">These are the committed demo files for a fictional merger. '
+            "Switching sample clears review decisions and assumption changes; saved scenarios "
+            "are kept. You can size your own merger from two purchasing files instead.</div>",
+            unsafe_allow_html=True,
+        )
     else:
         row.markdown(
             '<div class="to-muted">These are your uploaded files. They exist in this '
-            "session's memory only.</div>",
+            f"session's memory only. Back to demo returns to "
+            f"{esc(state.sample().label)}.</div>",
             unsafe_allow_html=True,
             width="content",
         )
