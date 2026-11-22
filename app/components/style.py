@@ -40,6 +40,11 @@ _CSS = f"""
 [data-testid="stTopNavLink"] {{ padding: {t.SPACING[0]}px {t.SPACING[1] - 2}px; }}
 [data-testid="stTopNavLink"] p {{ font-size: {_TY["nav"]}px; }}
 
+/* Visitors get the app, not the host's controls: no Fork or GitHub buttons, no menu
+   with Print and Record screen. The owner manages the app from share.streamlit.io. */
+[data-testid="stToolbarActions"], [data-testid="stMainMenu"],
+[data-testid="stAppDeployButton"] {{ display: none !important; }}
+
 /* Running text keeps a readable measure however wide the column. */
 [data-testid="stMarkdownContainer"] p, [data-testid="stCaptionContainer"] {{
     max-width: {t.READING_WIDTH_CH}ch;
