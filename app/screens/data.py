@@ -16,12 +16,20 @@ from components.data_view import (
     render_pareto,
     render_received,
 )
+from components.explain import screen_intro
 from components.page import next_question, page_question
 from components.style import esc, headline
 
 from tieout.views import data_quality_summary
 
 page_question("What did we receive and what state is it in?")
+screen_intro(
+    "The two companies' purchasing files: how many records, which period, and what needed "
+    "fixing before matching. You can switch to another sample merger here, or upload your "
+    "own two files.",
+    ("Unit of measure (UoM)", "Spend Pareto"),
+    key="data",
+)
 
 if upload_ui.is_active():
     headline("Add your two purchasing files and Tie-Out sizes the synergies from them.")

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import streamlit as st
 from components import exports, state
+from components.explain import screen_intro
 from components.page import page_question, section
 from components.style import esc, headline
 from streamlit.errors import StreamlitAPIException
@@ -20,6 +21,12 @@ mode = state.view()
 label = "integration-office" if mode == "masked" else "clean-team"
 
 page_question("Workbook and deck")
+screen_intro(
+    "Take the analysis into a meeting: a spreadsheet that ties every figure back to source "
+    "rows, a short slide deck, the charts as pictures, and your review decisions.",
+    ("Clean team and integration office", "Run-rate saving"),
+    key="export",
+)
 headline("Take the analysis with you: every file ties to the figures on screen.")
 st.caption(
     esc(

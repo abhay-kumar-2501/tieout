@@ -70,12 +70,14 @@ def demo() -> Results:
 def test_overview_answers_first(demo: Results) -> None:
     at = _open("overview")
     text = "\n".join(_texts(at))
-    assert "of run-rate savings is defensible" in text
+    assert "These two companies can defend" in text and "$6–13M a year" in text
+    assert "Not the $32M a quick estimate suggests." in text
     assert "Run-rate P&L saving" in text and "One-time cash release" in text
     assert "never added to the run-rate saving" in text
-    assert "Why is it so much smaller than the naive figure?" in [
-        p.label for p in at.get("page_link")
-    ]
+    assert any(
+        p.label.startswith("Why is it so much smaller than the naive figure?")
+        for p in at.get("page_link")
+    )
     assert not at.get("spinner")
 
 

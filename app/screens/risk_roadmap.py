@@ -10,6 +10,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 from components import state
+from components.explain import screen_intro
 from components.page import (
     empty_state,
     error_state,
@@ -277,6 +278,14 @@ def _guard(name: str, draw, *args) -> None:
 results = state.current_results()
 mode = state.view()
 page_question("What do we give up for resilience, and what happens when?")
+screen_intro(
+    "Buying more from fewer suppliers saves money but can leave the business depending on "
+    "one of them. Move the caps to see how much saving you give up to stay safe, which "
+    "opportunities come first, and when the savings arrive.",
+    ("Concentration cap", "Concentration index", "Sole source", "Run-rate saving",
+     "One-time cash release"),
+    key="risk",
+)  # fmt: skip
 
 forgone = float(results.totals["lever2"]["savings_forgone"])
 net_total = phasing_by_year(results, mode).iloc[-1]

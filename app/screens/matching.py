@@ -7,6 +7,7 @@ the threshold-sensitivity curves. Every figure comes from a view function.
 from __future__ import annotations
 
 from components import state
+from components.explain import screen_intro
 from components.matching_queue import render_queue
 from components.matching_scorecard import render_scorecard, render_sensitivity
 from components.matching_stages import render_stages
@@ -19,9 +20,10 @@ from tieout.views import matching_counts
 def _headline(counts: dict) -> str:
     vendors, items = counts["vendors"], counts["items"]
     return (
-        f"{vendors['records']:,} vendor records resolve to {vendors['legal_entities']:,} legal "
-        f"entities and {items['records']:,} item records to {items['canonical_items']:,} canonical "
-        f"items; {vendors['pending_review'] + items['pending_review']:,} pairs wait for a human."
+        f"{vendors['records']:,} supplier records turn out to be {vendors['legal_entities']:,} "
+        f"real companies, and {items['records']:,} item records {items['canonical_items']:,} "
+        f"distinct items; {vendors['pending_review'] + items['pending_review']:,} pairs wait "
+        "for a person to decide."
     )
 
 
@@ -30,6 +32,15 @@ mode = state.view()
 counts = matching_counts(results, mode)
 
 page_question("Which vendors and items are the same, and how do we know?")
+screen_intro(
+    "The two companies name the same suppliers and items differently: \"Acme Corp.\" and "
+    "\"ACME Corporation\", a box of 12 and a single piece. This screen shows how the records "
+    "were paired up and how accurate that is. You can also decide the uncertain pairs "
+    "yourself; each decision updates the saving shown at the top.",
+    ("Tier A, B, C", "Part number (MPN)", "Unit of measure (UoM)", "Precision and recall",
+     "Threshold"),
+    key="matching",
+)  # fmt: skip
 headline(_headline(counts))
 
 section(
