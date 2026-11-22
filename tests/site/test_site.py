@@ -95,14 +95,18 @@ def test_repository_links():
 
 def test_data_js_matches_committed_results():
     data = _js_object(SITE / "data.js", "TIEOUT")
-    totals = json.loads((ROOT / "data/demo/results/results.json").read_text())["totals"]
+    manifest = json.loads((ROOT / "data/samples.json").read_text())["samples"]
+    assert [s["id"] for s in data["samples"]] == [s["id"] for s in manifest]
+    for sample, row in zip(data["samples"], manifest, strict=True):
+        totals = json.loads((ROOT / row["results"] / "results.json").read_text())["totals"]
+        l1 = totals["lever1"]
+        assert sample["label"] == row["label"]
+        assert sample["naive"] == l1["naive"]
+        assert sample["defensible_recurring"] == totals["recurring"]
+        assert sample["lever1"]["defensible"] == l1["bridge"]["defensible"]
+        assert sample["lever1"]["steps"] == [l1["bridge_raw"][f"step_{i}"] for i in range(1, 8)]
     score = json.loads((ROOT / "data/demo/scorecard.json").read_text())
-    l1 = totals["lever1"]
-    assert data["naive"] == l1["naive"]
-    assert data["defensible_recurring"] == totals["recurring"]
-    assert data["lever1"]["defensible"] == l1["bridge"]["defensible"]
-    assert data["lever1"]["steps"] == [l1["bridge_raw"][f"step_{i}"] for i in range(1, 8)]
-    assert data["scorecard"]["held_out_seed"] == score["held_out_seed"]
+    assert data["scorecard"]["held_out_seed"] == score["held_out_seed"] == 4
     metrics = data["scorecard"]["metrics"]
     assert set(metrics) == set(score["tool"]["held_out"])
     for key, m in metrics.items():
@@ -110,6 +114,47 @@ def test_data_js_matches_committed_results():
         assert m["baseline"] == score["baseline"]["held_out"][key]
         target = score["targets"].get(key)
         assert m["target"] == (target["bound"] if target else None)
+
+
+def test_every_sample_has_its_own_downloads():
+    from PIL import Image
+
+    samples = _js_object(SITE / "data.js", "TIEOUT")["samples"]
+    assert len(samples) >= 3
+    assert samples[0]["assets"] == {
+        "bridge": "assets/bridge.png",
+        "workbook": "assets/tieout_workbook.xlsx",
+        "deck": "assets/tieout_deck.pptx",
+    }
+    seen = set()
+    for sample in samples:
+        assets = sample["assets"]
+        assert set(assets) == {"bridge", "workbook", "deck"}
+        for rel in assets.values():
+            assert (SITE / rel).is_file(), rel
+            assert rel not in seen, rel
+            seen.add(rel)
+        # The page's <img> declares 2000 x 1080; every sample's bridge must match it.
+        with Image.open(SITE / assets["bridge"]) as picture:
+            assert picture.size == (2000, 1080), assets["bridge"]
+
+
+def test_samples_tell_different_stories():
+    samples = _js_object(SITE / "data.js", "TIEOUT")["samples"]
+    assert len({round(s["naive"] / 1e6) for s in samples}) == len(samples)
+    for s in samples:
+        r = s["defensible_recurring"]
+        assert 0 < r["low"] <= r["base"] <= r["high"] < s["naive"]
+
+
+def test_sample_rotation_controls():
+    html = (SITE / "index.html").read_text(encoding="utf-8")
+    assert 'id="next-sample"' in html and "Show another sample" in html
+    assert 'data-bind="sample"' in html
+    for asset in ("workbook", "deck", "bridge"):
+        assert f'data-asset="{asset}"' in html
+    script = (SITE / "main.js").read_text(encoding="utf-8")
+    assert "Math.random()" in script and "TIEOUT.samples" in script
 
 
 def test_workflow_is_manual_only():
@@ -194,4 +239,4 @@ def test_figures_come_from_data_js():
     assert 'data-bind="naive"' in html and 'data-bind="range"' in html
     script = (SITE / "main.js").read_text(encoding="utf-8")
     assert not re.search(r"[\"']\$?\d[\d.,]*[MkK%]?[\"']", script), "figure literal in main.js"
-    assert "TIEOUT.naive" in script and "TIEOUT.defensible_recurring" in script
+    assert "sample.naive" in script and "sample.defensible_recurring" in script

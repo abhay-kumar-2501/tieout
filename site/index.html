@@ -8,7 +8,7 @@
 <meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F6E63'/%3E%3Cpath d='M8 11h16M16 11v13' stroke='%23FAF8F4' stroke-width='3.2' fill='none' stroke-linecap='square'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
-<noscript><style>.ladder-card { display: none; } .hero-grid { grid-template-columns: minmax(0, 1fr); }</style></noscript>
+<noscript><style>.ladder-card, .js-only { display: none; } .hero-grid { grid-template-columns: minmax(0, 1fr); }</style></noscript>
 <script src="config.js" defer></script>
 <script src="data.js" defer></script>
 <script src="main.js" defer></script>
@@ -40,7 +40,7 @@
         <h1 id="pitch">A smaller synergy figure you can defend, line by line.</h1>
         <p class="lede">Tie-Out takes two messy purchasing extracts and produces a synergy estimate that is smaller than the naive one, expressed as a range, measured for accuracy, and traceable to the source rows.</p>
 
-        <div class="finding" role="group" aria-label="Headline figures">
+        <div class="finding swaps" role="group" aria-label="Headline figures">
           <p class="stat">
             <span class="stat-label">Naive synergy figure</span>
             <strong class="stat-value naive" data-bind="naive">…</strong>
@@ -51,17 +51,21 @@
             <strong class="stat-value defensible" data-bind="range">…</strong>
           </p>
         </div>
-        <p class="why"><a href="#bridge">Why is the defensible figure so much smaller?</a></p>
+        <div class="sample-bar" id="sample-bar" hidden>
+          <p class="sample-name swaps" aria-live="polite"><span class="sample-count">Sample <span data-bind="sample-number">1</span> of <span data-bind="sample-count">1</span></span> <span data-bind="sample">…</span></p>
+          <button type="button" class="button ghost small" id="next-sample">Show another sample</button>
+        </div>
+        <p class="why"><a href="#bridge">Why is the defensible figure smaller?</a></p>
 
         <div class="actions">
           <a id="demo-button" class="button" href="#">Open the live demo</a>
-          <a id="workbook-button" class="button" href="assets/tieout_workbook.xlsx" download>Download sample workbook</a>
-          <a class="button ghost" href="assets/tieout_deck.pptx" download>Sample deck</a>
+          <a id="workbook-button" class="button" href="assets/tieout_workbook.xlsx" data-asset="workbook" download>Download sample workbook</a>
+          <a class="button ghost" href="assets/tieout_deck.pptx" data-asset="deck" download>Sample deck</a>
         </div>
         <p class="here">On this page: read the bridge, check the accuracy scorecard, see the limits, and take the sample workbook and deck.</p>
       </div>
 
-      <figure class="ladder-card" aria-labelledby="ladder-h">
+      <figure class="ladder-card swaps" aria-labelledby="ladder-h">
         <figcaption>
           <span class="card-title" id="ladder-h">From the naive figure to the defensible one</span>
           <span class="card-note">Annual price gap. Grey bars are removed; teal is what remains. Illustrative: synthetic data.</span>
@@ -93,10 +97,10 @@
         <p>A plain &ldquo;pay the lower of the two prices on everything&rdquo; formula counts unit-of-measure errors, unverified matches, one-off spot prices and gaps that exist inside a single company. Each step removes one of these, and each dollar is attributed to the first step that removes it, so the steps sum exactly to the difference.</p>
       </div>
       <figure class="bridge">
-        <a class="bridge-link" href="assets/bridge.png">
-          <img src="assets/bridge.png" width="2000" height="1080" loading="lazy" alt="Bridge chart: the naive savings figure falls through seven removal steps to a defensible price-harmonisation saving, then volume consolidation is added, ending on a defensible run-rate range.">
+        <a class="bridge-link" href="assets/bridge.png" data-asset="bridge">
+          <img src="assets/bridge.png" data-asset="bridge" width="2000" height="1080" loading="lazy" alt="Bridge chart: the naive savings figure falls through seven removal steps to a defensible price-harmonisation saving, then volume consolidation is added, ending on a defensible run-rate range.">
         </a>
-        <figcaption>The bridge chart as exported by the tool. <a href="assets/bridge.png">Open it full size</a>. Illustrative: synthetic data.</figcaption>
+        <figcaption>The bridge chart as exported by the tool, for the sample shown at the top of the page. <a href="assets/bridge.png" data-asset="bridge">Open it full size</a>. Illustrative: synthetic data.</figcaption>
       </figure>
       <noscript><p class="note">Figures in the summary above are filled in by a small script. With scripts off, this chart shows the same bridge.</p></noscript>
     </div>
@@ -107,7 +111,7 @@
       <div class="band-text">
         <p class="eyebrow">The scorecard</p>
         <h2 id="score-h">The matching is measured, not asserted.</h2>
-        <p>The demo data is synthetic, so the tool is scored against hidden ground truth it never reads. Tuning used three other seeds; the figures here are for a fourth, held-out seed. The same data is run through a naive design: fuzzy names and plain text similarity, with no attribute checks.</p>
+        <p>The demo data is synthetic, so the tool is scored against hidden ground truth it never reads. Tuning used three other seeds; the figures here are for a fourth, held-out seed, the first of the sample mergers, whichever sample is shown at the top of the page. The same data is run through a naive design: fuzzy names and plain text similarity, with no attribute checks.</p>
       </div>
       <div class="band-body">
         <div class="table-scroll card" tabindex="0" role="region" aria-label="Accuracy scorecard, scrollable">
@@ -167,12 +171,12 @@
       <div class="band-text">
         <p class="eyebrow">Sample outputs</p>
         <h2 id="dl-h">Take the working with you.</h2>
-        <p>Both files are generated from the same committed results as this page.</p>
+        <p>Both files are generated from the committed results of the sample shown at the top of this page<span class="js-only">: <span data-bind="sample">…</span></span>.</p>
       </div>
       <div class="band-body">
         <ul class="downloads">
-          <li><a href="assets/tieout_workbook.xlsx" download><span class="dl-name">Sample workbook</span> <span class="mono">.xlsx</span><span class="dl-note">Formula-live, with a tie-out check.</span></a></li>
-          <li><a href="assets/tieout_deck.pptx" download><span class="dl-name">Sample deck</span> <span class="mono">.pptx</span><span class="dl-note">The bridge, the range and the limits.</span></a></li>
+          <li><a href="assets/tieout_workbook.xlsx" data-asset="workbook" download><span class="dl-name">Sample workbook</span> <span class="mono">.xlsx</span><span class="dl-note">Formula-live, with a tie-out check.</span></a></li>
+          <li><a href="assets/tieout_deck.pptx" data-asset="deck" download><span class="dl-name">Sample deck</span> <span class="mono">.pptx</span><span class="dl-note">The bridge, the range and the limits.</span></a></li>
         </ul>
       </div>
     </div>
