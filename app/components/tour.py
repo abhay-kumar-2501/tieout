@@ -115,11 +115,14 @@ def _tour() -> None:
     render_step()
 
 
-def render_tour_button(*, primary: bool = False) -> None:
-    """The "Take the 2-minute tour" button; the tour opens only when it is clicked."""
+def render_tour_button(*, primary: bool = False, key: str = "tour_open") -> None:
+    """The "Take the 2-minute tour" button; the tour opens only when it is clicked.
+
+    ``key`` tells two buttons on one page apart; both open the same tour.
+    """
     if st.button(
         "Take the 2-minute tour",
-        key="tour_open",
+        key=key,
         icon=":material/tour:",
         type="primary" if primary else "secondary",
     ):

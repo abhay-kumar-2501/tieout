@@ -9,6 +9,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 from components import state
+from components.explain import render_glossary, screen_intro
 from components.matching_scorecard import target_text, truth_source
 from components.page import page_question, section, unavailable
 from components.style import esc, headline
@@ -20,6 +21,12 @@ results = state.current_results()
 mode = state.view()
 
 page_question("How does it work, and what can it not see?")
+screen_intro(
+    "How Tie-Out turns two messy purchasing files into a figure you can defend, how "
+    "accurate it is, what it cannot see, and what the trade words used across the app "
+    "mean.",
+    key="method",
+)
 headline("Every figure comes from rules you can read, and the limits are listed here.")
 
 section("How it works")
@@ -68,6 +75,13 @@ with st.container(border=True):
             "removed, and every item to the source rows."
         )
     )
+
+section(
+    "Words we use",
+    "Every trade term in the app, in plain words. The same explanations sit behind "
+    '"What do these words mean?" on each screen.',
+)
+render_glossary()
 
 section(
     "Risk guardrails",

@@ -17,6 +17,7 @@ import streamlit as st
 from components import state
 from components.assumptions_charts import scenario_display, tornado_figure, tornado_table
 from components.assumptions_forms import render_forms, reset_all, summary_line
+from components.explain import screen_intro
 from components.page import empty_state, error_state, next_question, page_question, section
 from components.plotting import chart_with_table
 from components.style import esc, headline
@@ -113,6 +114,14 @@ def _guard(name: str, draw: Callable[..., None], *args) -> None:
 results = state.current_results()
 mode = state.view()
 page_question("Which inputs drive the answer?")
+screen_intro(
+    "Every figure rests on assumptions you can see and change, such as how much of each "
+    "price gap a negotiation will win. Change one and watch the answer move; save a "
+    "what-if as a scenario to compare it with others.",
+    ("Capture probability", "Concentration cap", "Tornado chart", "Scenario",
+     "Run-rate saving"),
+    key="assumptions",
+)  # fmt: skip
 
 try:
     ranked = _cached("tornado", results, mode, lambda: tornado_chart(results, mode))

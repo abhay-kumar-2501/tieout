@@ -55,6 +55,8 @@ SPACING: tuple[int, ...] = tuple(SPACING_UNIT * n for n in (1, 2, 3, 4, 6, 8))
 BASE_FONT_SIZE = 17
 FONT_MIN = 14
 TYPE: dict[str, int] = {
+    "hero": 44,  # the Overview's answer, serif; scales down to hero_min on a phone
+    "hero_min": 28,
     "headline": 36,  # finding headline, serif; scales down to headline_min on a phone
     "headline_min": 26,
     "figure": 34,  # headline figures in cards, serif; scales down to 26 px
@@ -92,6 +94,7 @@ GUTTER_MAX = 64
 READING_WIDTH_CH = 78  # longest line of running text, in characters
 BORDER_WIDTH = 1
 CARD_RADIUS = 8
+HERO_RADIUS = 16  # the Overview's hero panel
 QUAD_BREAKPOINT = 1200  # a row of four cards becomes two by two below this width
 STACK_BREAKPOINT = 900  # two-column grids stack below this width
 PHONE_BREAKPOINT = 700  # phone layout and the "best on a larger screen" note

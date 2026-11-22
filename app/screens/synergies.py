@@ -11,6 +11,7 @@ import pandas as pd
 import streamlit as st
 from components import state
 from components.bridge import render_bar_detail, render_bridge, render_refused
+from components.explain import screen_intro
 from components.page import next_question, page_question, section, unavailable
 from components.plotting import (
     bridge_figure,
@@ -142,6 +143,14 @@ mode = state.view()
 frame = bridge(results, mode)
 
 page_question("Where does the saving come from, and what did we refuse to count?")
+screen_intro(
+    "Where the saving comes from, and every dollar we refused to count. Click a bar to see "
+    "the items behind it, then an item to see the original rows from both companies side "
+    "by side.",
+    ("Naive figure", "Lever", "Price harmonisation", "Volume consolidation", "Run-rate saving",
+     "Benchmark price", "Capture probability"),
+    key="synergies",
+)  # fmt: skip
 headline(_headline(frame))
 
 section("From the naive figure to the defensible range")

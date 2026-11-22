@@ -13,6 +13,7 @@ import pandas as pd
 import streamlit as st
 
 from components import state
+from components.explain import step_reason
 from components.plotting import bridge_figure, chart_with_table, exact_money, selected_row
 from components.style import esc
 from components.trace import render_trace
@@ -22,11 +23,13 @@ __all__ = ["bridge_caption", "render_bar_detail", "render_bridge", "render_refus
 
 
 def _hover(frame: pd.DataFrame) -> list[str]:
-    """Exact figure and the count of items behind each bar (PRD 6.8)."""
+    """Exact figure, the count of items behind each bar (PRD 6.8) and why the step exists."""
     out = []
     for label, amount, items in zip(frame["label"], frame["amount"], frame["items"], strict=True):
         count = f"<br>{items:,} items" if items else ""
-        out.append(f"{label}<br>{exact_money(amount)}{count}")
+        reason = step_reason(label)
+        why = f"<br><i>{reason}</i>" if reason else ""
+        out.append(f"<b>{label}</b><br>{exact_money(amount)}{count}{why}")
     return out
 
 
