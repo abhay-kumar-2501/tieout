@@ -2,6 +2,8 @@
 
 Tie-Out sizes the procurement savings of a merger from the two companies' purchasing extracts. It matches vendors and items across them, then walks the naive savings figure down to a defensible range, with every dollar traceable to source rows.
 
+**Live:** [app](https://tie-out.streamlit.app/) · [landing page](https://abhay-kumar-2501.github.io/tieout/)
+
 On the demo data (a synthetic merger of about 60,000 purchasing lines and $522M of in-scope spend) the naive figure is $32M and the defensible run-rate saving is $6–13M. The landing page and the app open on one of four [sample mergers](#sample-mergers) at random.
 
 ![Bridge from the naive savings figure of $32M to the defensible run-rate saving of $6–13M](site/assets/bridge.png)

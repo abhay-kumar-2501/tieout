@@ -1,11 +1,11 @@
 # Human to-do
 
-Tasks left to the owner (PRD 11.1). Status as of 2026-11-21.
+Tasks left to the owner (PRD 11.1). Status as of 2026-11-22.
 
 | # | Task | Status |
 | --- | --- | --- |
 | 1 | Record the 90-second video | Not recorded |
-| 2 | Deploy the app and the landing page | Not done |
+| 2 | Deploy the app and the landing page | Done |
 | 3 | Usability check with five people | Remains with you |
 | 4 | Review by two practitioners | Remains with you |
 | 5 | Check the names | Web-search screening done; register search remains |
@@ -27,15 +27,12 @@ Suggested 90-second shot list, one shot per step of the in-app tour. Record the 
 | 0:55-1:15 | Risk & roadmap | Drag the standard concentration cap | Moving the cap changes the saving given up to protect supply. |
 | 1:15-1:30 | Matching | The unit-of-measure flag (the packing tape item on the Overview "Worth a look" card) | A 36x price gap is a pack size, not a saving. Unit errors are removed first and shown. End on the "Illustrative - synthetic data" tag. |
 
-## 2. Deploy (not done)
+## 2. Deploy (done)
 
-The repository is private and no hosting account was created, so nothing is deployed.
+Deployed on 2026-11-22. The repository is public.
 
-1. Open Streamlit Community Cloud and create an app from this repository: branch `main`, main file `app/main.py`, Python version 3.11 or later (`requires-python = ">=3.11"` in `pyproject.toml`; 3.12 works). Dependencies come from `requirements.txt`.
-2. Copy the app address and set it in `site/config.js`: `const DEMO_URL = "https://<your-app>.streamlit.app";`. While it is `"#"` the landing page button reads "Live demo coming soon". Commit the change to `main`.
-3. In the repository on GitHub, open the Actions tab, choose the workflow named "Deploy landing page" (file `.github/workflows/pages.yml`) and run it with "Run workflow". It runs on `workflow_dispatch` only, never on push. Under Settings > Pages, set the source to "GitHub Actions" first.
-4. GitHub Pages needs a public repository or a paid plan. If the repository stays private on a free plan, make it public first or host the `site/` folder elsewhere.
-5. Open the deployed landing page and check that the "Run locally" link reaches the README's Development section.
+- App: https://tie-out.streamlit.app/ (Streamlit Community Cloud, branch `main`, main file `app/main.py`, Python 3.12). It redeploys on every push to `main`.
+- Landing page: https://abhay-kumar-2501.github.io/tieout/ (GitHub Pages, source "GitHub Actions"). It does not redeploy on push: after a change to `site/`, run the "Deploy landing page" workflow (`.github/workflows/pages.yml`) from the Actions tab.
 
 A free Streamlit app sleeps after about 12 hours without traffic; the first visitor waits while it wakes. The landing page does not depend on the app being awake.
 
