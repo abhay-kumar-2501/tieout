@@ -1,0 +1,1092 @@
+{
+ "assumptions": {
+  "benchmark": {
+   "min_lines": 3,
+   "min_volume_share": 0.1
+  },
+  "caps": {
+   "critical": 0.6,
+   "non_critical": 0.9,
+   "standard": 0.75
+  },
+  "cost_of_capital": 0.08,
+  "global_ramp": {
+   "year1": 0.4,
+   "year2": 0.85,
+   "year3": 1.0
+  },
+  "lead_time_months": {
+   "l1_same_vendor": 3,
+   "l1_switch": 6,
+   "l2": 6,
+   "l3": 3
+  },
+  "lever1": {
+   "same_vendor": {
+    "base": 0.7,
+    "high": 0.85,
+    "low": 0.5
+   },
+   "switch": {
+    "base": 0.4,
+    "high": 0.6,
+    "low": 0.2
+   }
+  },
+  "lever2": {
+   "capture": {
+    "base": 0.6,
+    "high": 0.8,
+    "low": 0.4
+   },
+   "discount": {
+    "commodity": 0.0,
+    "engineered": 0.02,
+    "indirect": 0.03,
+    "mro": 0.04
+   }
+  },
+  "lever3": {
+   "capture": {
+    "base": 0.5,
+    "high": 0.7,
+    "low": 0.3
+   },
+   "max_payment_days": 90
+  },
+  "planning_horizon_months": 36,
+  "reference_bands": {
+   "addressable_spend": {
+    "high": 0.1,
+    "low": 0.03
+   },
+   "total_spend": {
+    "high": 0.03,
+    "low": 0.01
+   }
+  },
+  "reporting_currency": "USD",
+  "switching_cost": {
+   "fixed_usd": 25000.0,
+   "pct_of_spend_moved": 0.01
+  }
+ },
+ "meta": {
+  "addressable_l2": [
+   "L01.01",
+   "L01.02",
+   "L01.03",
+   "L01.04",
+   "L01.05",
+   "L02.01",
+   "L02.02",
+   "L02.03",
+   "L02.04",
+   "L02.05",
+   "L03.01",
+   "L03.02",
+   "L03.03",
+   "L03.04",
+   "L03.05",
+   "L04.01",
+   "L04.02",
+   "L04.03",
+   "L04.04",
+   "L04.05",
+   "L05.01",
+   "L05.02",
+   "L05.03",
+   "L05.04",
+   "L05.05",
+   "L06.01",
+   "L06.02",
+   "L06.03",
+   "L06.04",
+   "L06.05",
+   "L07.01",
+   "L07.02",
+   "L07.03",
+   "L07.04",
+   "L07.05",
+   "L08.01",
+   "L08.02",
+   "L08.03",
+   "L08.04",
+   "L08.05",
+   "L09.01",
+   "L09.02",
+   "L09.03",
+   "L09.04",
+   "L09.05",
+   "L10.01",
+   "L10.02",
+   "L10.03",
+   "L10.04",
+   "L10.05",
+   "L11.01",
+   "L11.02",
+   "L11.03",
+   "L11.04",
+   "L11.05",
+   "L12.01",
+   "L12.02",
+   "L12.03",
+   "L12.04",
+   "L12.05"
+  ],
+  "addressable_spend": {
+   "acquirer": 201908929.8448,
+   "target": 107076253.63509999,
+   "total": 308985183.4799
+  },
+  "aggregated": false,
+  "category_mapping": {
+   "mappings": 135,
+   "source": "supplied"
+  },
+  "features": {
+   "benchmark_line_test": true,
+   "contract_phasing": true,
+   "observed_days_to_pay": true,
+   "payment_terms": true
+  },
+  "fx_rates": {
+   "CAD": 0.73,
+   "EUR": 1.08,
+   "GBP": 1.27,
+   "USD": 1.0
+  },
+  "in_scope_spend": {
+   "acquirer": 203948929.87949997,
+   "target": 108156253.61729999,
+   "total": 312105183.49679995
+  },
+  "inputs": {
+   "category_settings": false,
+   "fx": "shipped (illustrative)",
+   "review_decisions": 0,
+   "vendor_parents": true
+  },
+  "matching": {
+   "items": {
+    "by_stage": {
+     "I1": 1828,
+     "I3": 676,
+     "none": 2896
+    },
+    "by_tier": {
+     "A": 1828,
+     "B": 676,
+     "none": 2896
+    },
+    "canonical_items": 4148,
+    "matchable_records": 5400,
+    "pending_review": 3392,
+    "records": 5400
+   },
+   "vendors": {
+    "after_normalisation": 1163,
+    "by_stage": {
+     "V1": 437,
+     "V2": 320,
+     "V3": 66,
+     "V4": 48,
+     "none": 633
+    },
+    "by_tier": {
+     "A": 823,
+     "B": 48,
+     "none": 633
+    },
+    "legal_entities": 1091,
+    "parents": 1058,
+    "pending_review": 127,
+    "records": 1504
+   }
+  },
+  "months_with_data": {
+   "acquirer": 12,
+   "target": 12
+  },
+  "not_item_addressable": {
+   "amount": {
+    "acquirer": 71400000.05790001,
+    "target": 37800000.2924,
+    "total": 109200000.35030001
+   },
+   "rows": {
+    "acquirer": 5728,
+    "target": 3308
+   },
+   "share": {
+    "acquirer": 0.3500876425293606,
+    "target": 0.3494943568048455,
+    "total": 0.3498820465806831
+   }
+  },
+  "period": {
+   "end": "2025-12",
+   "months": 12,
+   "start": "2025-01"
+  },
+  "report_date": "2026-01-15",
+  "reporting_currency": "USD",
+  "rows": {
+   "acquirer": 22786,
+   "target": 13180
+  },
+  "rows_in_file": {
+   "acquirer": 22786,
+   "target": 13180
+  },
+  "scaled": false,
+  "scaling_factor": {
+   "acquirer": 1.0,
+   "target": 1.0
+  },
+  "scenario": "demo",
+  "seed": null,
+  "stages_run": [
+   "ingest",
+   "vendor_matching",
+   "item_matching",
+   "synergy"
+  ],
+  "switched_off": {},
+  "thresholds": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "unmapped_by_category": [
+   {
+    "amount": 2040000.0347,
+    "category_native": "ZZ99 - Miscellaneous / unclassified",
+    "company": "acquirer",
+    "rows": 228,
+    "share": 0.010002504234296801
+   },
+   {
+    "amount": 1079999.9822,
+    "category_native": "9999-99 MISC NON CATALOG",
+    "company": "target",
+    "rows": 132,
+    "share": 0.009985552809747564
+   }
+  ],
+  "unmapped_spend": {
+   "acquirer": 2040000.0347,
+   "target": 1079999.9822,
+   "total": 3120000.0169
+  },
+  "view": "clean"
+ },
+ "scorecard": {
+  "baseline": {
+   "held_out": {
+    "false_savings_rate": 0.10822750702927075,
+    "item_precision": 0.5860979462875198,
+    "item_recall": 0.49966329966329964,
+    "planted_savings_recall": 0.4703530249853425,
+    "unit_error_catch_rate": 0.42857142857142855,
+    "vendor_precision": 0.36681222707423583,
+    "vendor_recall": 0.9312638580931264
+   },
+   "tuning": {
+    "1": {
+     "false_savings_rate": 0.13215283317492163,
+     "item_precision": 0.33166666666666667,
+     "item_recall": 0.5053968253968254,
+     "planted_savings_recall": 0.4795125288438528,
+     "unit_error_catch_rate": 0.5,
+     "vendor_precision": 0.029431643625192013,
+     "vendor_recall": 0.9485148514851485
+    },
+    "2": {
+     "false_savings_rate": 0.11380810497301569,
+     "item_precision": 0.3303030303030303,
+     "item_recall": 0.48444444444444446,
+     "planted_savings_recall": 0.4829997100992263,
+     "unit_error_catch_rate": 0.42857142857142855,
+     "vendor_precision": 0.03326018378823207,
+     "vendor_recall": 0.943579766536965
+    },
+    "3": {
+     "false_savings_rate": 0.12359199639998185,
+     "item_precision": 0.35447593342330186,
+     "item_recall": 0.5003174603174603,
+     "planted_savings_recall": 0.4711398080481855,
+     "unit_error_catch_rate": 0.5,
+     "vendor_precision": 0.09482245586193215,
+     "vendor_recall": 0.9390962671905697
+    }
+   },
+   "tuning_mean": {
+    "false_savings_rate": 0.12318431151597305,
+    "item_precision": 0.3388152101309996,
+    "item_recall": 0.49671957671957667,
+    "planted_savings_recall": 0.4778840156637549,
+    "unit_error_catch_rate": 0.4761904761904762,
+    "vendor_precision": 0.05250476109178542,
+    "vendor_recall": 0.9437302950708943
+   }
+  },
+  "failures": [],
+  "gates": {
+   "false_savings_rate": {
+    "passed": true,
+    "value": 0.0007874402477558381
+   },
+   "item_precision": {
+    "passed": true,
+    "value": 0.9904153354632588
+   },
+   "item_recall": {
+    "passed": true,
+    "value": 0.835016835016835
+   },
+   "unit_error_catch_rate": {
+    "passed": true,
+    "value": 1.0
+   },
+   "vendor_precision": {
+    "passed": true,
+    "value": 0.9976958525345622
+   },
+   "vendor_recall": {
+    "passed": true,
+    "value": 0.9600886917960089
+   }
+  },
+  "held_out_seed": 7,
+  "passed": true,
+  "sample": {
+   "id": "high_overlap",
+   "profile": "high_overlap"
+  },
+  "schema_version": 1,
+  "targets": {
+   "false_savings_rate": {
+    "bound": 0.02,
+    "direction": "<="
+   },
+   "item_precision": {
+    "bound": 0.97,
+    "direction": ">="
+   },
+   "item_recall": {
+    "bound": 0.8,
+    "direction": ">="
+   },
+   "unit_error_catch_rate": {
+    "bound": 0.95,
+    "direction": ">="
+   },
+   "vendor_precision": {
+    "bound": 0.98,
+    "direction": ">="
+   },
+   "vendor_recall": {
+    "bound": 0.9,
+    "direction": ">="
+   }
+  },
+  "thresholds": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "tool": {
+   "held_out": {
+    "false_savings_rate": 0.0007874402477558381,
+    "item_precision": 0.9904153354632588,
+    "item_recall": 0.835016835016835,
+    "planted_savings_recall": 0.5329784078911288,
+    "unit_error_catch_rate": 1.0,
+    "vendor_precision": 0.9976958525345622,
+    "vendor_recall": 0.9600886917960089
+   },
+   "tuning": {
+    "1": {
+     "false_savings_rate": 0.00730424982063465,
+     "item_precision": 0.9762258543833581,
+     "item_recall": 0.8342857142857143,
+     "planted_savings_recall": 0.6258087565540704,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.9959266802443992,
+     "vendor_recall": 0.9683168316831683
+    },
+    "2": {
+     "false_savings_rate": 0.005204351609699213,
+     "item_precision": 0.9722425127830533,
+     "item_recall": 0.8450793650793651,
+     "planted_savings_recall": 0.605371505889709,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.997979797979798,
+     "vendor_recall": 0.9610894941634242
+    },
+    "3": {
+     "false_savings_rate": 0.005735455746377971,
+     "item_precision": 0.9788011695906432,
+     "item_recall": 0.8501587301587301,
+     "planted_savings_recall": 0.5344670036997005,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.993963782696177,
+     "vendor_recall": 0.9705304518664047
+    }
+   },
+   "tuning_mean": {
+    "false_savings_rate": 0.006081352392237278,
+    "item_precision": 0.9757565122523516,
+    "item_recall": 0.8431746031746031,
+    "planted_savings_recall": 0.5885490887144933,
+    "unit_error_catch_rate": 1.0,
+    "vendor_precision": 0.9959567536401247,
+    "vendor_recall": 0.9666455925709991
+   }
+  },
+  "tuning_seeds": [
+   1,
+   2,
+   3
+  ]
+ },
+ "sensitivity": {
+  "current": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "recurring_base": 5396286.437833104,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "curves": {
+   "item_auto_cosine": [
+    {
+     "recurring_base": 5507875.1416009795,
+     "recurring_high": 7093317.176052087,
+     "recurring_low": 3713284.793030278,
+     "threshold": 0.6
+    },
+    {
+     "recurring_base": 5448129.313007664,
+     "recurring_high": 7019814.749835119,
+     "recurring_low": 3671366.938698984,
+     "threshold": 0.65
+    },
+    {
+     "recurring_base": 5448129.313007664,
+     "recurring_high": 7019814.749835119,
+     "recurring_low": 3671366.938698984,
+     "threshold": 0.7
+    },
+    {
+     "recurring_base": 5417931.328708389,
+     "recurring_high": 6982872.185868755,
+     "recurring_low": 3650013.056136638,
+     "threshold": 0.75
+    },
+    {
+     "recurring_base": 5350949.126223849,
+     "recurring_high": 6901591.509407337,
+     "recurring_low": 3602150.1778800683,
+     "threshold": 0.8
+    },
+    {
+     "recurring_base": 5290104.356350763,
+     "recurring_high": 6826614.809125847,
+     "recurring_low": 3559549.335168088,
+     "threshold": 0.85
+    },
+    {
+     "recurring_base": 5255951.337590896,
+     "recurring_high": 6781706.431081225,
+     "recurring_low": 3537753.4302584836,
+     "threshold": 0.9
+    },
+    {
+     "recurring_base": 5246120.148081184,
+     "recurring_high": 6768627.056211642,
+     "recurring_low": 3531602.4734766586,
+     "threshold": 0.95
+    }
+   ],
+   "vendor_auto": [
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 80.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 82.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 84.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 86.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 88.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 90.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 92.0
+    },
+    {
+     "recurring_base": 5396286.437833104,
+     "recurring_high": 6956577.48086377,
+     "recurring_low": 3634562.500780168,
+     "threshold": 94.0
+    },
+    {
+     "recurring_base": 5396211.553525963,
+     "recurring_high": 6956515.077274485,
+     "recurring_low": 3634487.616473026,
+     "threshold": 96.0
+    },
+    {
+     "recurring_base": 5385150.165090953,
+     "recurring_high": 6947749.523055196,
+     "recurring_low": 3623124.715053648,
+     "threshold": 98.0
+    }
+   ]
+  },
+  "seed": null
+ },
+ "totals": {
+  "checks": {
+   "benchmark_line_test": true,
+   "bridge_tie_out_difference": -4.656612873077393e-10,
+   "contract_lock_in_assessed": true,
+   "lever3_enabled": true,
+   "lever3_message": null
+  },
+  "currency": "USD",
+  "defensible_range": {
+   "high": 6956577.48086377,
+   "low": 3634562.500780168
+  },
+  "lever1": {
+   "bridge": {
+    "defensible": 3393023.193247397,
+    "step_1": 4821226.833986236,
+    "step_2": 3868186.196600454,
+    "step_3": 2714348.05583563,
+    "step_4": 324988.7745456882,
+    "step_5": 665422.41511025,
+    "step_6": 774619.4514400214,
+    "step_7": 2094390.4940492804
+   },
+   "bridge_raw": {
+    "step_1": 4821226.833986236,
+    "step_2": 3868186.196600454,
+    "step_3": 2714348.05583563,
+    "step_4": 324988.7745456882,
+    "step_5": 665422.41511025,
+    "step_6": 774619.4514400214,
+    "step_7": 2094390.4940492804
+   },
+   "internal_variance": 324988.7745456882,
+   "naive": 18656205.414814956,
+   "tier_a": {
+    "base": 2482711.9137311997,
+    "high": 3155220.7489868365,
+    "low": 1667991.2980730725
+   },
+   "tier_b": {
+    "base": 910311.2795161973,
+    "high": 1135608.8953317748,
+    "low": 627549.1577149893
+   },
+   "upside_pending_review": 1179914.3885499802
+  },
+  "lever2": {
+   "B2": {
+    "base": 200671593.63218954,
+    "high": 200244684.18847874,
+    "low": 201240806.22380397
+   },
+   "savings_forgone": 944872.5671442284
+  },
+  "levers": {
+   "lever1": {
+    "base": 3393023.193247397,
+    "gross_gap": 5487413.687296677,
+    "high": 4290829.644318611,
+    "kind": "recurring",
+    "low": 2295540.4557880615
+   },
+   "lever2": {
+    "base": 2003263.2445857076,
+    "gross": 3338772.0743095125,
+    "high": 2665747.836545158,
+    "kind": "recurring",
+    "low": 1339022.0449921065
+   },
+   "lever3": {
+    "base": 1708348.4965985385,
+    "gross": 3416696.993197077,
+    "high": 2376585.8584003826,
+    "kind": "one_time_cash",
+    "low": 1032294.0243240404
+   }
+  },
+  "memo": {
+   "financing_value": {
+    "base": 136667.8797278831,
+    "high": 190126.8686720306,
+    "low": 82583.52194592323
+   }
+  },
+  "one_time": {
+   "cash": {
+    "base": 1708348.4965985385,
+    "high": 2376585.8584003826,
+    "low": 1032294.0243240404
+   },
+   "costs": {
+    "base": 4004041.1422000704,
+    "high": 5627580.45520375,
+    "low": 2380501.8291963907
+   }
+  },
+  "phasing": {
+   "beyond_month_36": [
+    "L1:CI000025:switch",
+    "L1:CI000254:same_vendor",
+    "L1:CI000305:same_vendor",
+    "L1:CI001196:switch",
+    "L1:CI001198:switch",
+    "L1:CI001199:switch",
+    "L1:CI001208:switch",
+    "L1:CI001226:switch",
+    "L1:CI001251:switch",
+    "L1:CI001287:switch",
+    "L1:CI001317:switch",
+    "L1:CI001343:switch",
+    "L1:CI001458:switch",
+    "L1:CI001478:switch",
+    "L1:CI001542:switch",
+    "L1:CI001571:switch",
+    "L1:CI001642:switch",
+    "L1:CI001699:switch",
+    "L1:CI001727:switch",
+    "L1:CI001731:same_vendor",
+    "L1:CI001885:switch",
+    "L1:CI002114:same_vendor",
+    "L1:CI002118:switch",
+    "L1:CI002208:same_vendor",
+    "L1:CI002553:same_vendor",
+    "L1:CI002613:same_vendor",
+    "L1:CI002614:same_vendor",
+    "L1:CI002685:same_vendor",
+    "L1:CI002840:switch",
+    "L1:CI002967:switch",
+    "L1:CI003167:same_vendor",
+    "L1:CI003258:same_vendor",
+    "L2:L02.03",
+    "L2:L03.01",
+    "L2:L03.02",
+    "L2:L03.03",
+    "L2:L03.04",
+    "L2:L03.05",
+    "L2:L04.02",
+    "L2:L05.02",
+    "L2:L05.05",
+    "L2:L06.01",
+    "L2:L06.02",
+    "L2:L06.04",
+    "L2:L07.01",
+    "L2:L07.02",
+    "L2:L07.03",
+    "L2:L07.04",
+    "L2:L09.03",
+    "L2:L10.01",
+    "L2:L10.02",
+    "L2:L10.03",
+    "L2:L10.04",
+    "L2:L10.05",
+    "L3:LE00733",
+    "L3:P:brovolt hardware",
+    "L3:P:nostali and vadellnar"
+   ],
+   "method": "contract",
+   "net_three_year": {
+    "base": 8002049.307428796,
+    "high": 9800126.21748802,
+    "low": 5715894.8149796575
+   },
+   "realised": {
+    "year1": {
+     "base": 2571076.915713342,
+     "high": 3260551.4966683444,
+     "low": 1753948.6997636794
+    },
+    "year2": {
+     "base": 3844069.208050253,
+     "high": 4913721.222492095,
+     "low": 2597942.690608172
+    },
+    "year3": {
+     "base": 4036291.6423360426,
+     "high": 5166880.990821139,
+     "low": 2721752.8494559294
+    }
+   }
+  },
+  "reconciliation": {
+   "addressable_spend": {
+    "band_high": 0.1,
+    "band_low": 0.03,
+    "share": 0.017464547578166126,
+    "spend": 308985183.4799,
+    "within": false
+   },
+   "largest_opportunities": [
+    "L1:CI002988:same_vendor",
+    "L1:CI002908:same_vendor",
+    "L1:CI002901:same_vendor"
+   ],
+   "outside_band": true,
+   "total_spend": {
+    "band_high": 0.03,
+    "band_low": 0.01,
+    "share": 0.01728996095923038,
+    "spend": 312105183.49679995,
+    "within": true
+   }
+  },
+  "recurring": {
+   "base": 5396286.437833104,
+   "high": 6956577.48086377,
+   "low": 3634562.500780168
+  },
+  "spend": {
+   "addressable": 308985183.4799,
+   "baseline": 312105183.49679995,
+   "net_run_rate": {
+    "base": 306708897.0589668,
+    "high": 305148606.0159362,
+    "low": 308470620.9960198
+   }
+  }
+ },
+ "trace_figures": {
+  "defensible_range.high": [
+   "total:recurring",
+   "recurring_high"
+  ],
+  "defensible_range.low": [
+   "total:recurring",
+   "recurring_low"
+  ],
+  "lever1.bridge.defensible": [
+   "lever:1",
+   "base"
+  ],
+  "lever1.bridge.step_1": [
+   "bridge:step:1",
+   "step_1"
+  ],
+  "lever1.bridge.step_2": [
+   "bridge:step:2",
+   "step_2"
+  ],
+  "lever1.bridge.step_3": [
+   "bridge:step:3",
+   "step_3"
+  ],
+  "lever1.bridge.step_4": [
+   "bridge:step:4",
+   "step_4"
+  ],
+  "lever1.bridge.step_5": [
+   "bridge:step:5",
+   "step_5"
+  ],
+  "lever1.bridge.step_6": [
+   "bridge:step:6",
+   "step_6"
+  ],
+  "lever1.bridge.step_7": [
+   "bridge:step:7",
+   "step_7"
+  ],
+  "lever1.bridge_raw.step_1": [
+   "bridge:raw:1",
+   "raw_1"
+  ],
+  "lever1.bridge_raw.step_2": [
+   "bridge:raw:2",
+   "raw_2"
+  ],
+  "lever1.bridge_raw.step_3": [
+   "bridge:raw:3",
+   "raw_3"
+  ],
+  "lever1.bridge_raw.step_4": [
+   "bridge:raw:4",
+   "raw_4"
+  ],
+  "lever1.bridge_raw.step_5": [
+   "bridge:raw:5",
+   "raw_5"
+  ],
+  "lever1.bridge_raw.step_6": [
+   "bridge:raw:6",
+   "raw_6"
+  ],
+  "lever1.bridge_raw.step_7": [
+   "bridge:raw:7",
+   "raw_7"
+  ],
+  "lever1.internal_variance": [
+   "lever:1:internal",
+   "internal"
+  ],
+  "lever1.naive": [
+   "bridge:naive",
+   "naive"
+  ],
+  "lever1.tier_a.base": [
+   "lever:1:tier:A",
+   "base"
+  ],
+  "lever1.tier_a.high": [
+   "lever:1:tier:A",
+   "high"
+  ],
+  "lever1.tier_a.low": [
+   "lever:1:tier:A",
+   "low"
+  ],
+  "lever1.tier_b.base": [
+   "lever:1:tier:B",
+   "base"
+  ],
+  "lever1.tier_b.high": [
+   "lever:1:tier:B",
+   "high"
+  ],
+  "lever1.tier_b.low": [
+   "lever:1:tier:B",
+   "low"
+  ],
+  "lever1.upside_pending_review": [
+   "lever:1:upside",
+   "upside"
+  ],
+  "lever2.B2.base": [
+   "lever:2",
+   "B2_base"
+  ],
+  "lever2.B2.high": [
+   "lever:2",
+   "B2_high"
+  ],
+  "lever2.B2.low": [
+   "lever:2",
+   "B2_low"
+  ],
+  "lever2.savings_forgone": [
+   "lever:2",
+   "forgone"
+  ],
+  "levers.lever1.base": [
+   "lever:1",
+   "base"
+  ],
+  "levers.lever1.gross_gap": [
+   "lever:1",
+   "gross"
+  ],
+  "levers.lever1.high": [
+   "lever:1",
+   "high"
+  ],
+  "levers.lever1.low": [
+   "lever:1",
+   "low"
+  ],
+  "levers.lever2.base": [
+   "lever:2",
+   "l2_base"
+  ],
+  "levers.lever2.gross": [
+   "lever:2",
+   "l2_gross"
+  ],
+  "levers.lever2.high": [
+   "lever:2",
+   "l2_high"
+  ],
+  "levers.lever2.low": [
+   "lever:2",
+   "l2_low"
+  ],
+  "levers.lever3.base": [
+   "lever:3",
+   "l3_base"
+  ],
+  "levers.lever3.gross": [
+   "lever:3",
+   "l3_gross"
+  ],
+  "levers.lever3.high": [
+   "lever:3",
+   "l3_high"
+  ],
+  "levers.lever3.low": [
+   "lever:3",
+   "l3_low"
+  ],
+  "memo.financing_value.base": [
+   "lever:3",
+   "fin_base"
+  ],
+  "memo.financing_value.high": [
+   "lever:3",
+   "fin_high"
+  ],
+  "memo.financing_value.low": [
+   "lever:3",
+   "fin_low"
+  ],
+  "one_time.cash.base": [
+   "lever:3",
+   "l3_base"
+  ],
+  "one_time.cash.high": [
+   "lever:3",
+   "l3_high"
+  ],
+  "one_time.cash.low": [
+   "lever:3",
+   "l3_low"
+  ],
+  "one_time.costs.base": [
+   "one_time:costs",
+   "cost_base"
+  ],
+  "one_time.costs.high": [
+   "one_time:costs",
+   "cost_high"
+  ],
+  "one_time.costs.low": [
+   "one_time:costs",
+   "cost_low"
+  ],
+  "phasing.net_three_year.base": [
+   "phasing:net",
+   "net3_base"
+  ],
+  "phasing.net_three_year.high": [
+   "phasing:net",
+   "net3_high"
+  ],
+  "phasing.net_three_year.low": [
+   "phasing:net",
+   "net3_low"
+  ],
+  "phasing.realised.year1.base": [
+   "phasing:realised",
+   "realised_y1_base"
+  ],
+  "phasing.realised.year1.high": [
+   "phasing:realised",
+   "realised_y1_high"
+  ],
+  "phasing.realised.year1.low": [
+   "phasing:realised",
+   "realised_y1_low"
+  ],
+  "phasing.realised.year2.base": [
+   "phasing:realised",
+   "realised_y2_base"
+  ],
+  "phasing.realised.year2.high": [
+   "phasing:realised",
+   "realised_y2_high"
+  ],
+  "phasing.realised.year2.low": [
+   "phasing:realised",
+   "realised_y2_low"
+  ],
+  "phasing.realised.year3.base": [
+   "phasing:realised",
+   "realised_y3_base"
+  ],
+  "phasing.realised.year3.high": [
+   "phasing:realised",
+   "realised_y3_high"
+  ],
+  "phasing.realised.year3.low": [
+   "phasing:realised",
+   "realised_y3_low"
+  ],
+  "reconciliation.addressable_spend.spend": [
+   "spend:addressable",
+   "spend"
+  ],
+  "reconciliation.total_spend.spend": [
+   "spend:baseline",
+   "spend"
+  ],
+  "recurring.base": [
+   "total:recurring",
+   "recurring_base"
+  ],
+  "recurring.high": [
+   "total:recurring",
+   "recurring_high"
+  ],
+  "recurring.low": [
+   "total:recurring",
+   "recurring_low"
+  ],
+  "spend.addressable": [
+   "spend:addressable",
+   "spend"
+  ],
+  "spend.baseline": [
+   "spend:baseline",
+   "spend"
+  ],
+  "spend.net_run_rate.base": [
+   "spend:net",
+   "net_base"
+  ],
+  "spend.net_run_rate.high": [
+   "spend:net",
+   "net_high"
+  ],
+  "spend.net_run_rate.low": [
+   "spend:net",
+   "net_low"
+  ]
+ }
+}
