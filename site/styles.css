@@ -249,7 +249,7 @@ h1 { font: 600 var(--text-h1)/1.04 var(--serif); letter-spacing: -0.02em; margin
 .rec-row.price dd { font-family: var(--sans); font-weight: 600; font-variant-numeric: tabular-nums; }
 .rec-row .per { font-weight: 400; color: var(--muted); font-size: var(--text-small); }
 .unit-code { font-family: var(--mono); }
-.unit-name { font-family: var(--sans); color: var(--muted); font-size: var(--text-small); }
+.unit-name { font-family: var(--sans); color: var(--muted); font-size: var(--text-small); margin-left: 6px; }
 
 .tok { border-radius: 3px; padding: 1px 0; transition: background-color 0.35s var(--ease), box-shadow 0.35s var(--ease), color 0.35s, text-decoration-color 0.35s; transition-delay: var(--d, 0s); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .is-tied .tok[data-g] { cursor: pointer; }

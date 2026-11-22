@@ -115,6 +115,11 @@
   function unitName(code) {
     return UNIT_NAMES[code] || code;
   }
+  // "per single item (EA)" reads better than "per each".
+  function unitPhrase(code) {
+    var name = code === "EA" || code === "PC" ? "single item" : unitName(code);
+    return name + " (" + code + ")";
+  }
 
   function bind(id, s) {
     var els = document.querySelectorAll('[data-bind="' + id + '"]');
@@ -315,7 +320,7 @@
     row("Unit", unit);
     var p = document.createDocumentFragment();
     p.appendChild(el("span", "price-tag", price(rec.price)));
-    p.appendChild(el("span", "per", " per " + unitName(rec.uom)));
+    p.appendChild(el("span", "per", rec.uom === "EA" ? " each" : " per " + unitName(rec.uom)));
     row("Price paid", p, "price");
     node.appendChild(dl);
   }
@@ -464,7 +469,7 @@
       body.appendChild(el("p", "v-title", "Same item, different units."));
       var known = a.price_base !== null && b.price_base !== null;
       var text =
-        "Company A buys it by the " + unitName(a.uom) + " at " + price(a.price) + "; Company B by the " + unitName(b.uom) +
+        "Company A records it per " + unitPhrase(a.uom) + " at " + price(a.price) + "; Company B per " + unitPhrase(b.uom) +
         " at " + price(b.price) + ". ";
       text += known
         ? "Converted to one unit, they pay " + price(a.price_base) + " and " + price(b.price_base) + " per " + a.base_unit + "."
