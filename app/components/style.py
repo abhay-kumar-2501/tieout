@@ -194,7 +194,14 @@ h1, h2, h3, h4 {{ color: {t.INK}; font-weight: 600; }}
     line-height: 1.55;
     color: {t.INK};
     max-width: {t.READING_WIDTH_CH}ch;
+    padding: 4px 0;
 }}
+/* Streamlit pulls a markdown block's bottom edge up; in the intro row that clipped the
+   last line, so the text keeps its own height there. */
+.st-key-to_header_view [data-testid="stMarkdown"],
+.st-key-to_header_view [data-testid="stMarkdownContainer"],
+[class*="st-key-to_intro_"] [data-testid="stMarkdown"],
+[class*="st-key-to_intro_"] [data-testid="stMarkdownContainer"] {{ margin-bottom: 0 !important; }}
 [class*="st-key-to_intro_"] {{
     background: {t.TEAL_TINT};
     border-radius: {t.CARD_RADIUS}px;
