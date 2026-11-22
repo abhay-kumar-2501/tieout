@@ -4,8 +4,11 @@ import sys
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
+# Hosts such as Streamlit Community Cloud install requirements.txt but not this
+# package, so the repository root must be importable for `import tieout`.
+for path in (APP_DIR.parent, APP_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 import streamlit as st  # noqa: E402
 from components.header import render_header  # noqa: E402
