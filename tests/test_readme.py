@@ -84,3 +84,30 @@ def test_the_headline_figures_match_the_demo_results() -> None:
     recurring = results["totals"]["recurring"]
     assert f"${recurring['low'] / 1e6:.0f}–{recurring['high'] / 1e6:.0f}M" in README
     assert SCORECARD["held_out_seed"] == 4 and "seed 4" in README
+
+
+def _headline(x: float) -> str:
+    m = x / 1e6
+    return f"${m:.0f}M" if m >= 10 else f"${m:.1f}M"
+
+
+def _range(low: float, high: float) -> str:
+    dp = 0 if high >= 1e7 else 1
+    return f"${low / 1e6:.{dp}f}–{high / 1e6:.{dp}f}M"
+
+
+def test_the_sample_table_quotes_each_samples_results() -> None:
+    samples = json.loads((ROOT / "data/samples.json").read_text(encoding="utf-8"))["samples"]
+    rows = {}
+    for line in README.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 4:
+            rows[cells[0]] = cells[1:]
+    for sample in samples:
+        path = ROOT / sample["results"] / "results.json"
+        results = json.loads(path.read_text(encoding="utf-8"))
+        recurring = results["totals"]["recurring"]
+        seed, naive, defensible = rows[sample["label"]]
+        assert seed == f"{sample['seed']}, {sample['profile']}, {sample['scale']}"
+        assert naive == _headline(results["totals"]["lever1"]["naive"])
+        assert defensible == _range(recurring["low"], recurring["high"])
