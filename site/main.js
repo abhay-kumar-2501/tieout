@@ -438,7 +438,7 @@
       money_.className += " good";
       money_.textContent =
         "Now the prices compare like for like" + unitNote + ": Company A pays " + price(a.price_base) +
-        ", Company B " + price(b.price_base) + " per " + (a.base_unit || unitName(a.uom)) + ". That gap is a saving that can count.";
+        ", Company B " + price(b.price_base) + " per " + (a.base_unit || unitName(a.uom)) + ". That gap is a real candidate saving; the later checks in the bridge decide how much of it stays.";
       box.appendChild(money_);
     } else if (example.kind === "lookalike") {
       var ca = clashWords(a.item_tokens);
