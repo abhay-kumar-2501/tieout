@@ -3,8 +3,10 @@
 Every page reads results, the view mode, assumptions and review decisions
 through these functions and never touches ``st.session_state`` keys directly.
 
-- The committed demo results are loaded once per server (``st.cache_resource``,
-  shared across visitors because they are public). Uploaded results live in
+- The committed sample mergers (``data/samples.json``; the first is the held-out
+  demo seed) are each loaded once per server (``st.cache_resource``, shared across
+  visitors because they are public). A new session starts on a random sample, or
+  on the one named by the ``TIEOUT_SAMPLE`` environment variable. Uploaded results live in
   ``st.session_state`` only and are never cached across sessions or written to
   disk (PRD 9.3).
 - ``current_results()`` applies this session's review decisions
@@ -17,8 +19,11 @@ through these functions and never touches ``st.session_state`` keys directly.
 from __future__ import annotations
 
 import copy
+import json
+import os
+import random
 from collections.abc import Mapping
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -33,6 +38,8 @@ from tieout.results import Results
 
 __all__ = [
     "DEMO_DIR",
+    "SAMPLE_ENV",
+    "Sample",
     "VIEW_KEY",
     "VIEW_MODES",
     "assumptions",
@@ -44,20 +51,28 @@ __all__ = [
     "record_decisions",
     "reset_assumptions",
     "reset_to_demo",
+    "sample",
+    "samples",
     "save_scenario",
     "scenarios",
+    "set_sample",
     "set_assumptions",
     "set_uploaded_results",
     "undo_last_decision",
     "view",
 ]
 
-DEMO_DIR = Path(__file__).resolve().parents[2] / "data" / "demo" / "results"
+ROOT = Path(__file__).resolve().parents[2]
+DEMO_DIR = ROOT / "data" / "demo" / "results"
+SAMPLES_FILE = ROOT / "data" / "samples.json"
+#: Names the sample a new session starts on (default: a random one).
+SAMPLE_ENV = "TIEOUT_SAMPLE"
 
 #: Header control labels -> view mode passed to every view function (PRD 6.9).
 VIEW_MODES = {"Clean team": "clean", "Integration office": "masked"}
 VIEW_KEY = "view_mode"
 
+_SAMPLE = "_to_sample"  # id of the sample merger shown while no upload is in force
 _UPLOADED = "_to_uploaded"  # Results from uploaded files, or absent for the demo
 _ASSUMPTIONS = "_to_assumptions"  # full assumptions in force, or absent for the base run's
 _DECISIONS = "_to_decisions"  # this session's decisions, PRD 4.5 format
@@ -65,6 +80,45 @@ _SCENARIOS = "_to_scenarios"  # name -> assumptions
 _VERSION = "_to_version"  # change counters: base, decisions, assumptions
 _MATCHED = "_to_matched"  # (base, decisions) versions -> Results with decisions applied
 _CURRENT = "_to_current"  # (base, decisions, assumptions) versions -> Results in force
+
+
+@dataclass(frozen=True)
+class Sample:
+    """One committed sample merger from ``data/samples.json``."""
+
+    id: str
+    label: str
+    seed: int | None
+    results_dir: Path
+
+
+@st.cache_resource(show_spinner=False)
+def _load_samples(path: str) -> tuple[Sample, ...]:
+    try:
+        rows = json.loads(Path(path).read_text(encoding="utf-8"))["samples"]
+        found = tuple(
+            Sample(str(r["id"]), str(r["label"]), r.get("seed"), ROOT / r["results"]) for r in rows
+        )
+    except (OSError, KeyError, TypeError, ValueError):
+        found = ()
+    return found or (Sample("demo", "Demo merger", 4, DEMO_DIR),)
+
+
+def samples() -> tuple[Sample, ...]:
+    """The committed sample mergers, the held-out demo seed first."""
+    return _load_samples(str(SAMPLES_FILE))
+
+
+def sample() -> Sample:
+    """The sample merger this session shows when no upload is in force."""
+    by_id = {s.id: s for s in samples()}
+    chosen = st.session_state.get(_SAMPLE)
+    if chosen not in by_id:
+        chosen = os.environ.get(SAMPLE_ENV, "")
+        if chosen not in by_id:
+            chosen = random.choice(list(by_id))
+        st.session_state[_SAMPLE] = chosen
+    return by_id[chosen]
 
 
 @st.cache_resource(show_spinner=False)
@@ -75,8 +129,8 @@ def _load_demo(directory: str) -> Results:
 
 
 def demo_results() -> Results:
-    """The committed demo results (``data/demo/results``), loaded once per server."""
-    return _load_demo(str(DEMO_DIR))
+    """The committed results of this session's sample merger, loaded once per server."""
+    return _load_demo(str(sample().results_dir))
 
 
 # ---------------------------------------------------------------- versions
@@ -307,9 +361,24 @@ def set_uploaded_results(results: Results) -> None:
 
 
 def reset_to_demo() -> None:
-    """ "Back to demo": drop uploaded results and this session's decisions and overrides."""
+    """ "Back to demo": drop uploaded results and this session's decisions and overrides.
+
+    The session returns to the sample merger it showed before the upload.
+    """
     st.session_state.pop(_UPLOADED, None)
     _clear_work()
+
+
+def set_sample(sample_id: str) -> None:
+    """Show another sample merger: like "Back to demo", on the sample ``sample_id``.
+
+    Decisions, assumption overrides and uploaded results are cleared: they refer to
+    other records. Saved scenarios are kept (they are assumption sets, not records).
+    """
+    if sample_id not in {s.id for s in samples()}:
+        raise ValueError(f"Unknown sample {sample_id!r}.")
+    st.session_state[_SAMPLE] = sample_id
+    reset_to_demo()
 
 
 def _clear_work() -> None:

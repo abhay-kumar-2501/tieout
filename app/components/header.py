@@ -1,7 +1,8 @@
 """The live header rendered above every page (PRD 6.3, 6.9, 6.12).
 
-Scenario name, the view-mode control, the current headline range (so every
-change shows its effect) and, in demo mode, the illustrative-data tag.
+Scenario name (the sample merger's label in demo mode), the view-mode control, the
+current headline range (so every change shows its effect) and, in demo mode, the
+illustrative-data tag.
 """
 
 from __future__ import annotations
@@ -32,6 +33,13 @@ def scenario_name(meta: dict) -> str:
     return _SCENARIO_NAMES.get(raw, raw.replace("_", " "))
 
 
+def display_name(results) -> str:
+    """The header's name: the sample merger in demo mode, else the scenario."""
+    if state.is_demo():
+        return state.sample().label
+    return scenario_name(results.meta)
+
+
 def render_header() -> None:
     chosen = st.session_state.get(state.VIEW_KEY)
     if chosen in VIEW_LABELS:
@@ -50,7 +58,7 @@ def render_header() -> None:
             key="to_header_row",
         ):
             st.markdown(
-                f'<span class="to-strong">{esc(scenario_name(results.meta))}</span>',
+                f'<span class="to-strong">{esc(display_name(results))}</span>',
                 unsafe_allow_html=True,
                 width="content",
             )

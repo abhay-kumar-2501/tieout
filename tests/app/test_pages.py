@@ -146,7 +146,8 @@ def test_view_switch_in_the_header() -> None:
     at = AppTest.from_function(_header_script, default_timeout=60).run()
     text = "\n".join(_texts(at))
     assert "VIEW=clean" in text and "Clean-team view" in text
-    assert "Demo merger" in text and "Illustrative — synthetic data" in text
+    assert "Two mid-size manufacturers, $522M combined spend" in text
+    assert "Illustrative — synthetic data" in text
     assert "Defensible run-rate saving: " in text and "$6–13M" in text
     at.get("button_group")[0].set_value("Integration office").run()
     text = "\n".join(_texts(at))
