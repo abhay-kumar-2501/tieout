@@ -27,6 +27,17 @@ _BANNERS = {
         "not a security control."
     ),
 }
+#: The same, short enough for two lines on a phone.
+_BANNERS_SHORT = {
+    "clean": "Full detail, including vendor names and unit prices.",
+    "masked": "Vendor codes, no prices or item detail. A presentation, not a security control.",
+}
+_TAG_SHORT = "Synthetic data"
+
+
+def _wide_or_phone(wide: str, phone: str) -> str:
+    """Both texts as HTML; the stylesheet shows one, by window width."""
+    return f'<span class="to-wide-only">{wide}</span><span class="to-phone-only">{phone}</span>'
 
 
 def scenario_name(meta: dict) -> str:
@@ -91,9 +102,10 @@ def render_header() -> None:
                 key="to_header_name",
             ):
                 eyebrow = "You're looking at" if state.is_demo() else "Your data"
+                name = esc(display_name(results))
                 st.markdown(
                     f'<span class="to-eyebrow">{eyebrow}</span>'
-                    f'<span class="to-strong">{esc(display_name(results))}</span>',
+                    f'<span class="to-strong" title="{name}">{name}</span>',
                     unsafe_allow_html=True,
                     width="content",
                 )
@@ -106,15 +118,18 @@ def render_header() -> None:
                 key="to_header_answer",
             ):
                 st.markdown(
-                    f'<span class="to-range"><span class="to-muted">Defensible run-rate '
-                    f"saving: </span><strong>{esc(top['range_text'])}</strong> a year</span>",
+                    '<span class="to-range"><span class="to-muted">'
+                    + _wide_or_phone("Defensible run-rate saving: ", "Defensible: ")
+                    + f"</span><strong>{esc(top['range_text'])}</strong> a year</span>",
                     unsafe_allow_html=True,
                     width="content",
                     help=GLOSSARY["Run-rate saving"] + " " + GLOSSARY["Defensible saving"],
                 )
                 if state.is_demo():
                     st.markdown(
-                        f'<span class="to-tag">{esc(t.ILLUSTRATIVE_LABEL)}</span>',
+                        '<span class="to-tag">'
+                        + _wide_or_phone(esc(t.ILLUSTRATIVE_LABEL), _TAG_SHORT)
+                        + "</span>",
                         unsafe_allow_html=True,
                         width="content",
                     )
@@ -131,7 +146,9 @@ def render_header() -> None:
                 help=GLOSSARY["Clean team and integration office"],
             )
             st.markdown(
-                f'<div class="to-banner">{esc(_BANNERS[mode])}</div>',
+                '<div class="to-banner">'
+                + _wide_or_phone(esc(_BANNERS[mode]), esc(_BANNERS_SHORT[mode]))
+                + "</div>",
                 unsafe_allow_html=True,
                 width="stretch",
             )

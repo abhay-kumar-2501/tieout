@@ -154,6 +154,7 @@ h1, h2, h3, h4 {{ color: {t.INK}; font-weight: 600; }}
     padding-top: {t.SPACING[0]}px;
 }}
 .st-key-to_header_view .to-banner {{ min-width: 16em; }}
+.to-phone-only {{ display: none; }}
 
 /* Cards in a row stretch to one height. */
 [class*="st-key-to_cards_"] [data-testid="stColumn"] > div {{ height: 100%; }}
@@ -429,6 +430,53 @@ h1, h2, h3, h4 {{ color: {t.INK}; font-weight: 600; }}
 .to-narrow-note {{ display: none; }}
 {_PHONE} {{
     .to-hero-lead, .to-intro {{ font-size: {_TY["body"]}px; }}
+    /* A compact header, so the answer shows on the first screen: the sample on one line
+       (full name on hover) beside a short "Switch" button, the range and a short tag on
+       one line, the view toggle above a two-line banner. */
+    .to-wide-only {{ display: none; }}
+    .to-phone-only {{ display: inline; }}
+    .st-key-to_header {{ padding: {t.SPACING[0] + 4}px {t.SPACING[1]}px !important; }}
+    .st-key-to_header .to-eyebrow {{ display: none; }}
+    .st-key-to_header_row {{ row-gap: 4px !important; }}
+    .st-key-to_header_name {{
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        column-gap: {t.SPACING[0]}px !important;
+    }}
+    .st-key-to_header_name > div:first-child {{
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        overflow: hidden;
+    }}
+    .st-key-to_header_name .to-strong {{
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: {_TY["muted"]}px;
+    }}
+    .st-key-to_header_name [data-testid="stPopover"] button p {{ display: none; }}
+    .st-key-to_header_name [data-testid="stPopover"] button
+        [data-testid="stMarkdownContainer"]::after {{
+        content: "Switch";
+        font-size: {_TY["caption"]}px;
+    }}
+    .st-key-to_header_answer {{
+        flex-wrap: nowrap !important;
+        column-gap: 6px !important;
+        max-width: 100%;
+    }}
+    .st-key-to_header .to-range {{ font-size: {_TY["caption"]}px; }}
+    .st-key-to_header .to-tag {{ padding: 1px 6px; font-size: {_TY["small"]}px; }}
+    .st-key-to_header_view {{ row-gap: 4px !important; padding-top: 6px; }}
+    .st-key-to_header_view .to-banner {{
+        min-width: 0;
+        font-size: {_TY["caption"]}px;
+        line-height: 1.35;
+        padding: 0 0 0 {t.SPACING[0]}px;
+        border-left-width: 3px;
+    }}
     .to-narrow-note {{ display: block; color: {t.MUTED}; font-size: {_TY["caption"]}px; }}
     .block-container {{ padding-top: {t.SPACING[1] + 56}px; }}
     .to-section {{ margin-top: {t.SPACING[3]}px; }}
