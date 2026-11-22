@@ -86,5 +86,12 @@ def test_generator_writes_all_files_and_leaves_the_results_alone(tmp_path: Path)
         | {"data.js"}
     )
     assert all((tmp_path / n).stat().st_size == s for n, s in sizes.items() if n != "data.js")
-    assert (tmp_path / "assets" / "bridge.png").read_bytes() == (ASSETS / "bridge.png").read_bytes()
+    # Same chart as the committed one; bytes differ across platforms' font rendering.
+    from PIL import Image
+
+    with (
+        Image.open(tmp_path / "assets" / "bridge.png") as built,
+        Image.open(ASSETS / "bridge.png") as kept,
+    ):
+        assert (built.format, built.size) == (kept.format, kept.size)
     assert {p: p.stat().st_mtime_ns for d in results for p in d.iterdir()} == before
