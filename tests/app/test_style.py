@@ -113,3 +113,13 @@ def test_an_unknown_chart_shape_is_refused() -> None:
 
     with pytest.raises(ValueError, match="unknown chart shape"):
         show_chart(go.Figure(), "c", shape="square")
+
+
+def test_stylesheet_hides_host_and_developer_controls_from_visitors() -> None:
+    from components.style import stylesheet
+
+    css = stylesheet()
+    rule = re.search(r"([^{}]+)\{\s*display: none !important;", css)
+    assert rule is not None
+    for testid in ("stToolbarActions", "stMainMenu", "stAppDeployButton"):
+        assert f'[data-testid="{testid}"]' in rule.group(1)
