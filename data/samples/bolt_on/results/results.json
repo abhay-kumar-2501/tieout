@@ -1,0 +1,1070 @@
+{
+ "assumptions": {
+  "benchmark": {
+   "min_lines": 3,
+   "min_volume_share": 0.1
+  },
+  "caps": {
+   "critical": 0.6,
+   "non_critical": 0.9,
+   "standard": 0.75
+  },
+  "cost_of_capital": 0.08,
+  "global_ramp": {
+   "year1": 0.4,
+   "year2": 0.85,
+   "year3": 1.0
+  },
+  "lead_time_months": {
+   "l1_same_vendor": 3,
+   "l1_switch": 6,
+   "l2": 6,
+   "l3": 3
+  },
+  "lever1": {
+   "same_vendor": {
+    "base": 0.7,
+    "high": 0.85,
+    "low": 0.5
+   },
+   "switch": {
+    "base": 0.4,
+    "high": 0.6,
+    "low": 0.2
+   }
+  },
+  "lever2": {
+   "capture": {
+    "base": 0.6,
+    "high": 0.8,
+    "low": 0.4
+   },
+   "discount": {
+    "commodity": 0.0,
+    "engineered": 0.02,
+    "indirect": 0.03,
+    "mro": 0.04
+   }
+  },
+  "lever3": {
+   "capture": {
+    "base": 0.5,
+    "high": 0.7,
+    "low": 0.3
+   },
+   "max_payment_days": 90
+  },
+  "planning_horizon_months": 36,
+  "reference_bands": {
+   "addressable_spend": {
+    "high": 0.1,
+    "low": 0.03
+   },
+   "total_spend": {
+    "high": 0.03,
+    "low": 0.01
+   }
+  },
+  "reporting_currency": "USD",
+  "switching_cost": {
+   "fixed_usd": 25000.0,
+   "pct_of_spend_moved": 0.01
+  }
+ },
+ "meta": {
+  "addressable_l2": [
+   "L01.01",
+   "L01.02",
+   "L01.03",
+   "L01.04",
+   "L01.05",
+   "L02.01",
+   "L02.02",
+   "L02.03",
+   "L02.04",
+   "L02.05",
+   "L03.01",
+   "L03.02",
+   "L03.03",
+   "L03.04",
+   "L03.05",
+   "L04.01",
+   "L04.02",
+   "L04.03",
+   "L04.04",
+   "L04.05",
+   "L05.01",
+   "L05.02",
+   "L05.03",
+   "L05.04",
+   "L05.05",
+   "L06.01",
+   "L06.02",
+   "L06.03",
+   "L06.04",
+   "L06.05",
+   "L07.01",
+   "L07.02",
+   "L07.03",
+   "L07.04",
+   "L07.05",
+   "L08.01",
+   "L08.02",
+   "L08.03",
+   "L08.04",
+   "L08.05",
+   "L09.01",
+   "L09.02",
+   "L09.03",
+   "L09.04",
+   "L09.05",
+   "L10.01",
+   "L10.02",
+   "L10.03",
+   "L10.04",
+   "L10.05",
+   "L11.01",
+   "L11.02",
+   "L11.03",
+   "L11.04",
+   "L11.05",
+   "L12.01",
+   "L12.02",
+   "L12.03",
+   "L12.04",
+   "L12.05"
+  ],
+  "addressable_spend": {
+   "acquirer": 202595544.5714,
+   "target": 27222691.7072,
+   "total": 229818236.27859998
+  },
+  "aggregated": false,
+  "category_mapping": {
+   "mappings": 135,
+   "source": "supplied"
+  },
+  "features": {
+   "benchmark_line_test": true,
+   "contract_phasing": true,
+   "observed_days_to_pay": true,
+   "payment_terms": true
+  },
+  "fx_rates": {
+   "CAD": 0.73,
+   "EUR": 1.08,
+   "GBP": 1.27,
+   "USD": 1.0
+  },
+  "in_scope_spend": {
+   "acquirer": 204635544.5594,
+   "target": 27492691.7213,
+   "total": 232128236.2807
+  },
+  "inputs": {
+   "category_settings": false,
+   "fx": "shipped (illustrative)",
+   "review_decisions": 0,
+   "vendor_parents": true
+  },
+  "matching": {
+   "items": {
+    "by_stage": {
+     "I1": 290,
+     "I3": 90,
+     "none": 3460
+    },
+    "by_tier": {
+     "A": 290,
+     "B": 90,
+     "none": 3460
+    },
+    "canonical_items": 3650,
+    "matchable_records": 3840,
+    "pending_review": 802,
+    "records": 3840
+   },
+   "vendors": {
+    "after_normalisation": 954,
+    "by_stage": {
+     "V1": 206,
+     "V2": 170,
+     "V3": 52,
+     "V4": 22,
+     "none": 675
+    },
+    "by_tier": {
+     "A": 428,
+     "B": 22,
+     "none": 675
+    },
+    "legal_entities": 922,
+    "parents": 906,
+    "pending_review": 88,
+    "records": 1125
+   }
+  },
+  "months_with_data": {
+   "acquirer": 12,
+   "target": 12
+  },
+  "not_item_addressable": {
+   "amount": {
+    "acquirer": 71400000.02190001,
+    "target": 9283852.8331,
+    "total": 80683852.85500002
+   },
+   "rows": {
+    "acquirer": 5716,
+    "target": 820
+   },
+   "share": {
+    "acquirer": 0.34891299151196375,
+    "target": 0.3376843899903524,
+    "total": 0.34758310383848967
+   }
+  },
+  "period": {
+   "end": "2025-12",
+   "months": 12,
+   "start": "2025-01"
+  },
+  "report_date": "2026-01-15",
+  "reporting_currency": "USD",
+  "rows": {
+   "acquirer": 22781,
+   "target": 3281
+  },
+  "rows_in_file": {
+   "acquirer": 22781,
+   "target": 3281
+  },
+  "scaled": false,
+  "scaling_factor": {
+   "acquirer": 1.0,
+   "target": 1.0
+  },
+  "scenario": "demo",
+  "seed": null,
+  "stages_run": [
+   "ingest",
+   "vendor_matching",
+   "item_matching",
+   "synergy"
+  ],
+  "switched_off": {},
+  "thresholds": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "unmapped_by_category": [
+   {
+    "amount": 2039999.988,
+    "category_native": "ZZ99 - Miscellaneous / unclassified",
+    "company": "acquirer",
+    "rows": 228,
+    "share": 0.009968942552928994
+   },
+   {
+    "amount": 270000.0141,
+    "category_native": "9999-99 MISC NON CATALOG",
+    "company": "target",
+    "rows": 33,
+    "share": 0.009820792261341842
+   }
+  ],
+  "unmapped_spend": {
+   "acquirer": 2039999.988,
+   "target": 270000.0141,
+   "total": 2310000.0020999997
+  },
+  "view": "clean"
+ },
+ "scorecard": {
+  "baseline": {
+   "held_out": {
+    "false_savings_rate": 0.1363857646324034,
+    "item_precision": 0.46747967479674796,
+    "item_recall": 0.5,
+    "planted_savings_recall": 0.5721254658223252,
+    "unit_error_catch_rate": 0.4583333333333333,
+    "vendor_precision": 0.3490725126475548,
+    "vendor_recall": 0.9539170506912442
+   },
+   "tuning": {
+    "1": {
+     "false_savings_rate": 0.13215283317492163,
+     "item_precision": 0.33166666666666667,
+     "item_recall": 0.5053968253968254,
+     "planted_savings_recall": 0.4795125288438528,
+     "unit_error_catch_rate": 0.5,
+     "vendor_precision": 0.029431643625192013,
+     "vendor_recall": 0.9485148514851485
+    },
+    "2": {
+     "false_savings_rate": 0.11380810497301569,
+     "item_precision": 0.3303030303030303,
+     "item_recall": 0.48444444444444446,
+     "planted_savings_recall": 0.4829997100992263,
+     "unit_error_catch_rate": 0.42857142857142855,
+     "vendor_precision": 0.03326018378823207,
+     "vendor_recall": 0.943579766536965
+    },
+    "3": {
+     "false_savings_rate": 0.12359199639998185,
+     "item_precision": 0.35447593342330186,
+     "item_recall": 0.5003174603174603,
+     "planted_savings_recall": 0.4711398080481855,
+     "unit_error_catch_rate": 0.5,
+     "vendor_precision": 0.09482245586193215,
+     "vendor_recall": 0.9390962671905697
+    }
+   },
+   "tuning_mean": {
+    "false_savings_rate": 0.12318431151597305,
+    "item_precision": 0.3388152101309996,
+    "item_recall": 0.49671957671957667,
+    "planted_savings_recall": 0.4778840156637549,
+    "unit_error_catch_rate": 0.4761904761904762,
+    "vendor_precision": 0.05250476109178542,
+    "vendor_recall": 0.9437302950708943
+   }
+  },
+  "failures": [
+   "unit_error_catch_rate: 0.9167 (need >= 0.95)"
+  ],
+  "gates": {
+   "false_savings_rate": {
+    "passed": true,
+    "value": 0.006002665503613494
+   },
+   "item_precision": {
+    "passed": true,
+    "value": 0.9789473684210527
+   },
+   "item_recall": {
+    "passed": true,
+    "value": 0.808695652173913
+   },
+   "unit_error_catch_rate": {
+    "passed": false,
+    "value": 0.9166666666666666
+   },
+   "vendor_precision": {
+    "passed": true,
+    "value": 1.0
+   },
+   "vendor_recall": {
+    "passed": true,
+    "value": 0.9723502304147466
+   }
+  },
+  "held_out_seed": 5,
+  "passed": false,
+  "sample": {
+   "id": "bolt_on",
+   "profile": "bolt_on"
+  },
+  "schema_version": 1,
+  "targets": {
+   "false_savings_rate": {
+    "bound": 0.02,
+    "direction": "<="
+   },
+   "item_precision": {
+    "bound": 0.97,
+    "direction": ">="
+   },
+   "item_recall": {
+    "bound": 0.8,
+    "direction": ">="
+   },
+   "unit_error_catch_rate": {
+    "bound": 0.95,
+    "direction": ">="
+   },
+   "vendor_precision": {
+    "bound": 0.98,
+    "direction": ">="
+   },
+   "vendor_recall": {
+    "bound": 0.9,
+    "direction": ">="
+   }
+  },
+  "thresholds": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "tool": {
+   "held_out": {
+    "false_savings_rate": 0.006002665503613494,
+    "item_precision": 0.9789473684210527,
+    "item_recall": 0.808695652173913,
+    "planted_savings_recall": 0.7047636531132211,
+    "unit_error_catch_rate": 0.9166666666666666,
+    "vendor_precision": 1.0,
+    "vendor_recall": 0.9723502304147466
+   },
+   "tuning": {
+    "1": {
+     "false_savings_rate": 0.00730424982063465,
+     "item_precision": 0.9762258543833581,
+     "item_recall": 0.8342857142857143,
+     "planted_savings_recall": 0.6258087565540704,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.9959266802443992,
+     "vendor_recall": 0.9683168316831683
+    },
+    "2": {
+     "false_savings_rate": 0.005204351609699213,
+     "item_precision": 0.9722425127830533,
+     "item_recall": 0.8450793650793651,
+     "planted_savings_recall": 0.605371505889709,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.997979797979798,
+     "vendor_recall": 0.9610894941634242
+    },
+    "3": {
+     "false_savings_rate": 0.005735455746377971,
+     "item_precision": 0.9788011695906432,
+     "item_recall": 0.8501587301587301,
+     "planted_savings_recall": 0.5344670036997005,
+     "unit_error_catch_rate": 1.0,
+     "vendor_precision": 0.993963782696177,
+     "vendor_recall": 0.9705304518664047
+    }
+   },
+   "tuning_mean": {
+    "false_savings_rate": 0.006081352392237278,
+    "item_precision": 0.9757565122523516,
+    "item_recall": 0.8431746031746031,
+    "planted_savings_recall": 0.5885490887144933,
+    "unit_error_catch_rate": 1.0,
+    "vendor_precision": 0.9959567536401247,
+    "vendor_recall": 0.9666455925709991
+   }
+  },
+  "tuning_seeds": [
+   1,
+   2,
+   3
+  ]
+ },
+ "sensitivity": {
+  "current": {
+   "item_auto_cosine": 0.78,
+   "item_review_cosine": 0.6,
+   "recurring_base": 2791713.1128055356,
+   "vendor_auto": 85.0,
+   "vendor_review": 75.0
+  },
+  "curves": {
+   "item_auto_cosine": [
+    {
+     "recurring_base": 2817467.281117015,
+     "recurring_high": 3714845.6340378234,
+     "recurring_low": 1871630.2228549242,
+     "threshold": 0.6
+    },
+    {
+     "recurring_base": 2815115.6488694996,
+     "recurring_high": 3712001.641539526,
+     "recurring_low": 1869943.68497932,
+     "threshold": 0.65
+    },
+    {
+     "recurring_base": 2815115.6488694996,
+     "recurring_high": 3712001.641539526,
+     "recurring_low": 1869943.68497932,
+     "threshold": 0.7
+    },
+    {
+     "recurring_base": 2814527.2217574995,
+     "recurring_high": 3711290.0156915267,
+     "recurring_low": 1869521.67825932,
+     "threshold": 0.75
+    },
+    {
+     "recurring_base": 2790957.315862282,
+     "recurring_high": 3682671.5131024616,
+     "recurring_low": 1852684.7974109803,
+     "threshold": 0.8
+    },
+    {
+     "recurring_base": 2790881.905563462,
+     "recurring_high": 3682558.397654232,
+     "recurring_low": 1852647.0922615703,
+     "threshold": 0.85
+    },
+    {
+     "recurring_base": 2778849.458891119,
+     "recurring_high": 3666214.099462802,
+     "recurring_low": 1845356.346802419,
+     "threshold": 0.9
+    },
+    {
+     "recurring_base": 2775950.0484295073,
+     "recurring_high": 3661660.993672785,
+     "recurring_low": 1844110.631669213,
+     "threshold": 0.95
+    }
+   ],
+   "vendor_auto": [
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 80.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 82.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 84.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 86.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 88.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 90.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 92.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 94.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 96.0
+    },
+    {
+     "recurring_base": 2791713.1128055356,
+     "recurring_high": 3683587.911273871,
+     "recurring_low": 1853225.4495820259,
+     "threshold": 98.0
+    }
+   ]
+  },
+  "seed": null
+ },
+ "totals": {
+  "checks": {
+   "benchmark_line_test": true,
+   "bridge_tie_out_difference": 3.4924596548080444e-10,
+   "contract_lock_in_assessed": true,
+   "lever3_enabled": true,
+   "lever3_message": null
+  },
+  "currency": "USD",
+  "defensible_range": {
+   "high": 3683587.911273871,
+   "low": 1853225.4495820259
+  },
+  "lever1": {
+   "bridge": {
+    "defensible": 884206.8196951268,
+    "step_1": 2364763.951047487,
+    "step_2": 1258975.8685612758,
+    "step_3": 926342.9484467385,
+    "step_4": 85019.79260365339,
+    "step_5": 86285.45031338977,
+    "step_6": 47212.5482544105,
+    "step_7": 632928.5072850861
+   },
+   "bridge_raw": {
+    "step_1": 2364763.951047487,
+    "step_2": 1258975.8685612758,
+    "step_3": 926342.9484467385,
+    "step_4": 85019.79260365339,
+    "step_5": 86285.45031338977,
+    "step_6": 47212.5482544105,
+    "step_7": 632928.5072850861
+   },
+   "internal_variance": 85019.79260365339,
+   "naive": 6285735.886207168,
+   "tier_a": {
+    "base": 752232.2856106615,
+    "high": 968683.0624192024,
+    "low": 495865.1673029233
+   },
+   "tier_b": {
+    "base": 131974.5340844653,
+    "high": 172725.37452146015,
+    "low": 84914.586996161
+   },
+   "upside_pending_review": 341722.7765005182
+  },
+  "lever2": {
+   "B2": {
+    "base": 166960050.32604873,
+    "high": 166847166.1231713,
+    "low": 167110562.59655192
+   },
+   "savings_forgone": 584775.5431899761
+  },
+  "levers": {
+   "lever1": {
+    "base": 884206.8196951268,
+    "gross_gap": 1517135.326980213,
+    "high": 1141408.4369406626,
+    "kind": "recurring",
+    "low": 580779.7542990843
+   },
+   "lever2": {
+    "base": 1907506.2931104086,
+    "gross": 3179177.1551840142,
+    "high": 2542179.4743332085,
+    "kind": "recurring",
+    "low": 1272445.6952829415
+   },
+   "lever3": {
+    "base": 630376.203605099,
+    "gross": 1260752.4072101982,
+    "high": 875989.2892045185,
+    "kind": "one_time_cash",
+    "low": 381205.53818112914
+   }
+  },
+  "memo": {
+   "financing_value": {
+    "base": 50430.09628840792,
+    "high": 70079.14313636148,
+    "low": 30496.443054490333
+   }
+  },
+  "one_time": {
+   "cash": {
+    "base": 630376.203605099,
+    "high": 875989.2892045185,
+    "low": 381205.53818112914
+   },
+   "costs": {
+    "base": 2702995.8164015,
+    "high": 3674289.032953921,
+    "low": 1731702.59984908
+   }
+  },
+  "phasing": {
+   "beyond_month_36": [
+    "L1:CI000134:same_vendor",
+    "L1:CI000455:same_vendor",
+    "L1:CI000972:same_vendor",
+    "L1:CI001306:same_vendor",
+    "L1:CI001419:switch",
+    "L1:CI002034:same_vendor",
+    "L1:CI002635:switch",
+    "L1:CI002666:switch",
+    "L1:CI002687:same_vendor",
+    "L1:CI003101:switch",
+    "L1:CI003123:same_vendor",
+    "L2:L02.03",
+    "L2:L03.01",
+    "L2:L03.03",
+    "L2:L03.04",
+    "L2:L03.05",
+    "L2:L04.02",
+    "L2:L05.02",
+    "L2:L05.04",
+    "L2:L06.01",
+    "L2:L06.02",
+    "L2:L06.04",
+    "L2:L07.04",
+    "L2:L07.05",
+    "L2:L09.03",
+    "L2:L10.02",
+    "L2:L10.03",
+    "L2:L10.04",
+    "L2:L10.05",
+    "L3:LE00034",
+    "L3:LE00323",
+    "L3:LE00655",
+    "L3:LE00668"
+   ],
+   "method": "contract",
+   "net_three_year": {
+    "base": 2999408.5500411433,
+    "high": 3798568.4430824704,
+    "low": 2076302.9819638794
+   },
+   "realised": {
+    "year1": {
+     "base": 1021431.3153756515,
+     "high": 1315526.1023887985,
+     "low": 692654.1776727322
+    },
+    "year2": {
+     "base": 1589223.3401340055,
+     "high": 2071690.5318111144,
+     "low": 1063265.0856599337
+    },
+    "year3": {
+     "base": 1874860.383921068,
+     "high": 2457973.5189657793,
+     "low": 1245974.9873271545
+    }
+   }
+  },
+  "reconciliation": {
+   "addressable_spend": {
+    "band_high": 0.1,
+    "band_low": 0.03,
+    "share": 0.012147482976160546,
+    "spend": 229818236.2786,
+    "within": false
+   },
+   "largest_opportunities": [
+    "L1:CI000250:same_vendor",
+    "L2:L12.03",
+    "L2:L12.05"
+   ],
+   "outside_band": true,
+   "total_spend": {
+    "band_high": 0.03,
+    "band_low": 0.01,
+    "share": 0.012026598562656848,
+    "spend": 232128236.2807,
+    "within": true
+   }
+  },
+  "recurring": {
+   "base": 2791713.1128055356,
+   "high": 3683587.911273871,
+   "low": 1853225.4495820259
+  },
+  "spend": {
+   "addressable": 229818236.2786,
+   "baseline": 232128236.2807,
+   "net_run_rate": {
+    "base": 229336523.16789445,
+    "high": 228444648.36942613,
+    "low": 230275010.83111796
+   }
+  }
+ },
+ "trace_figures": {
+  "defensible_range.high": [
+   "total:recurring",
+   "recurring_high"
+  ],
+  "defensible_range.low": [
+   "total:recurring",
+   "recurring_low"
+  ],
+  "lever1.bridge.defensible": [
+   "lever:1",
+   "base"
+  ],
+  "lever1.bridge.step_1": [
+   "bridge:step:1",
+   "step_1"
+  ],
+  "lever1.bridge.step_2": [
+   "bridge:step:2",
+   "step_2"
+  ],
+  "lever1.bridge.step_3": [
+   "bridge:step:3",
+   "step_3"
+  ],
+  "lever1.bridge.step_4": [
+   "bridge:step:4",
+   "step_4"
+  ],
+  "lever1.bridge.step_5": [
+   "bridge:step:5",
+   "step_5"
+  ],
+  "lever1.bridge.step_6": [
+   "bridge:step:6",
+   "step_6"
+  ],
+  "lever1.bridge.step_7": [
+   "bridge:step:7",
+   "step_7"
+  ],
+  "lever1.bridge_raw.step_1": [
+   "bridge:raw:1",
+   "raw_1"
+  ],
+  "lever1.bridge_raw.step_2": [
+   "bridge:raw:2",
+   "raw_2"
+  ],
+  "lever1.bridge_raw.step_3": [
+   "bridge:raw:3",
+   "raw_3"
+  ],
+  "lever1.bridge_raw.step_4": [
+   "bridge:raw:4",
+   "raw_4"
+  ],
+  "lever1.bridge_raw.step_5": [
+   "bridge:raw:5",
+   "raw_5"
+  ],
+  "lever1.bridge_raw.step_6": [
+   "bridge:raw:6",
+   "raw_6"
+  ],
+  "lever1.bridge_raw.step_7": [
+   "bridge:raw:7",
+   "raw_7"
+  ],
+  "lever1.internal_variance": [
+   "lever:1:internal",
+   "internal"
+  ],
+  "lever1.naive": [
+   "bridge:naive",
+   "naive"
+  ],
+  "lever1.tier_a.base": [
+   "lever:1:tier:A",
+   "base"
+  ],
+  "lever1.tier_a.high": [
+   "lever:1:tier:A",
+   "high"
+  ],
+  "lever1.tier_a.low": [
+   "lever:1:tier:A",
+   "low"
+  ],
+  "lever1.tier_b.base": [
+   "lever:1:tier:B",
+   "base"
+  ],
+  "lever1.tier_b.high": [
+   "lever:1:tier:B",
+   "high"
+  ],
+  "lever1.tier_b.low": [
+   "lever:1:tier:B",
+   "low"
+  ],
+  "lever1.upside_pending_review": [
+   "lever:1:upside",
+   "upside"
+  ],
+  "lever2.B2.base": [
+   "lever:2",
+   "B2_base"
+  ],
+  "lever2.B2.high": [
+   "lever:2",
+   "B2_high"
+  ],
+  "lever2.B2.low": [
+   "lever:2",
+   "B2_low"
+  ],
+  "lever2.savings_forgone": [
+   "lever:2",
+   "forgone"
+  ],
+  "levers.lever1.base": [
+   "lever:1",
+   "base"
+  ],
+  "levers.lever1.gross_gap": [
+   "lever:1",
+   "gross"
+  ],
+  "levers.lever1.high": [
+   "lever:1",
+   "high"
+  ],
+  "levers.lever1.low": [
+   "lever:1",
+   "low"
+  ],
+  "levers.lever2.base": [
+   "lever:2",
+   "l2_base"
+  ],
+  "levers.lever2.gross": [
+   "lever:2",
+   "l2_gross"
+  ],
+  "levers.lever2.high": [
+   "lever:2",
+   "l2_high"
+  ],
+  "levers.lever2.low": [
+   "lever:2",
+   "l2_low"
+  ],
+  "levers.lever3.base": [
+   "lever:3",
+   "l3_base"
+  ],
+  "levers.lever3.gross": [
+   "lever:3",
+   "l3_gross"
+  ],
+  "levers.lever3.high": [
+   "lever:3",
+   "l3_high"
+  ],
+  "levers.lever3.low": [
+   "lever:3",
+   "l3_low"
+  ],
+  "memo.financing_value.base": [
+   "lever:3",
+   "fin_base"
+  ],
+  "memo.financing_value.high": [
+   "lever:3",
+   "fin_high"
+  ],
+  "memo.financing_value.low": [
+   "lever:3",
+   "fin_low"
+  ],
+  "one_time.cash.base": [
+   "lever:3",
+   "l3_base"
+  ],
+  "one_time.cash.high": [
+   "lever:3",
+   "l3_high"
+  ],
+  "one_time.cash.low": [
+   "lever:3",
+   "l3_low"
+  ],
+  "one_time.costs.base": [
+   "one_time:costs",
+   "cost_base"
+  ],
+  "one_time.costs.high": [
+   "one_time:costs",
+   "cost_high"
+  ],
+  "one_time.costs.low": [
+   "one_time:costs",
+   "cost_low"
+  ],
+  "phasing.net_three_year.base": [
+   "phasing:net",
+   "net3_base"
+  ],
+  "phasing.net_three_year.high": [
+   "phasing:net",
+   "net3_high"
+  ],
+  "phasing.net_three_year.low": [
+   "phasing:net",
+   "net3_low"
+  ],
+  "phasing.realised.year1.base": [
+   "phasing:realised",
+   "realised_y1_base"
+  ],
+  "phasing.realised.year1.high": [
+   "phasing:realised",
+   "realised_y1_high"
+  ],
+  "phasing.realised.year1.low": [
+   "phasing:realised",
+   "realised_y1_low"
+  ],
+  "phasing.realised.year2.base": [
+   "phasing:realised",
+   "realised_y2_base"
+  ],
+  "phasing.realised.year2.high": [
+   "phasing:realised",
+   "realised_y2_high"
+  ],
+  "phasing.realised.year2.low": [
+   "phasing:realised",
+   "realised_y2_low"
+  ],
+  "phasing.realised.year3.base": [
+   "phasing:realised",
+   "realised_y3_base"
+  ],
+  "phasing.realised.year3.high": [
+   "phasing:realised",
+   "realised_y3_high"
+  ],
+  "phasing.realised.year3.low": [
+   "phasing:realised",
+   "realised_y3_low"
+  ],
+  "reconciliation.addressable_spend.spend": [
+   "spend:addressable",
+   "spend"
+  ],
+  "reconciliation.total_spend.spend": [
+   "spend:baseline",
+   "spend"
+  ],
+  "recurring.base": [
+   "total:recurring",
+   "recurring_base"
+  ],
+  "recurring.high": [
+   "total:recurring",
+   "recurring_high"
+  ],
+  "recurring.low": [
+   "total:recurring",
+   "recurring_low"
+  ],
+  "spend.addressable": [
+   "spend:addressable",
+   "spend"
+  ],
+  "spend.baseline": [
+   "spend:baseline",
+   "spend"
+  ],
+  "spend.net_run_rate.base": [
+   "spend:net",
+   "net_base"
+  ],
+  "spend.net_run_rate.high": [
+   "spend:net",
+   "net_high"
+  ],
+  "spend.net_run_rate.low": [
+   "spend:net",
+   "net_low"
+  ]
+ }
+}

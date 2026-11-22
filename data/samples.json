@@ -1,0 +1,45 @@
+{
+  "held_out_seed": 4,
+  "samples": [
+    {
+      "id": "demo",
+      "label": "Two mid-size manufacturers, $522M combined spend",
+      "title": "Two mid-size manufacturers",
+      "seed": 4,
+      "profile": "default",
+      "scale": 1.0,
+      "results": "data/demo/results",
+      "scorecard": "data/demo/scorecard.json"
+    },
+    {
+      "id": "bolt_on",
+      "label": "Small bolt-on acquisition, $232M combined spend",
+      "title": "Small bolt-on acquisition",
+      "seed": 5,
+      "profile": "bolt_on",
+      "scale": 0.6,
+      "results": "data/samples/bolt_on/results",
+      "scorecard": "data/samples/bolt_on/scorecard.json"
+    },
+    {
+      "id": "messy_data",
+      "label": "Merger with messy master data, $263M combined spend",
+      "title": "Merger with messy master data",
+      "seed": 6,
+      "profile": "messy",
+      "scale": 0.5,
+      "results": "data/samples/messy_data/results",
+      "scorecard": "data/samples/messy_data/scorecard.json"
+    },
+    {
+      "id": "high_overlap",
+      "label": "Two firms with overlapping suppliers, $312M combined spend",
+      "title": "Two firms with overlapping suppliers",
+      "seed": 7,
+      "profile": "high_overlap",
+      "scale": 0.6,
+      "results": "data/samples/high_overlap/results",
+      "scorecard": "data/samples/high_overlap/scorecard.json"
+    }
+  ]
+}

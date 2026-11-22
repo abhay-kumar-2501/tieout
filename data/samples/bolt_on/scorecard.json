@@ -1,0 +1,173 @@
+{
+  "baseline": {
+    "held_out": {
+      "false_savings_rate": 0.1363857646324034,
+      "item_precision": 0.46747967479674796,
+      "item_recall": 0.5,
+      "planted_savings_recall": 0.5721254658223252,
+      "unit_error_catch_rate": 0.4583333333333333,
+      "vendor_precision": 0.3490725126475548,
+      "vendor_recall": 0.9539170506912442
+    },
+    "tuning": {
+      "1": {
+        "false_savings_rate": 0.13215283317492163,
+        "item_precision": 0.33166666666666667,
+        "item_recall": 0.5053968253968254,
+        "planted_savings_recall": 0.4795125288438528,
+        "unit_error_catch_rate": 0.5,
+        "vendor_precision": 0.029431643625192013,
+        "vendor_recall": 0.9485148514851485
+      },
+      "2": {
+        "false_savings_rate": 0.11380810497301569,
+        "item_precision": 0.3303030303030303,
+        "item_recall": 0.48444444444444446,
+        "planted_savings_recall": 0.4829997100992263,
+        "unit_error_catch_rate": 0.42857142857142855,
+        "vendor_precision": 0.03326018378823207,
+        "vendor_recall": 0.943579766536965
+      },
+      "3": {
+        "false_savings_rate": 0.12359199639998185,
+        "item_precision": 0.35447593342330186,
+        "item_recall": 0.5003174603174603,
+        "planted_savings_recall": 0.4711398080481855,
+        "unit_error_catch_rate": 0.5,
+        "vendor_precision": 0.09482245586193215,
+        "vendor_recall": 0.9390962671905697
+      }
+    },
+    "tuning_mean": {
+      "false_savings_rate": 0.12318431151597305,
+      "item_precision": 0.3388152101309996,
+      "item_recall": 0.49671957671957667,
+      "planted_savings_recall": 0.4778840156637549,
+      "unit_error_catch_rate": 0.4761904761904762,
+      "vendor_precision": 0.05250476109178542,
+      "vendor_recall": 0.9437302950708943
+    }
+  },
+  "failures": [
+    "unit_error_catch_rate: 0.9167 (need >= 0.95)"
+  ],
+  "gates": {
+    "false_savings_rate": {
+      "passed": true,
+      "value": 0.006002665503613494
+    },
+    "item_precision": {
+      "passed": true,
+      "value": 0.9789473684210527
+    },
+    "item_recall": {
+      "passed": true,
+      "value": 0.808695652173913
+    },
+    "unit_error_catch_rate": {
+      "passed": false,
+      "value": 0.9166666666666666
+    },
+    "vendor_precision": {
+      "passed": true,
+      "value": 1.0
+    },
+    "vendor_recall": {
+      "passed": true,
+      "value": 0.9723502304147466
+    }
+  },
+  "held_out_seed": 5,
+  "passed": false,
+  "sample": {
+    "id": "bolt_on",
+    "profile": "bolt_on"
+  },
+  "schema_version": 1,
+  "targets": {
+    "false_savings_rate": {
+      "bound": 0.02,
+      "direction": "<="
+    },
+    "item_precision": {
+      "bound": 0.97,
+      "direction": ">="
+    },
+    "item_recall": {
+      "bound": 0.8,
+      "direction": ">="
+    },
+    "unit_error_catch_rate": {
+      "bound": 0.95,
+      "direction": ">="
+    },
+    "vendor_precision": {
+      "bound": 0.98,
+      "direction": ">="
+    },
+    "vendor_recall": {
+      "bound": 0.9,
+      "direction": ">="
+    }
+  },
+  "thresholds": {
+    "item_auto_cosine": 0.78,
+    "item_review_cosine": 0.6,
+    "vendor_auto": 85.0,
+    "vendor_review": 75.0
+  },
+  "tool": {
+    "held_out": {
+      "false_savings_rate": 0.006002665503613494,
+      "item_precision": 0.9789473684210527,
+      "item_recall": 0.808695652173913,
+      "planted_savings_recall": 0.7047636531132211,
+      "unit_error_catch_rate": 0.9166666666666666,
+      "vendor_precision": 1.0,
+      "vendor_recall": 0.9723502304147466
+    },
+    "tuning": {
+      "1": {
+        "false_savings_rate": 0.00730424982063465,
+        "item_precision": 0.9762258543833581,
+        "item_recall": 0.8342857142857143,
+        "planted_savings_recall": 0.6258087565540704,
+        "unit_error_catch_rate": 1.0,
+        "vendor_precision": 0.9959266802443992,
+        "vendor_recall": 0.9683168316831683
+      },
+      "2": {
+        "false_savings_rate": 0.005204351609699213,
+        "item_precision": 0.9722425127830533,
+        "item_recall": 0.8450793650793651,
+        "planted_savings_recall": 0.605371505889709,
+        "unit_error_catch_rate": 1.0,
+        "vendor_precision": 0.997979797979798,
+        "vendor_recall": 0.9610894941634242
+      },
+      "3": {
+        "false_savings_rate": 0.005735455746377971,
+        "item_precision": 0.9788011695906432,
+        "item_recall": 0.8501587301587301,
+        "planted_savings_recall": 0.5344670036997005,
+        "unit_error_catch_rate": 1.0,
+        "vendor_precision": 0.993963782696177,
+        "vendor_recall": 0.9705304518664047
+      }
+    },
+    "tuning_mean": {
+      "false_savings_rate": 0.006081352392237278,
+      "item_precision": 0.9757565122523516,
+      "item_recall": 0.8431746031746031,
+      "planted_savings_recall": 0.5885490887144933,
+      "unit_error_catch_rate": 1.0,
+      "vendor_precision": 0.9959567536401247,
+      "vendor_recall": 0.9666455925709991
+    }
+  },
+  "tuning_seeds": [
+    1,
+    2,
+    3
+  ]
+}
