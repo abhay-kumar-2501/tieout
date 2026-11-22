@@ -12,10 +12,18 @@ Crops run between section headings found on the page, so they follow layout chan
 Plain ``--screenshot`` with a virtual-time budget returned the loading skeleton on the
 build machine, because the page is drawn over a websocket after load. Set
 ``TIEOUT_APP_URL`` to capture an app running on another port.
+
+For a design review, ``--review DIR`` instead captures whole pages at several window
+sizes (phone, laptop, desktop by default) into ``DIR`` without cropping, and leaves
+``docs/screenshots/`` alone:
+
+    python scripts/make_screenshots.py --review out/ --pages overview,matching \
+        --sizes 390x844,1440x900,1920x1080
 """
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import base64
 import io
@@ -37,7 +45,7 @@ OUT = Path(__file__).resolve().parents[1] / "docs" / "screenshots"
 #: file name -> (page, first section, section after the crop). ``None`` as the first
 #: section starts at the top of the page; each section is matched on the start of its text.
 SHOTS = {
-    "overview.png": ("", None, "How sure we are"),
+    "overview.png": ("", None, "How sure are we?"),
     "matching-review-queue.png": (
         "matching",
         "Review the uncertain matches",
@@ -131,7 +139,92 @@ def _section_top(tops: dict[str, float], start: str) -> int:
     raise SystemExit(f"No section starting {start!r} on the page; update SHOTS.")
 
 
+async def review(out: Path, pages: list[str], sizes: list[tuple[int, int]]) -> None:
+    """Whole-page captures of ``pages`` at each ``(width, height)`` window size into ``out``."""
+    out.mkdir(parents=True, exist_ok=True)
+    profile = tempfile.mkdtemp()
+    chrome = subprocess.Popen(
+        [CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+         "--remote-debugging-port=9334", f"--user-data-dir={profile}", "about:blank"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )  # fmt: skip
+    try:
+        tabs: list[dict] = []
+        for _ in range(50):
+            try:
+                tabs = json.load(urllib.request.urlopen("http://localhost:9334/json"))
+                break
+            except OSError:
+                time.sleep(0.3)
+        url = next(t["webSocketDebuggerUrl"] for t in tabs if t["type"] == "page")
+        async with websockets.connect(url, max_size=None) as ws:
+            counter = 0
+
+            async def call(method: str, **params):
+                nonlocal counter
+                counter += 1
+                await ws.send(json.dumps({"id": counter, "method": method, "params": params}))
+                while True:
+                    reply = json.loads(await ws.recv())
+                    if reply.get("id") == counter:
+                        return reply.get("result")
+
+            async def evaluate(expression: str):
+                reply = await call("Runtime.evaluate", expression=expression, returnByValue=True)
+                return reply["result"].get("value")
+
+            for width, height in sizes:
+                phone = width < 700
+                scale = 2 if phone else 1
+                await call("Emulation.setDeviceMetricsOverride", width=width, height=height,
+                           deviceScaleFactor=scale, mobile=phone)  # fmt: skip
+                for page in pages:
+                    # The Overview is the default page, served at the root address.
+                    await call("Page.navigate", url=BASE + ("" if page == "overview" else page))
+                    last = 0
+                    for _ in range(60):
+                        await asyncio.sleep(1)
+                        length = await evaluate(
+                            "(()=>{const m=document.querySelector('[data-testid=stMain]');"
+                            "const r=document.querySelector('[data-testid=stStatusWidget]');"
+                            "return (m?m.innerText.length:0)+(r?-100000:0)})()"
+                        )
+                        if (length or 0) > 300 and length == last:
+                            break
+                        last = length or 0
+                    await asyncio.sleep(2)
+                    fold = await call("Page.captureScreenshot", format="png")
+                    full = await evaluate(
+                        "(()=>{const m=document.querySelector('[data-testid=stMain]');"
+                        "return m?m.scrollHeight:0})()"
+                    )
+                    await call("Emulation.setDeviceMetricsOverride", width=width,
+                               height=min(max(int(full or height), height), 9000),
+                               deviceScaleFactor=scale, mobile=phone)  # fmt: skip
+                    await asyncio.sleep(2)
+                    whole = await call("Page.captureScreenshot", format="png")
+                    await call("Emulation.setDeviceMetricsOverride", width=width, height=height,
+                               deviceScaleFactor=scale, mobile=phone)  # fmt: skip
+                    name = page or "overview"
+                    for suffix, shot in (("fold", fold), ("full", whole)):
+                        path = out / f"{name}-{width}x{height}-{suffix}.png"
+                        path.write_bytes(base64.b64decode(shot["data"]))
+                        print(path.name)
+    finally:
+        chrome.terminate()
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--review", type=Path, help="capture whole pages into this folder")
+    parser.add_argument("--pages", default="overview,matching,synergies")
+    parser.add_argument("--sizes", default="390x844,1440x900,1920x1080")
+    args = parser.parse_args()
+    if args.review:
+        sizes = [tuple(int(v) for v in s.split("x")) for s in args.sizes.split(",")]
+        pages = [p.strip() for p in args.pages.split(",")]
+        asyncio.run(review(args.review, pages, sizes))  # type: ignore[arg-type]
+        return
     OUT.mkdir(parents=True, exist_ok=True)
     images = asyncio.run(capture({page for page, _, _ in SHOTS.values()}))
     for name, (page, first, after) in SHOTS.items():
