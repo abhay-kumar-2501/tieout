@@ -71,9 +71,9 @@ def test_no_external_resource_loads():
         )
 
 
-def test_config_demo_url_placeholder():
+def test_config_demo_url_is_the_live_app_or_the_placeholder():
     text = (SITE / "config.js").read_text(encoding="utf-8")
-    assert re.search(r'^const DEMO_URL = "#";$', text, re.M)
+    assert re.search(r'^const DEMO_URL = "(#|https://[a-z0-9-]+\.streamlit\.app/)";$', text, re.M)
 
 
 def test_video_block_is_commented_out():
